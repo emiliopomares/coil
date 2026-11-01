@@ -23,7 +23,7 @@ on every supported platform, locally and in CI.
 ## Specs (in dependency order)
 | # | Spec | Status | Depends on |
 |---|------|--------|------------|
-| 1 | [SPEC-0001 Build skeleton](../specs/0001-build-skeleton.md) | Done (pending acknowledgement) | — |
+| 1 | [SPEC-0001 Build skeleton](../specs/0001-build-skeleton.md) | Done | — |
 | 2 | CI matrix | Planned | SPEC-0001 |
 | 3 | Layering checker (`tools/check_layering.py`) | Planned | SPEC-0001 |
 | 4 | Compiler feature check | Planned | CI matrix; ADR-0001 amendment |

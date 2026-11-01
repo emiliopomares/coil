@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Done (pending acknowledgement) |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | build infrastructure (`CMakeLists.txt`, `cmake/`, `tools/`), `coil::foundation` |
@@ -234,4 +234,5 @@ Not applicable (no widgets).
 | 2026-11-01 | Red re-verified on AppleClang 21.0.0 (macOS 27.2, Xcode 27.2 CLT): identical 5 failures. | Emilio Pomares |
 | 2026-11-01 | Plan deviation: the generated `version_config.hpp` is emitted to the build tree and exposed on the **public** include path (a public header includes it); behavior unchanged. | — (implementation detail) |
 | 2026-11-01 | clang-tidy 23 findings: `portability-avoid-pragma-once` and `readability-trailing-comma` disabled in `.clang-tidy`; `modernize-use-designated-initializers` kept; test amended (AC2 expected value uses designated initializers) and re-Red shown failing (`kVersion.minor` 0 ≠ 1), commit `8eefb3b`. LLVM pinned to 23 (ADR-0001 Amendment 1). | Emilio Pomares |
-| 2026-11-01 | **Green + Refactor**: `tools/check.sh` exit 0 (format 3 files, tidy 2 TUs, 6/6 tests); `ctest --preset asan` 6/6; `git diff 8eefb3b -- ':(glob)**/tests/**'` empty. All ACs verified. | Emilio Pomares (acknowledgement pending) |
+| 2026-11-01 | **Green + Refactor**: `tools/check.sh` exit 0 (format 3 files, tidy 2 TUs, 6/6 tests); `ctest --preset asan` 6/6; `git diff 8eefb3b -- ':(glob)**/tests/**'` empty. All ACs verified. | Emilio Pomares |
+| 2026-11-01 | Closed (Done) | Emilio Pomares |

@@ -25,8 +25,8 @@ SDL3 adapter, and stays open until the user closes it.
 ## Specs (in dependency order)
 | # | Spec | Status | Depends on |
 |---|------|--------|------------|
-| 1 | [SPEC-0002 `coil::Error`](../specs/0002-coil-error.md) | Done (pending acknowledgement) | SPEC-0001 |
-| 2 | Window port + fake + contract tests | Planned | `coil::Error` |
+| 1 | [SPEC-0002 `coil::Error`](../specs/0002-coil-error.md) | Done | SPEC-0001 |
+| 2 | [SPEC-0003 Window port + fake + contract tests](../specs/0003-window-port.md) | Draft | SPEC-0002 |
 | 3 | SDL3 window adapter | Planned | Window port |
 | 4 | Window events (`CloseRequested`) | Planned | SDL3 window adapter |
 | 5 | `hello_window` example | Planned | Window events |

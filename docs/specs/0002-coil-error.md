@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Done (pending acknowledgement) |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::foundation` |
@@ -270,4 +270,5 @@ All tests in `modules/foundation/tests/error_test.cpp` (unit, GoogleTest, no fak
 | 2026-11-01 | Spec and plan approved; Q1 resolved (one project-wide enum) | Emilio Pomares |
 | 2026-11-01 | Pre-freeze lint of Red tests: keep `std::uint16_t` for `ErrorCode` with a targeted `NOLINTNEXTLINE(performance-enum-size)` (wire-format headroom); disable `clang-analyzer-optin.core.EnumCastOutOfRange` globally (out-of-range values of fixed-underlying-type enums are well-defined and Coil decodes enums from external data on purpose). | Emilio Pomares |
 | 2026-11-01 | **Red** (commit `4148e48`, AppleClang 21): AC-1, AC-3, AC-4, AC-5, AC-6, AC-7 fail on assertions (code `Internal` / empty strings); AC-2, AC-8 and the alias test pass as guards (§10.3). Test file clang-tidy clean before freezing. | Emilio Pomares |
-| 2026-11-01 | **Green + Refactor**: `tools/check.sh` exit 0 (format 6 files, tidy 4 TUs, 15/15 tests); `ctest --preset asan` 15/15; `git diff 4148e48 -- ':(glob)**/tests/**'` empty. `cert-dcl58-cpp` did not fire on the `std::formatter` specializations. ADR-0013 amended (Q1). | Emilio Pomares (acknowledgement pending) |
+| 2026-11-01 | **Green + Refactor**: `tools/check.sh` exit 0 (format 6 files, tidy 4 TUs, 15/15 tests); `ctest --preset asan` 15/15; `git diff 4148e48 -- ':(glob)**/tests/**'` empty. `cert-dcl58-cpp` did not fire on the `std::formatter` specializations. ADR-0013 amended (Q1). | Emilio Pomares |
+| 2026-11-01 | Closed (Done) | Emilio Pomares |
