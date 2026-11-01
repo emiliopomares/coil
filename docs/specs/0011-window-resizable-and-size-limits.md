@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | Done (pending acknowledgement) |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::platform` (port, fake, contract suite); `backends/platform_sdl3` |
@@ -250,23 +250,23 @@ All resolved as recommended (2026-11-01, Emilio Pomares).
   resize on SDL. The tests only see the coalesced final event, which is the contract.
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally)
-- [ ] Sanitizer preset passes; macOS `leaks` reports 0 leaks for the SDL SL tests
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented (Doxygen comments on new public declarations)
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally)
+- [x] Sanitizer preset passes; macOS `leaks` reports 0 leaks for the SDL SL tests
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented (Doxygen comments on new public declarations)
 
 ### AC verification
-- [ ] AC-1 → `…SL1_ResizableIsSetAtCreation` (Fake, Sdl3)
-- [ ] AC-2 → `…SL2_LimitsAreSetAtCreation` (Fake, Sdl3)
-- [ ] AC-3 → `…SL3_CreateRejectsInvalidLimitsAndSizes` (Fake, Sdl3)
-- [ ] AC-4 → `…SL4_SetSizeIsClampedToLimits` (Fake, Sdl3)
-- [ ] AC-5 → `…SL5_NewLimitsResizeTheWindow` (Fake, Sdl3)
-- [ ] AC-6 → `…SL6_SetLimitsRejectsBadInputWithoutEvents` (Fake, Sdl3)
-- [ ] AC-7 → `…SL7_UserResizeIsClampedToLimits` (Fake, Sdl3)
+- [x] AC-1 → `…SL1_ResizableIsSetAtCreation` (Fake, Sdl3)
+- [x] AC-2 → `…SL2_LimitsAreSetAtCreation` (Fake, Sdl3)
+- [x] AC-3 → `…SL3_CreateRejectsInvalidLimitsAndSizes` (Fake, Sdl3)
+- [x] AC-4 → `…SL4_SetSizeIsClampedToLimits` (Fake, Sdl3)
+- [x] AC-5 → `…SL5_NewLimitsResizeTheWindow` (Fake, Sdl3)
+- [x] AC-6 → `…SL6_SetLimitsRejectsBadInputWithoutEvents` (Fake, Sdl3)
+- [x] AC-7 → `…SL7_UserResizeIsClampedToLimits` (Fake, Sdl3)
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -274,3 +274,4 @@ All resolved as recommended (2026-11-01, Emilio Pomares).
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
 | 2026-11-01 | Q1–Q4 confirmed as recommended; spec and plan approved | Emilio Pomares |
 | 2026-11-01 | **Red**: 14 tests fail on assertions: SL1–SL7 for both Fake and Sdl3 (stubs report `false` / empty limits, ignore limits and clamping, and succeed where `InvalidArgument` / `NotFound` is required). No guards, as planned; the other 97 tests pass. The `hello_window` test doubles gain the three overrides. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
+| 2026-11-01 | **Green + Refactor**: fake stores `resizable` and limits, validates them, and clamps every size change through one `resize` helper (which also coalesces `Resized`). SDL creates windows with `SDL_WINDOW_RESIZABLE`, validates limits before calling SDL, applies them in the order clear max → min → max, and lets SDL clamp; limits are recorded only after SDL accepts them. `tools/check.sh` exit 0 (111/111 tests); `ctest --preset asan` 111/111; macOS `leaks`: 0 leaks for Sdl3 SL1–SL7. `git diff 8b711f0 -- ':(glob)**/tests/**'` empty. | Emilio Pomares (acknowledgement pending) |

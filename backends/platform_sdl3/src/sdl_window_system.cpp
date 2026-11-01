@@ -46,6 +46,47 @@ std::unexpected<Error> invalidSize(platform::WindowSize size) {
         std::format("window size must be positive, got {}x{}", size.width, size.height));
 }
 
+/// Each bound has positive dimensions, and min <= max in both dimensions (SPEC-0011 rule 1).
+bool validLimits(const platform::WindowSizeLimits& limits) {
+    const auto positive = [](platform::WindowSize size) {
+        return size.width > 0 && size.height > 0;
+    };
+    if ((limits.min && !positive(*limits.min)) || (limits.max && !positive(*limits.max))) {
+        return false;
+    }
+    if (limits.min && limits.max) {
+        return limits.min->width <= limits.max->width && limits.min->height <= limits.max->height;
+    }
+    return true;
+}
+
+bool withinLimits(platform::WindowSize size, const platform::WindowSizeLimits& limits) {
+    if (limits.min && (size.width < limits.min->width || size.height < limits.min->height)) {
+        return false;
+    }
+    return !limits.max || (size.width <= limits.max->width && size.height <= limits.max->height);
+}
+
+std::unexpected<Error> invalidLimits() {
+    return makeUnexpected(ErrorCode::InvalidArgument,
+                          "window size limits need positive bounds with min <= max");
+}
+
+/// Applies valid limits to an SDL window; 0x0 means "no bound" to SDL. SDL refuses a minimum above
+/// the current maximum, so the maximum is cleared first (SPEC-0011 rule 8). SDL then clamps the
+/// window's size, reporting any change as SDL_EVENT_WINDOW_RESIZED.
+Expected<void> applyLimits(SDL_Window* window, const platform::WindowSizeLimits& limits) {
+    const platform::WindowSize none{};
+    const platform::WindowSize min = limits.min.value_or(none);
+    const platform::WindowSize max = limits.max.value_or(none);
+    if (!SDL_SetWindowMaximumSize(window, 0, 0) ||
+        !SDL_SetWindowMinimumSize(window, min.width, min.height) ||
+        !SDL_SetWindowMaximumSize(window, max.width, max.height)) {
+        return sdlFailure(ErrorCode::Internal, "cannot set window size limits");
+    }
+    return {};
+}
+
 /// Positive timeout in whole milliseconds, rounded up and clamped to SDL's Sint32 range
 /// (SPEC-0009 rule 7). Callers never pass zero or negative values.
 Sint32 toSdlTimeout(platform::Clock::Duration timeout) {
@@ -60,6 +101,7 @@ private:
     struct Window {
         platform::WindowId id;
         SdlWindowPtr handle;
+        platform::WindowSizeLimits limits; ///< As last set through the port.
     };
 
     /// The live window with `id`, or nullptr.
@@ -117,13 +159,27 @@ public:
         if (desc.size.width <= 0 || desc.size.height <= 0) {
             return invalidSize(desc.size);
         }
+        if (!validLimits(desc.limits)) {
+            return invalidLimits();
+        }
+        if (!withinLimits(desc.size, desc.limits)) {
+            return makeUnexpected(ErrorCode::InvalidArgument,
+                                  std::format("window size {}x{} is outside its limits",
+                                              desc.size.width, desc.size.height));
+        }
+        const SDL_WindowFlags flags = desc.resizable ? SDL_WINDOW_RESIZABLE : 0;
         SdlWindowPtr handle{
-            SDL_CreateWindow(desc.title.c_str(), desc.size.width, desc.size.height, 0)};
+            SDL_CreateWindow(desc.title.c_str(), desc.size.width, desc.size.height, flags)};
         if (!handle) {
             return sdlFailure(ErrorCode::Internal, "SDL_CreateWindow failed");
         }
+        if (desc.limits != platform::WindowSizeLimits{}) {
+            if (auto applied = applyLimits(handle.get(), desc.limits); !applied) {
+                return std::unexpected{std::move(applied.error())};
+            }
+        }
         const platform::WindowId id{.value = m_nextId++};
-        m_windows.push_back(Window{.id = id, .handle = std::move(handle)});
+        m_windows.push_back(Window{.id = id, .handle = std::move(handle), .limits = desc.limits});
         return id;
     }
 
@@ -193,18 +249,37 @@ public:
         return {};
     }
 
-    [[nodiscard]] Expected<bool> resizable(platform::WindowId /*id*/) const override {
-        return false; // Red stub (SPEC-0011).
+    [[nodiscard]] Expected<bool> resizable(platform::WindowId id) const override {
+        const Window* window = find(id);
+        if (window == nullptr) {
+            return notFound(id);
+        }
+        return (SDL_GetWindowFlags(window->handle.get()) & SDL_WINDOW_RESIZABLE) != 0;
     }
 
     [[nodiscard]] Expected<platform::WindowSizeLimits>
-    sizeLimits(platform::WindowId /*id*/) const override {
-        return platform::WindowSizeLimits{}; // Red stub (SPEC-0011).
+    sizeLimits(platform::WindowId id) const override {
+        const Window* window = find(id);
+        if (window == nullptr) {
+            return notFound(id);
+        }
+        return window->limits;
     }
 
-    [[nodiscard]] Expected<void> setSizeLimits(platform::WindowId /*id*/,
-                                               platform::WindowSizeLimits /*limits*/) override {
-        return {}; // Red stub (SPEC-0011).
+    [[nodiscard]] Expected<void> setSizeLimits(platform::WindowId id,
+                                               platform::WindowSizeLimits limits) override {
+        Window* window = find(id);
+        if (window == nullptr) {
+            return notFound(id);
+        }
+        if (!validLimits(limits)) {
+            return invalidLimits();
+        }
+        if (auto applied = applyLimits(window->handle.get(), limits); !applied) {
+            return applied;
+        }
+        window->limits = limits;
+        return {};
     }
 
     [[nodiscard]] std::vector<platform::WindowEvent> pollEvents() override {

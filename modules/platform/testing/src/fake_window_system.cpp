@@ -28,6 +28,36 @@ std::unexpected<Error> invalidSize(WindowSize size) {
         std::format("window size must be positive, got {}x{}", size.width, size.height));
 }
 
+/// Each bound has positive dimensions, and min <= max in both dimensions (SPEC-0011 rule 1).
+bool validLimits(const WindowSizeLimits& limits) {
+    const auto positive = [](WindowSize size) { return size.width > 0 && size.height > 0; };
+    if ((limits.min && !positive(*limits.min)) || (limits.max && !positive(*limits.max))) {
+        return false;
+    }
+    if (limits.min && limits.max) {
+        return limits.min->width <= limits.max->width && limits.min->height <= limits.max->height;
+    }
+    return true;
+}
+
+std::unexpected<Error> invalidLimits() {
+    return makeUnexpected(ErrorCode::InvalidArgument,
+                          "window size limits need positive bounds with min <= max");
+}
+
+/// `size` with each dimension clamped to the limits (SPEC-0011 rule 4).
+WindowSize clamp(WindowSize size, const WindowSizeLimits& limits) {
+    if (limits.min) {
+        size.width = std::max(size.width, limits.min->width);
+        size.height = std::max(size.height, limits.min->height);
+    }
+    if (limits.max) {
+        size.width = std::min(size.width, limits.max->width);
+        size.height = std::min(size.height, limits.max->height);
+    }
+    return size;
+}
+
 } // namespace
 
 FakeWindowSystem::FakeWindowSystem()
@@ -45,8 +75,20 @@ Expected<WindowId> FakeWindowSystem::createWindow(const WindowDesc& desc) {
     if (desc.size.width <= 0 || desc.size.height <= 0) {
         return invalidSize(desc.size);
     }
+    if (!validLimits(desc.limits)) {
+        return invalidLimits();
+    }
+    if (clamp(desc.size, desc.limits) != desc.size) {
+        return makeUnexpected(ErrorCode::InvalidArgument,
+                              std::format("window size {}x{} is outside its limits",
+                                          desc.size.width, desc.size.height));
+    }
     const WindowId id{.value = m_nextId++};
-    m_windows.push_back(Window{.id = id, .title = desc.title, .size = desc.size});
+    m_windows.push_back(Window{.id = id,
+                               .title = desc.title,
+                               .size = desc.size,
+                               .resizable = desc.resizable,
+                               .limits = desc.limits});
     return id;
 }
 
@@ -101,28 +143,50 @@ Expected<void> FakeWindowSystem::setSize(WindowId id, WindowSize size) {
     if (size.width <= 0 || size.height <= 0) {
         return invalidSize(size);
     }
-    if (window->size != size) {
-        window->size = size;
-        // A pending Resized for this window is superseded by the new one (SPEC-0010 rule 9).
-        std::erase_if(m_events, [id](const WindowEvent& event) {
-            const auto* resized = std::get_if<Resized>(&event);
-            return resized != nullptr && resized->window == id;
-        });
-        m_events.emplace_back(Resized{.window = id, .size = size});
-    }
+    resize(*window, clamp(size, window->limits));
     return {};
 }
 
-Expected<bool> FakeWindowSystem::resizable(WindowId /*id*/) const {
-    return false; // Red stub (SPEC-0011).
+void FakeWindowSystem::resize(Window& window, WindowSize size) {
+    if (window.size == size) {
+        return;
+    }
+    window.size = size;
+    // A pending Resized for this window is superseded by the new one (SPEC-0010 rule 9).
+    std::erase_if(m_events, [id = window.id](const WindowEvent& event) {
+        const auto* resized = std::get_if<Resized>(&event);
+        return resized != nullptr && resized->window == id;
+    });
+    m_events.emplace_back(Resized{.window = window.id, .size = size});
 }
 
-Expected<WindowSizeLimits> FakeWindowSystem::sizeLimits(WindowId /*id*/) const {
-    return WindowSizeLimits{}; // Red stub (SPEC-0011).
+Expected<bool> FakeWindowSystem::resizable(WindowId id) const {
+    const Window* window = find(id);
+    if (window == nullptr) {
+        return notFound(id);
+    }
+    return window->resizable;
 }
 
-Expected<void> FakeWindowSystem::setSizeLimits(WindowId /*id*/, WindowSizeLimits /*limits*/) {
-    return {}; // Red stub (SPEC-0011).
+Expected<WindowSizeLimits> FakeWindowSystem::sizeLimits(WindowId id) const {
+    const Window* window = find(id);
+    if (window == nullptr) {
+        return notFound(id);
+    }
+    return window->limits;
+}
+
+Expected<void> FakeWindowSystem::setSizeLimits(WindowId id, WindowSizeLimits limits) {
+    Window* window = find(id);
+    if (window == nullptr) {
+        return notFound(id);
+    }
+    if (!validLimits(limits)) {
+        return invalidLimits();
+    }
+    window->limits = limits;
+    resize(*window, clamp(window->size, limits));
+    return {};
 }
 
 std::vector<WindowEvent> FakeWindowSystem::pollEvents() {

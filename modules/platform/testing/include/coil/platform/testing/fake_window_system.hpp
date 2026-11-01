@@ -60,10 +60,16 @@ private:
         WindowId id;
         std::string title;
         WindowSize size;
+        bool resizable = false;
+        WindowSizeLimits limits;
     };
 
     /// The live window with `id`, or nullptr.
     [[nodiscard]] auto* find(this auto& self, WindowId id);
+
+    /// Sets the window's size (already valid and within its limits) and queues Resized if it
+    /// changed, replacing any pending Resized for that window (SPEC-0010 rules 2, 4, 9).
+    void resize(Window& window, WindowSize size);
 
     std::vector<Window> m_windows;     ///< Live windows, in creation order.
     std::vector<WindowEvent> m_events; ///< Events not yet returned by pollEvents().
