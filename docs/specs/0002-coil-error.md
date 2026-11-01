@@ -268,3 +268,4 @@ All tests in `modules/foundation/tests/error_test.cpp` (unit, GoogleTest, no fak
 |------|--------|-------------|
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
 | 2026-11-01 | Spec and plan approved; Q1 resolved (one project-wide enum) | Emilio Pomares |
+| 2026-11-01 | Pre-freeze lint of Red tests: keep `std::uint16_t` for `ErrorCode` with a targeted `NOLINTNEXTLINE(performance-enum-size)` (wire-format headroom); disable `clang-analyzer-optin.core.EnumCastOutOfRange` globally (out-of-range values of fixed-underlying-type enums are well-defined and Coil decodes enums from external data on purpose). | Emilio Pomares |
