@@ -55,9 +55,8 @@ using foundation::makeUnexpected;
 template <>
 struct std::formatter<coil::foundation::ErrorCode> : std::formatter<std::string_view> {
     template <typename FormatContext>
-    auto format(coil::foundation::ErrorCode /*code*/, FormatContext& ctx) const {
-        return std::formatter<std::string_view>::format(std::string_view{},
-                                                        ctx); // SPEC-0002 Red stub
+    auto format(coil::foundation::ErrorCode code, FormatContext& ctx) const {
+        return std::formatter<std::string_view>::format(coil::foundation::toString(code), ctx);
     }
 };
 
@@ -65,8 +64,12 @@ struct std::formatter<coil::foundation::ErrorCode> : std::formatter<std::string_
 template <>
 struct std::formatter<coil::foundation::Error> : std::formatter<std::string_view> {
     template <typename FormatContext>
-    auto format(const coil::foundation::Error& /*error*/, FormatContext& ctx) const {
-        return std::formatter<std::string_view>::format(std::string_view{},
-                                                        ctx); // SPEC-0002 Red stub
+    auto format(const coil::foundation::Error& error, FormatContext& ctx) const {
+        const std::string_view name = coil::foundation::toString(error.code());
+        if (error.message().empty()) {
+            return std::formatter<std::string_view>::format(name, ctx);
+        }
+        const std::string text = std::format("{}: {}", name, error.message());
+        return std::formatter<std::string_view>::format(text, ctx);
     }
 };

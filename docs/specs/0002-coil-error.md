@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | In Progress |
+| Status | Done (pending acknowledgement) |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::foundation` |
@@ -243,25 +243,25 @@ All tests in `modules/foundation/tests/error_test.cpp` (unit, GoogleTest, no fak
   `code()` directly.
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log), except
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log), except
       the guards listed in §10.3
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format` and `clang-tidy` clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally; other targets once the CI matrix exists)
-- [ ] Sanitizer preset passes
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented (Doxygen comments on new public declarations)
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format` and `clang-tidy` clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally; other targets once the CI matrix exists)
+- [x] Sanitizer preset passes
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented (Doxygen comments on new public declarations)
 
 ### AC verification
-- [ ] AC-1 → `Error.AC1_StoresCodeAndMessage`
-- [ ] AC-2 → `Error.AC2_MessageIsOptional`
-- [ ] AC-3 → `Error.AC3_MakeUnexpectedFillsExpectedOfValue`
-- [ ] AC-4 → `Error.AC4_MakeUnexpectedFillsExpectedOfVoid`
-- [ ] AC-5 → `Error.AC5_ToStringNamesEveryCode`
-- [ ] AC-6 → `Error.AC6_FormatsCodeAndMessage`
-- [ ] AC-7 → `Error.AC7_FormatsWithoutMessageAndFormatsCode`
-- [ ] AC-8 → `Error.AC8_CodesHaveStableNumericValues`
+- [x] AC-1 → `Error.AC1_StoresCodeAndMessage`
+- [x] AC-2 → `Error.AC2_MessageIsOptional`
+- [x] AC-3 → `Error.AC3_MakeUnexpectedFillsExpectedOfValue`
+- [x] AC-4 → `Error.AC4_MakeUnexpectedFillsExpectedOfVoid`
+- [x] AC-5 → `Error.AC5_ToStringNamesEveryCode`
+- [x] AC-6 → `Error.AC6_FormatsCodeAndMessage`
+- [x] AC-7 → `Error.AC7_FormatsWithoutMessageAndFormatsCode`
+- [x] AC-8 → `Error.AC8_CodesHaveStableNumericValues`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -269,3 +269,5 @@ All tests in `modules/foundation/tests/error_test.cpp` (unit, GoogleTest, no fak
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
 | 2026-11-01 | Spec and plan approved; Q1 resolved (one project-wide enum) | Emilio Pomares |
 | 2026-11-01 | Pre-freeze lint of Red tests: keep `std::uint16_t` for `ErrorCode` with a targeted `NOLINTNEXTLINE(performance-enum-size)` (wire-format headroom); disable `clang-analyzer-optin.core.EnumCastOutOfRange` globally (out-of-range values of fixed-underlying-type enums are well-defined and Coil decodes enums from external data on purpose). | Emilio Pomares |
+| 2026-11-01 | **Red** (commit `4148e48`, AppleClang 21): AC-1, AC-3, AC-4, AC-5, AC-6, AC-7 fail on assertions (code `Internal` / empty strings); AC-2, AC-8 and the alias test pass as guards (§10.3). Test file clang-tidy clean before freezing. | Emilio Pomares |
+| 2026-11-01 | **Green + Refactor**: `tools/check.sh` exit 0 (format 6 files, tidy 4 TUs, 15/15 tests); `ctest --preset asan` 15/15; `git diff 4148e48 -- ':(glob)**/tests/**'` empty. `cert-dcl58-cpp` did not fire on the `std::formatter` specializations. ADR-0013 amended (Q1). | Emilio Pomares (acknowledgement pending) |

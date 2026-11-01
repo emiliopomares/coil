@@ -3,8 +3,12 @@ Status: Accepted (2026-11-01)
 
 ## Decision
 - **Recoverable errors** (I/O, parse, plugin load, transport, invalid user data):
-  `std::expected<T, coil::Error>`. `Error` = `{ErrorCode code; std::string message;}` with module-scoped
-  code enums. Every such function is `[[nodiscard]]`.
+  `coil::Expected<T>` (= `std::expected<T, coil::Error>`). `Error` holds an `ErrorCode` and an optional
+  human-readable message. Every such function is `[[nodiscard]]`.
+- **One project-wide `ErrorCode` enum** (amended 2026-11-01 by SPEC-0002; originally "module-scoped code
+  enums"). Codes describe the *kind* of failure, not where it happened. Numeric values are stable and
+  never reused (they cross process boundaries); new codes are appended. The underlying type is
+  `std::uint16_t` for wire-format headroom. Program logic never branches on the message.
 - **Programmer errors** (violated preconditions, broken invariants): `COIL_EXPECTS(cond)`,
   `COIL_ENSURES(cond)`, `COIL_ASSERT(cond)`. Active in Debug and `checked` builds; they call a
   configurable failure handler (default: log + abort). Death tests check them.
