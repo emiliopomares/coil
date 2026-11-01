@@ -23,6 +23,11 @@ struct WindowSystemContractTraits<testing::FakeWindowSystem> {
         auto& fake = dynamic_cast<testing::FakeWindowSystem&>(system);
         ASSERT_TRUE(succeeds(fake.requestClose(id)));
     }
+
+    static void userResize(WindowSystem& system, WindowId id, WindowSize size) {
+        auto& fake = dynamic_cast<testing::FakeWindowSystem&>(system);
+        ASSERT_TRUE(succeeds(fake.userResize(id, size)));
+    }
 };
 
 using FakeImplementations = ::testing::Types<testing::FakeWindowSystem>;
@@ -34,6 +39,23 @@ TEST(FakeWindowSystem, AC6_RequestCloseOnUnknownIdIsNotFound) {
     testing::FakeWindowSystem fake;
     EXPECT_TRUE(failsWith(fake.requestClose(WindowId{.value = 999}), ErrorCode::NotFound));
     EXPECT_EQ(fake.pollEvents(), std::vector<WindowEvent>{});
+}
+
+TEST(FakeWindowSystem, RS7_UserResizeValidatesLikeSetSize) {
+    testing::FakeWindowSystem fake;
+    const WindowSize initial{.width = 100, .height = 100};
+    const auto id = fake.createWindow({.title = "A", .size = initial});
+    ASSERT_TRUE(succeeds(id));
+
+    EXPECT_TRUE(failsWith(fake.userResize(WindowId{.value = 999}, {.width = 200, .height = 150}),
+                          ErrorCode::NotFound));
+    EXPECT_TRUE(
+        failsWith(fake.userResize(*id, {.width = 0, .height = 150}), ErrorCode::InvalidArgument));
+    EXPECT_TRUE(
+        failsWith(fake.userResize(*id, {.width = 200, .height = -1}), ErrorCode::InvalidArgument));
+    EXPECT_TRUE(succeeds(fake.userResize(*id, initial)));
+    EXPECT_EQ(fake.pollEvents(), std::vector<WindowEvent>{});
+    EXPECT_EQ(fake.size(*id), initial);
 }
 
 using std::chrono::milliseconds;

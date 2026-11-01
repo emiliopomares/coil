@@ -164,6 +164,11 @@ public:
         return result;
     }
 
+    [[nodiscard]] Expected<void> setSize(platform::WindowId /*id*/,
+                                         platform::WindowSize /*size*/) override {
+        return {}; // Red stub (SPEC-0010).
+    }
+
     [[nodiscard]] std::vector<platform::WindowEvent> pollEvents() override {
         std::vector<platform::WindowEvent> events;
         SDL_Event event;

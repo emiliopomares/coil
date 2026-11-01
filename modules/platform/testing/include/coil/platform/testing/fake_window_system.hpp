@@ -33,12 +33,17 @@ public:
     [[nodiscard]] Expected<std::string> title(WindowId id) const override;
     [[nodiscard]] Expected<void> setTitle(WindowId id, std::string_view title) override;
     [[nodiscard]] Expected<WindowSize> size(WindowId id) const override;
+    [[nodiscard]] Expected<void> setSize(WindowId id, WindowSize size) override;
     [[nodiscard]] std::vector<WindowEvent> pollEvents() override;
     [[nodiscard]] std::vector<WindowEvent> waitEvents(Clock::Duration timeout) override;
 
     /// Test control: queues CloseRequested for `id`, as if the OS had sent it.
     /// Fails with NotFound if `id` is not a live window.
     [[nodiscard]] Expected<void> requestClose(WindowId id);
+
+    /// Test control: resizes `id` as if the user dragged its edge. Same rules and errors as
+    /// setSize.
+    [[nodiscard]] Expected<void> userResize(WindowId id, WindowSize size);
 
     /// Test control: runs each time waitEvents would block (no pending events, timeout > 0), before
     /// time advances. If it queues events, waitEvents returns them without advancing time.

@@ -41,8 +41,16 @@ struct CloseRequested {
     friend constexpr bool operator==(CloseRequested, CloseRequested) = default;
 };
 
+/// A window's logical size changed: by setSize(), by the user, or by the OS (SPEC-0010).
+struct Resized {
+    WindowId window;
+    WindowSize size; ///< The new size, as applied (may differ from a request, e.g. OS limits).
+
+    friend constexpr bool operator==(Resized, Resized) = default;
+};
+
 /// An event about a window. New alternatives are added by later specs.
-using WindowEvent = std::variant<CloseRequested>;
+using WindowEvent = std::variant<CloseRequested, Resized>;
 
 /// Port: creates and manages OS windows. Implemented by adapters in backends/.
 /// The WindowSystem owns every window it creates; callers refer to windows by WindowId.
@@ -73,6 +81,11 @@ public:
 
     /// Client-area size of a window. Fails with NotFound if `id` is not a live window.
     [[nodiscard]] virtual Expected<WindowSize> size(WindowId id) const = 0;
+
+    /// Asks to resize a window. The change is reported by a Resized event; size() returns the new
+    /// size by the time that event has been returned. No event if the size does not change.
+    /// Fails with InvalidArgument for a non-positive size and NotFound for an unknown window.
+    [[nodiscard]] virtual Expected<void> setSize(WindowId id, WindowSize size) = 0;
 
     /// Returns all events that occurred since the previous call, in order; each event is returned
     /// once. Events for windows destroyed before this call are dropped. Non-blocking.

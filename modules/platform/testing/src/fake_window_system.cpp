@@ -89,6 +89,10 @@ Expected<WindowSize> FakeWindowSystem::size(WindowId id) const {
     return window->size;
 }
 
+Expected<void> FakeWindowSystem::setSize(WindowId /*id*/, WindowSize /*size*/) {
+    return {}; // Red stub (SPEC-0010).
+}
+
 std::vector<WindowEvent> FakeWindowSystem::pollEvents() {
     std::vector<WindowEvent> events = std::exchange(m_events, {});
     // Events for windows destroyed since they were queued are dropped (SPEC-0006 rule 4).
@@ -106,6 +110,10 @@ Expected<void> FakeWindowSystem::requestClose(WindowId id) {
     }
     m_events.emplace_back(CloseRequested{.window = id});
     return {};
+}
+
+Expected<void> FakeWindowSystem::userResize(WindowId id, WindowSize size) {
+    return setSize(id, size); // Same rules as setSize (SPEC-0010 rule 8).
 }
 
 std::vector<WindowEvent> FakeWindowSystem::waitEvents(Clock::Duration timeout) {

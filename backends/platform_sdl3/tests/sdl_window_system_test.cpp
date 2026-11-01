@@ -127,6 +127,16 @@ struct WindowSystemContractTraits<Sdl3> {
         event.window.windowID = *sdlId;
         ASSERT_TRUE(SDL_PushEvent(&event)) << SDL_GetError();
     }
+
+    /// Simulates a resize from outside the port: resizes the SDL window directly. SDL then reports
+    /// it as SDL_EVENT_WINDOW_RESIZED, as it does when the user drags an edge.
+    static void userResize(WindowSystem& system, WindowId id, WindowSize size) {
+        const auto sdlId = platform_sdl3::sdlWindowId(system, id);
+        ASSERT_TRUE(succeeds(sdlId));
+        SDL_Window* window = SDL_GetWindowFromID(*sdlId);
+        ASSERT_NE(window, nullptr) << SDL_GetError();
+        ASSERT_TRUE(SDL_SetWindowSize(window, size.width, size.height)) << SDL_GetError();
+    }
 };
 
 using Sdl3Implementations = ::testing::Types<Sdl3>;

@@ -6,6 +6,8 @@
 //       static std::unique_ptr<WindowSystem> make();
 //       // Simulates the OS asking to close `id` (SPEC-0006).
 //       static void requestClose(WindowSystem& system, WindowId id);
+//       // Simulates the user resizing `id` to `size`, outside the port (SPEC-0010).
+//       static void userResize(WindowSystem& system, WindowId id, WindowSize size);
 //   };
 //   INSTANTIATE_TYPED_TEST_SUITE_P(Name, WindowSystemContract, ::testing::Types<Impl>);
 
@@ -44,6 +46,9 @@ inline std::ostream& operator<<(std::ostream& os, WindowSize size) {
 inline std::ostream& operator<<(std::ostream& os, const WindowEvent& event) {
     if (const auto* close = std::get_if<CloseRequested>(&event)) {
         return os << "CloseRequested{" << close->window << "}";
+    }
+    if (const auto* resized = std::get_if<Resized>(&event)) {
+        return os << "Resized{" << resized->window << ", " << resized->size << "}";
     }
     return os << "WindowEvent{unknown}";
 }
@@ -85,6 +90,18 @@ protected:
     /// Simulates the OS asking to close `id`, in the implementation's own way (SPEC-0006).
     void requestClose(WindowId id) {
         WindowSystemContractTraits<Impl>::requestClose(*m_system, id);
+    }
+
+    /// Simulates the user resizing `id`, in the implementation's own way (SPEC-0010).
+    void userResize(WindowId id, WindowSize size) {
+        WindowSystemContractTraits<Impl>::userResize(*m_system, id, size);
+    }
+
+    /// Size of a window; 0x0 (and a test failure) if the query fails.
+    WindowSize sizeOf(WindowId id) {
+        const Expected<WindowSize> result = m_system->size(id);
+        EXPECT_TRUE(succeeds(result));
+        return result.value_or(WindowSize{});
     }
 
     /// Title of a window, or a marker describing the error.
@@ -273,6 +290,87 @@ TYPED_TEST_P(WindowSystemContract, WE4_NegativeTimeoutNeverBlocks) {
               std::vector<WindowEvent>{CloseRequested{.window = a}});
 }
 
+// SPEC-0010: setSize and the Resized event (RS<n> = SPEC-0010 AC-<n>).
+
+TYPED_TEST_P(WindowSystemContract, RS1_SetSizeIsReportedAsResized) {
+    WindowSystem& system = this->system();
+    const WindowId a = this->create("A", {.width = 100, .height = 100});
+    const WindowSize newSize{.width = 200, .height = 150};
+    ASSERT_TRUE(succeeds(system.setSize(a, newSize)));
+    EXPECT_EQ(system.waitEvents(std::chrono::seconds{1}),
+              (std::vector<WindowEvent>{Resized{.window = a, .size = newSize}}));
+    EXPECT_EQ(this->sizeOf(a), newSize);
+}
+
+TYPED_TEST_P(WindowSystemContract, RS2_SetSameSizeProducesNoEvent) {
+    WindowSystem& system = this->system();
+    const WindowSize initial{.width = 100, .height = 100};
+    const WindowId a = this->create("A", initial);
+    EXPECT_TRUE(succeeds(system.setSize(a, initial)));
+    EXPECT_EQ(system.pollEvents(), std::vector<WindowEvent>{});
+    EXPECT_EQ(this->sizeOf(a), initial);
+}
+
+TYPED_TEST_P(WindowSystemContract, RS3_SetSizeRejectsBadInputWithoutEvents) {
+    WindowSystem& system = this->system();
+    const WindowSize initial{.width = 100, .height = 100};
+    const WindowId a = this->create("A", initial);
+    const WindowId destroyed = this->create("B", initial);
+    ASSERT_TRUE(succeeds(system.destroyWindow(destroyed)));
+
+    const std::array<WindowSize, 4> invalidSizes{{
+        {.width = 0, .height = 600},
+        {.width = 800, .height = 0},
+        {.width = -1, .height = 600},
+        {.width = 800, .height = -1},
+    }};
+    for (const WindowSize size : invalidSizes) {
+        EXPECT_TRUE(failsWith(system.setSize(a, size), ErrorCode::InvalidArgument))
+            << ::testing::PrintToString(size);
+    }
+    const WindowSize valid{.width = 200, .height = 150};
+    EXPECT_TRUE(failsWith(system.setSize(destroyed, valid), ErrorCode::NotFound));
+    EXPECT_TRUE(failsWith(system.setSize(WindowId{.value = 999}, valid), ErrorCode::NotFound));
+
+    EXPECT_EQ(system.pollEvents(), std::vector<WindowEvent>{});
+    EXPECT_EQ(this->sizeOf(a), initial);
+}
+
+TYPED_TEST_P(WindowSystemContract, RS4_UserResizeIsReportedAsResized) {
+    WindowSystem& system = this->system();
+    const WindowId a = this->create("A", {.width = 100, .height = 100});
+    const WindowSize newSize{.width = 320, .height = 240};
+    this->userResize(a, newSize);
+    EXPECT_EQ(system.waitEvents(std::chrono::seconds{1}),
+              (std::vector<WindowEvent>{Resized{.window = a, .size = newSize}}));
+    EXPECT_EQ(this->sizeOf(a), newSize);
+}
+
+TYPED_TEST_P(WindowSystemContract, RS5_ResizesAreReportedInOrder) {
+    WindowSystem& system = this->system();
+    const WindowId a = this->create("A", {.width = 100, .height = 100});
+    const WindowSize first{.width = 200, .height = 150};
+    const WindowSize second{.width = 300, .height = 200};
+    ASSERT_TRUE(succeeds(system.setSize(a, first)));
+    ASSERT_TRUE(succeeds(system.setSize(a, second)));
+    EXPECT_EQ(system.waitEvents(std::chrono::seconds{1}),
+              (std::vector<WindowEvent>{Resized{.window = a, .size = first},
+                                        Resized{.window = a, .size = second}}));
+    EXPECT_EQ(this->sizeOf(a), second);
+}
+
+TYPED_TEST_P(WindowSystemContract, RS6_ResizesOfDestroyedWindowsAreDropped) {
+    WindowSystem& system = this->system();
+    const WindowId a = this->create("A", {.width = 100, .height = 100});
+    const WindowId b = this->create("B", {.width = 100, .height = 100});
+    const WindowSize newSize{.width = 200, .height = 150};
+    ASSERT_TRUE(succeeds(system.setSize(a, newSize)));
+    ASSERT_TRUE(succeeds(system.setSize(b, newSize)));
+    ASSERT_TRUE(succeeds(system.destroyWindow(a)));
+    EXPECT_EQ(system.waitEvents(std::chrono::seconds{1}),
+              (std::vector<WindowEvent>{Resized{.window = b, .size = newSize}}));
+}
+
 REGISTER_TYPED_TEST_SUITE_P(WindowSystemContract, AC1_CreateReturnsValidIdAndListsWindow,
                             AC2_ReportsTitleAndSizeFromDesc, AC3_SetTitleChangesOnlyThatWindow,
                             AC4_RejectsNonPositiveSize, AC5_DestroyedWindowIsNotFound,
@@ -281,6 +379,9 @@ REGISTER_TYPED_TEST_SUITE_P(WindowSystemContract, AC1_CreateReturnsValidIdAndLis
                             EV3_EventsKeepOrder, EV4_CloseRequestDoesNotCloseWindow,
                             EV5_EventsForDestroyedWindowsAreDropped, WE1_WaitReturnsPendingEvents,
                             WE2_WaitTimesOutEmpty, WE3_WaitedEventsAreDeliveredOnce,
-                            WE4_NegativeTimeoutNeverBlocks);
+                            WE4_NegativeTimeoutNeverBlocks, RS1_SetSizeIsReportedAsResized,
+                            RS2_SetSameSizeProducesNoEvent, RS3_SetSizeRejectsBadInputWithoutEvents,
+                            RS4_UserResizeIsReportedAsResized, RS5_ResizesAreReportedInOrder,
+                            RS6_ResizesOfDestroyedWindowsAreDropped);
 
 } // namespace coil::platform

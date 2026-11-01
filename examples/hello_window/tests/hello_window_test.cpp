@@ -85,6 +85,10 @@ public:
 
     [[nodiscard]] Expected<WindowSize> size(WindowId id) const override { return m_inner.size(id); }
 
+    [[nodiscard]] Expected<void> setSize(WindowId id, WindowSize size) override {
+        return m_inner.setSize(id, size);
+    }
+
     [[nodiscard]] std::vector<WindowEvent> pollEvents() override {
         ++m_pollCalls;
         beforeEventCall();
@@ -141,6 +145,10 @@ public:
     }
 
     [[nodiscard]] Expected<WindowSize> size(WindowId id) const override { return notFound(id); }
+
+    [[nodiscard]] Expected<void> setSize(WindowId id, WindowSize /*size*/) override {
+        return notFound(id);
+    }
 
     [[nodiscard]] std::vector<WindowEvent> pollEvents() override { return {}; }
 
