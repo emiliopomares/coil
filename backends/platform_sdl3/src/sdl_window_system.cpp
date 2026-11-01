@@ -40,6 +40,12 @@ std::unexpected<Error> notFound(platform::WindowId id) {
     return makeUnexpected(ErrorCode::NotFound, std::format("no window with id {}", id.value));
 }
 
+std::unexpected<Error> invalidSize(platform::WindowSize size) {
+    return makeUnexpected(
+        ErrorCode::InvalidArgument,
+        std::format("window size must be positive, got {}x{}", size.width, size.height));
+}
+
 /// Positive timeout in whole milliseconds, rounded up and clamped to SDL's Sint32 range
 /// (SPEC-0009 rule 7). Callers never pass zero or negative values.
 Sint32 toSdlTimeout(platform::Clock::Duration timeout) {
@@ -72,12 +78,21 @@ private:
     /// Appends the Coil event for `event`, if it maps to one for a live window (SPEC-0006 rules 4,
     /// 5).
     void translate(const SDL_Event& event, std::vector<platform::WindowEvent>& events) const {
-        if (event.type != SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
+        if (event.type != SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
+            event.type != SDL_EVENT_WINDOW_RESIZED) {
             return;
         }
         const Window* window = findByHandle(SDL_GetWindowFromEvent(&event));
-        if (window != nullptr) {
+        if (window == nullptr) {
+            return;
+        }
+        if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
             events.emplace_back(platform::CloseRequested{.window = window->id});
+        } else {
+            // SDL reports the new logical size in data1/data2 (SPEC-0010 rule 7).
+            events.emplace_back(platform::Resized{
+                .window = window->id,
+                .size = {.width = event.window.data1, .height = event.window.data2}});
         }
     }
 
@@ -100,9 +115,7 @@ public:
     [[nodiscard]] Expected<platform::WindowId>
     createWindow(const platform::WindowDesc& desc) override {
         if (desc.size.width <= 0 || desc.size.height <= 0) {
-            return makeUnexpected(ErrorCode::InvalidArgument,
-                                  std::format("window size must be positive, got {}x{}",
-                                              desc.size.width, desc.size.height));
+            return invalidSize(desc.size);
         }
         SdlWindowPtr handle{
             SDL_CreateWindow(desc.title.c_str(), desc.size.width, desc.size.height, 0)};
@@ -164,9 +177,20 @@ public:
         return result;
     }
 
-    [[nodiscard]] Expected<void> setSize(platform::WindowId /*id*/,
-                                         platform::WindowSize /*size*/) override {
-        return {}; // Red stub (SPEC-0010).
+    [[nodiscard]] Expected<void> setSize(platform::WindowId id,
+                                         platform::WindowSize size) override {
+        const Window* window = find(id);
+        if (window == nullptr) {
+            return notFound(id);
+        }
+        if (size.width <= 0 || size.height <= 0) {
+            return invalidSize(size);
+        }
+        // SDL reports the change as SDL_EVENT_WINDOW_RESIZED, and sends none for an unchanged size.
+        if (!SDL_SetWindowSize(window->handle.get(), size.width, size.height)) {
+            return sdlFailure(ErrorCode::Internal, "SDL_SetWindowSize failed");
+        }
+        return {};
     }
 
     [[nodiscard]] std::vector<platform::WindowEvent> pollEvents() override {

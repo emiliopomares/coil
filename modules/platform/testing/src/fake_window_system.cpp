@@ -22,6 +22,12 @@ std::unexpected<Error> notFound(WindowId id) {
     return makeUnexpected(ErrorCode::NotFound, std::format("no window with id {}", id.value));
 }
 
+std::unexpected<Error> invalidSize(WindowSize size) {
+    return makeUnexpected(
+        ErrorCode::InvalidArgument,
+        std::format("window size must be positive, got {}x{}", size.width, size.height));
+}
+
 } // namespace
 
 FakeWindowSystem::FakeWindowSystem()
@@ -37,9 +43,7 @@ auto* FakeWindowSystem::find(this auto& self, WindowId id) {
 
 Expected<WindowId> FakeWindowSystem::createWindow(const WindowDesc& desc) {
     if (desc.size.width <= 0 || desc.size.height <= 0) {
-        return makeUnexpected(ErrorCode::InvalidArgument,
-                              std::format("window size must be positive, got {}x{}",
-                                          desc.size.width, desc.size.height));
+        return invalidSize(desc.size);
     }
     const WindowId id{.value = m_nextId++};
     m_windows.push_back(Window{.id = id, .title = desc.title, .size = desc.size});
@@ -89,8 +93,24 @@ Expected<WindowSize> FakeWindowSystem::size(WindowId id) const {
     return window->size;
 }
 
-Expected<void> FakeWindowSystem::setSize(WindowId /*id*/, WindowSize /*size*/) {
-    return {}; // Red stub (SPEC-0010).
+Expected<void> FakeWindowSystem::setSize(WindowId id, WindowSize size) {
+    Window* window = find(id);
+    if (window == nullptr) {
+        return notFound(id);
+    }
+    if (size.width <= 0 || size.height <= 0) {
+        return invalidSize(size);
+    }
+    if (window->size != size) {
+        window->size = size;
+        // A pending Resized for this window is superseded by the new one (SPEC-0010 rule 9).
+        std::erase_if(m_events, [id](const WindowEvent& event) {
+            const auto* resized = std::get_if<Resized>(&event);
+            return resized != nullptr && resized->window == id;
+        });
+        m_events.emplace_back(Resized{.window = id, .size = size});
+    }
+    return {};
 }
 
 std::vector<WindowEvent> FakeWindowSystem::pollEvents() {

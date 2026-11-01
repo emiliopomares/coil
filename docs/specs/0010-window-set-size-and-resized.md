@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | Done (pending acknowledgement) |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::platform` (port, fake, contract suite); `backends/platform_sdl3` |
@@ -243,24 +243,24 @@ All resolved as recommended (2026-11-01, Emilio Pomares).
   can't be honored on asynchronous OS backends, and it would give applications two code paths.
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log), except
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log), except
       the guards listed in §10.1
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally)
-- [ ] Sanitizer preset passes; macOS `leaks` reports 0 leaks for the SDL RS tests
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented (Doxygen comments on new public declarations)
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally)
+- [x] Sanitizer preset passes; macOS `leaks` reports 0 leaks for the SDL RS tests
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented (Doxygen comments on new public declarations)
 
 ### AC verification
-- [ ] AC-1 → `…RS1_SetSizeIsReportedAsResized` (Fake, Sdl3)
-- [ ] AC-2 → `…RS2_SetSameSizeProducesNoEvent` (Fake, Sdl3)
-- [ ] AC-3 → `…RS3_SetSizeRejectsBadInputWithoutEvents` (Fake, Sdl3)
-- [ ] AC-4 → `…RS4_UserResizeIsReportedAsResized` (Fake, Sdl3)
-- [ ] AC-5 → `…RS5_PendingResizesAreCoalesced` (Fake, Sdl3)
-- [ ] AC-6 → `…RS6_ResizesOfDestroyedWindowsAreDropped` (Fake, Sdl3)
-- [ ] AC-7 → `FakeWindowSystem.RS7_UserResizeValidatesLikeSetSize`
+- [x] AC-1 → `…RS1_SetSizeIsReportedAsResized` (Fake, Sdl3)
+- [x] AC-2 → `…RS2_SetSameSizeProducesNoEvent` (Fake, Sdl3)
+- [x] AC-3 → `…RS3_SetSizeRejectsBadInputWithoutEvents` (Fake, Sdl3)
+- [x] AC-4 → `…RS4_UserResizeIsReportedAsResized` (Fake, Sdl3)
+- [x] AC-5 → `…RS5_PendingResizesAreCoalesced` (Fake, Sdl3)
+- [x] AC-6 → `…RS6_ResizesOfDestroyedWindowsAreDropped` (Fake, Sdl3)
+- [x] AC-7 → `FakeWindowSystem.RS7_UserResizeValidatesLikeSetSize`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -269,3 +269,4 @@ All resolved as recommended (2026-11-01, Emilio Pomares).
 | 2026-11-01 | Q1–Q4 confirmed as recommended; spec and plan approved | Emilio Pomares |
 | 2026-11-01 | **Red**: 11 tests fail on assertions: RS1, RS3, RS4, RS5 and RS6 for both Fake and Sdl3 (missing `Resized` events; stubs succeed where `InvalidArgument` / `NotFound` is required), and RS7 (fake). RS2 (×2) passes as the planned guard; the other 84 tests pass. File list amended: `hello_window`'s two test doubles gain `setSize` (forwarding, and `NotFound`), forced by the new pure virtual. The fake's `userResize` stub delegates to the `setSize` stub (shared path, rule 8). `tools/check.sh` format, layering and tidy clean. | Emilio Pomares (amendment pending acknowledgement) |
 | 2026-11-01 | **Amendment A** (found in Green: SDL coalesces pending `RESIZED` events per window): rule 9 added, §4.3 and AC-5 changed, RS5 renamed `RS5_PendingResizesAreCoalesced` and now expects one coalesced event. Out of Scope keeps only throttling. Per CLAUDE.md §3 the corrected test goes through Red again. | Emilio Pomares |
+| 2026-11-01 | **Green + Refactor**: fake `setSize` validates, updates the size, replaces any pending `Resized` for the window and queues the new one (`userResize` shares it). SDL `setSize` validates and calls `SDL_SetWindowSize`; `SDL_EVENT_WINDOW_RESIZED` (data1, data2) translates to `Resized`. The size-validation message is shared by `createWindow` and `setSize`. `tools/check.sh` exit 0 (97/97 tests); `ctest --preset asan` 97/97; macOS `leaks`: 0 leaks for Sdl3 RS1–RS6. `git diff c0920e8 -- ':(glob)**/tests/**'` empty. | Emilio Pomares (acknowledgement pending) |
