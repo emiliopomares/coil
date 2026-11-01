@@ -302,3 +302,5 @@ after Red. Future adapters reuse it but cannot weaken it.
 |------|--------|-------------|
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
 | 2026-11-01 | Spec and plan approved; Q1–Q3 confirmed as recommended | Emilio Pomares |
+| 2026-11-01 | Pre-freeze lint of Red tests: `PrintTo` replaced by `operator<<`, one `const` added (test code); `readability-identifier-naming.ClassIgnoredRegexp: '^AC[0-9]+_[A-Za-z0-9]+$'` added to `modules/platform/tests/.clang-tidy` only, because `TYPED_TEST_P` uses test names as class names. | Emilio Pomares |
+| 2026-11-01 | **Red** (AppleClang 21): all 7 contract tests fail on assertions against the stub fake (ids `WindowId{0}`, empty titles, invalid sizes accepted, `NotFound` cases succeed, AC-7 id reused 100×); 15 pre-existing tests pass (15/22). Test code clang-tidy clean before freezing. | Emilio Pomares |

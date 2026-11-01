@@ -22,4 +22,5 @@ find_package(GTest CONFIG REQUIRED)
 include(GoogleTest)
 
 add_subdirectory(modules/foundation)
+add_subdirectory(modules/platform)
 add_subdirectory(tests)
