@@ -182,7 +182,7 @@ Prerequisites: see ADR-0001 (toolchains, LLVM 23) and `VCPKG_ROOT` pointing to a
 
 ```
 modules/<name>/{include/coil/<name>/, src/, tests/}   # portable library modules
-backends/<name>/{src/, tests/}                         # adapters: OS, windowing, GPU APIs, sockets
+backends/<name>/{include/coil/<name>/, src/, tests/}   # adapters: OS, windowing, GPU APIs, sockets
 examples/                                              # sample apps (not part of the library)
 tools/                                                 # check.sh, check_layering.py, scripts
 docs/architecture/  docs/adr/  docs/epics/  docs/specs/

@@ -81,6 +81,10 @@ Rules:
   and backend may include. **[tools/layering.json](../../tools/layering.json) is the authoritative copy
   of this column**; the table mirrors it and both change together.
 - Backends never depend on `core`, `widgets` or `docking`; they see only ports.
+- **Backends** (SPEC-0005): `backends/<name>/` is built with `coil_add_backend` as `coil::<name>`. Its
+  public header (`include/coil/<name>/`) exposes only a factory returning the port and options, never
+  third-party types, and third-party libraries are linked `PRIVATE`. Each backend's tests instantiate
+  the contract suites of the ports it implements.
 - **Test support** (SPEC-0003): `modules/<m>/testing/` builds `coil::<m>_testing` (fakes of `<m>`'s
   ports; may depend on `coil::<m>`). Reusable **contract suites** live in `modules/<m>/tests/contract/`
   and are exposed as the INTERFACE target `coil::<m>_contract`. Only test executables may link either;
