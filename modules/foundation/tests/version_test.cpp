@@ -11,9 +11,9 @@ using coil::foundation::kVersion;
 using coil::foundation::Version;
 using coil::foundation::versionString;
 
-constexpr Version kExpectedVersion{COIL_TEST_EXPECTED_VERSION_MAJOR,
-                                   COIL_TEST_EXPECTED_VERSION_MINOR,
-                                   COIL_TEST_EXPECTED_VERSION_PATCH};
+constexpr Version kExpectedVersion{.major = COIL_TEST_EXPECTED_VERSION_MAJOR,
+                                   .minor = COIL_TEST_EXPECTED_VERSION_MINOR,
+                                   .patch = COIL_TEST_EXPECTED_VERSION_PATCH};
 
 constexpr std::string_view kExpectedVersionString{COIL_TEST_EXPECTED_VERSION_STRING};
 
