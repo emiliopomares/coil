@@ -7,6 +7,8 @@
 #include <format>
 #include <string>
 #include <string_view>
+#include <utility>
+#include <variant>
 #include <vector>
 
 namespace coil::platform::testing {
@@ -78,13 +80,22 @@ Expected<WindowSize> FakeWindowSystem::size(WindowId id) const {
     return window->size;
 }
 
-// SPEC-0006 Red stubs: no events are ever queued or delivered.
-
 std::vector<WindowEvent> FakeWindowSystem::pollEvents() {
-    return {};
+    std::vector<WindowEvent> events = std::exchange(m_events, {});
+    // Events for windows destroyed since they were queued are dropped (SPEC-0006 rule 4).
+    std::erase_if(events, [this](const WindowEvent& event) {
+        const WindowId window =
+            std::visit([](const auto& alternative) { return alternative.window; }, event);
+        return find(window) == nullptr;
+    });
+    return events;
 }
 
-Expected<void> FakeWindowSystem::requestClose(WindowId /*id*/) {
+Expected<void> FakeWindowSystem::requestClose(WindowId id) {
+    if (find(id) == nullptr) {
+        return notFound(id);
+    }
+    m_events.emplace_back(CloseRequested{.window = id});
     return {};
 }
 

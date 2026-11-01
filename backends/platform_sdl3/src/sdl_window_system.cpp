@@ -3,6 +3,7 @@
 #include <coil/platform_sdl3/sdl_window_system.hpp>
 
 #include <SDL3/SDL_error.h>
+#include <SDL3/SDL_events.h>
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_video.h>
@@ -47,6 +48,13 @@ private:
     [[nodiscard]] auto* find(this auto& self, platform::WindowId id) {
         const auto it = std::ranges::find(self.m_windows, id, &Window::id);
         return it == self.m_windows.end() ? nullptr : &*it;
+    }
+
+    /// The live window owning `handle`, or nullptr.
+    [[nodiscard]] const Window* findByHandle(const SDL_Window* handle) const {
+        const auto it = std::ranges::find(m_windows, handle,
+                                          [](const Window& window) { return window.handle.get(); });
+        return it == m_windows.end() ? nullptr : &*it;
     }
 
     std::vector<Window> m_windows; ///< Live windows, in creation order.
@@ -133,7 +141,32 @@ public:
     }
 
     [[nodiscard]] std::vector<platform::WindowEvent> pollEvents() override {
-        return {}; // SPEC-0006 Red stub
+        std::vector<platform::WindowEvent> events;
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type != SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
+                continue; // Not mapped yet (SPEC-0006 rule 5).
+            }
+            // Destroyed or foreign windows resolve to no live window and are dropped (rules 4, 5).
+            const Window* window = findByHandle(SDL_GetWindowFromEvent(&event));
+            if (window != nullptr) {
+                events.emplace_back(platform::CloseRequested{.window = window->id});
+            }
+        }
+        return events;
+    }
+
+    /// SDL's id for a live window (SPEC-0006 sdlWindowId).
+    [[nodiscard]] Expected<std::uint32_t> sdlWindowId(platform::WindowId id) const {
+        const Window* window = find(id);
+        if (window == nullptr) {
+            return notFound(id);
+        }
+        const SDL_WindowID sdlId = SDL_GetWindowID(window->handle.get());
+        if (sdlId == 0) {
+            return sdlFailure(ErrorCode::Internal, "SDL_GetWindowID failed");
+        }
+        return sdlId;
     }
 };
 
@@ -155,9 +188,13 @@ createSdlWindowSystem(const SdlWindowSystemOptions& options) {
     return std::make_unique<SdlWindowSystem>();
 }
 
-Expected<std::uint32_t> sdlWindowId(const platform::WindowSystem& /*system*/,
-                                    platform::WindowId /*id*/) {
-    return std::uint32_t{0}; // SPEC-0006 Red stub
+Expected<std::uint32_t> sdlWindowId(const platform::WindowSystem& system, platform::WindowId id) {
+    const auto* sdlSystem = dynamic_cast<const SdlWindowSystem*>(&system);
+    if (sdlSystem == nullptr) {
+        return makeUnexpected(ErrorCode::InvalidArgument,
+                              "window system was not created by createSdlWindowSystem");
+    }
+    return sdlSystem->sdlWindowId(id);
 }
 
 } // namespace coil::platform_sdl3

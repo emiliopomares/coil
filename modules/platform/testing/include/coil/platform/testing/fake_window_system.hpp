@@ -43,8 +43,9 @@ private:
     /// The live window with `id`, or nullptr.
     [[nodiscard]] auto* find(this auto& self, WindowId id);
 
-    std::vector<Window> m_windows; ///< Live windows, in creation order.
-    std::uint64_t m_nextId = 1;    ///< Next id to issue; ids are never reused.
+    std::vector<Window> m_windows;     ///< Live windows, in creation order.
+    std::vector<WindowEvent> m_events; ///< Events not yet returned by pollEvents().
+    std::uint64_t m_nextId = 1;        ///< Next id to issue; ids are never reused.
 };
 
 } // namespace coil::platform::testing
