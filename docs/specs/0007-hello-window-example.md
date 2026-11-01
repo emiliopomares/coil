@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `examples/hello_window` (new); `tools/check.sh` (format and tidy cover `examples/`) |
@@ -230,23 +230,23 @@ All resolved (2026-11-01, Emilio Pomares).
   forbids. The logic is fully tested through `runHelloWindow`; `main` is 4 lines plus the manual check.
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log), except
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log), except
       the guard listed in §10.1
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally)
-- [ ] Sanitizer preset passes; macOS `leaks` reports 0 leaks for AC-5
-- [ ] Every AC ticked below with its proving test
-- [ ] **Manual visual check** done on macOS and recorded in the Change Log
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally)
+- [x] Sanitizer preset passes; macOS `leaks` reports 0 leaks for AC-5
+- [x] Every AC ticked below with its proving test
+- [x] **Manual visual check** done on macOS and recorded in the Change Log
 
 ### AC verification
-- [ ] AC-1 → `HelloWindow.AC1_OpensOneTitledWindow`
-- [ ] AC-2 → `HelloWindow.AC2_WaitsUntilItsWindowIsClosed`
-- [ ] AC-3 → `HelloWindow.AC3_IgnoresCloseRequestsForOtherWindows`
-- [ ] AC-4 → `HelloWindow.AC4_FailsWhenWindowCannotBeCreated`
-- [ ] AC-5 → `HelloWindow.AC5_RunsOnSdlUntilClosed`
-- [ ] AC-6 → `gate.examples.AC6_HelloWindowBuilds`, `tools/check.sh`
+- [x] AC-1 → `HelloWindow.AC1_OpensOneTitledWindow`
+- [x] AC-2 → `HelloWindow.AC2_WaitsUntilItsWindowIsClosed`
+- [x] AC-3 → `HelloWindow.AC3_IgnoresCloseRequestsForOtherWindows`
+- [x] AC-4 → `HelloWindow.AC4_FailsWhenWindowCannotBeCreated`
+- [x] AC-5 → `HelloWindow.AC5_RunsOnSdlUntilClosed`
+- [x] AC-6 → `gate.examples.AC6_HelloWindowBuilds`, `tools/check.sh`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -257,3 +257,5 @@ All resolved (2026-11-01, Emilio Pomares).
 | 2026-11-01 | Q2–Q5 decided (Q4: finite 250 ms timeout; "wait forever" deferred to EPIC-003) | Emilio Pomares |
 | 2026-11-01 | Spec and plan approved | Emilio Pomares |
 | 2026-11-01 | **Red**: AC-1…AC-5 fail on assertions (stub returns 0 without touching the window system); AC-6 passes as the planned guard; the other 78 tests pass. Loop guard checked by temporarily running a never-ending loop: AC-2 and AC-5 fail with "loop guard" (AC-5 after 24.5 s, under the 30 s timeout); the AC-6 gate command was checked to fail for a missing file. `main` reports errors with a non-throwing `std::fwrite` helper (`bugprone-exception-escape`). Test code clang-tidy clean before freezing. | Emilio Pomares |
+| 2026-11-01 | **Green + Refactor**: `runHelloWindow` creates the window, loops on `waitEvents(kIdleTimeout)`, destroys its window and returns 0 on its own `CloseRequested` (a failed destroy is printed to stderr, exit code unchanged). `tools/check.sh` exit 0 (84/84 tests); `ctest --preset asan` 84/84; macOS `leaks`: 0 leaks for AC-5. `git diff aae66e6 -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
+| 2026-11-01 | **Manual visual check** (macOS 27.2, arm64): `build/dev/examples/hello_window/hello_window` showed the "Coil" window; while idle the process was sleeping at 0.1% CPU; closing the window exited with code 0 and no stderr output. Acknowledged; Status → Done. | Emilio Pomares |

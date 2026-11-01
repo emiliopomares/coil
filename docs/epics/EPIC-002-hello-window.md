@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | In Progress |
+| Status | Done |
 | Date | 2026-11-01 |
 | Origin | "Make the library just open up a window with a title" |
 
@@ -31,7 +31,7 @@ SDL3 adapter, and stays open until the user closes it.
 | 4 | [SPEC-0006 Window close events](../specs/0006-window-close-events.md) | Done | SPEC-0003, SPEC-0005 |
 | 5 | [SPEC-0008 `Clock` port + `FakeClock`](../specs/0008-clock-port.md) | Done | SPEC-0002, SPEC-0003 |
 | 6 | [SPEC-0009 Window `waitEvents(timeout)`](../specs/0009-wait-events.md) | Done | SPEC-0006, SPEC-0008 |
-| 7 | [SPEC-0007 `hello_window` example](../specs/0007-hello-window-example.md) | In Progress (Red) | `waitEvents`, SPEC-0005 |
+| 7 | [SPEC-0007 `hello_window` example](../specs/0007-hello-window-example.md) | Done | `waitEvents`, SPEC-0005 |
 
 ## Notes
 - Open questions for the window port spec: window ownership (system-owned `WindowId`, recommended,
@@ -49,3 +49,4 @@ SDL3 adapter, and stays open until the user closes it.
 |------|--------|-------------|
 | 2026-11-01 | Epic proposed and approved | Emilio Pomares |
 | 2026-11-01 | Spec list changed: `Clock` port and `waitEvents(timeout)` inserted before `hello_window` (pacing option B) | Emilio Pomares |
+| 2026-11-01 | All specs done; epic Done | Emilio Pomares |

@@ -177,6 +177,8 @@ Prerequisites: see ADR-0001 (toolchains, LLVM 23) and `VCPKG_ROOT` pointing to a
 - Single gate: `tools/check.sh format [files…]`, `tools/check.sh layering`, `tools/check.sh tidy [files…]`
 - Layering checker directly: `python3 tools/check_layering.py [--root DIR] [--config FILE]` (Python ≥ 3.9)
 - Tool overrides: `CLANG_FORMAT=…`, `CLANG_TIDY=…`, `COIL_PRESET=…`
+- Run the example (after a `dev` build): `build/dev/examples/hello_window/hello_window`
+  (examples build by default; `-DCOIL_BUILD_EXAMPLES=OFF` turns them off)
 
 ## 8. Repository layout
 
