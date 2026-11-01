@@ -1,9 +1,12 @@
 #pragma once
 
 #include <coil/foundation/error.hpp>
+#include <coil/platform/clock.hpp>
+#include <coil/platform/testing/fake_clock.hpp>
 #include <coil/platform/window_system.hpp>
 
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -13,7 +16,10 @@ namespace coil::platform::testing {
 /// In-memory WindowSystem for tests. No OS resources; deterministic ids starting at 1.
 class FakeWindowSystem final : public WindowSystem {
 public:
-    FakeWindowSystem() = default;
+    /// Uses its own FakeClock, starting at the time point zero.
+    FakeWindowSystem();
+    /// Waits advance `clock`, which must outlive this object.
+    explicit FakeWindowSystem(FakeClock& clock);
     ~FakeWindowSystem() override = default;
 
     FakeWindowSystem(const FakeWindowSystem&) = delete;
@@ -28,10 +34,18 @@ public:
     [[nodiscard]] Expected<void> setTitle(WindowId id, std::string_view title) override;
     [[nodiscard]] Expected<WindowSize> size(WindowId id) const override;
     [[nodiscard]] std::vector<WindowEvent> pollEvents() override;
+    [[nodiscard]] std::vector<WindowEvent> waitEvents(Clock::Duration timeout) override;
 
     /// Test control: queues CloseRequested for `id`, as if the OS had sent it.
     /// Fails with NotFound if `id` is not a live window.
     [[nodiscard]] Expected<void> requestClose(WindowId id);
+
+    /// Test control: runs each time waitEvents would block (no pending events, timeout > 0), before
+    /// time advances. If it queues events, waitEvents returns them without advancing time.
+    void setWaitHook(std::function<void()> hook);
+
+    /// The clock that waits advance.
+    [[nodiscard]] const FakeClock& clock() const;
 
 private:
     struct Window {
@@ -45,7 +59,11 @@ private:
 
     std::vector<Window> m_windows;     ///< Live windows, in creation order.
     std::vector<WindowEvent> m_events; ///< Events not yet returned by pollEvents().
-    std::uint64_t m_nextId = 1;        ///< Next id to issue; ids are never reused.
+    std::uint64_t m_nextId = 1;
+    FakeClock m_ownClock;             ///< Used when no external clock is given.
+    FakeClock* m_clock;               ///< The clock waits advance (never null).
+    std::function<void()> m_waitHook; ///< Optional; see setWaitHook().        ///< Next id to
+                                      ///< issue; ids are never reused.
 };
 
 } // namespace coil::platform::testing

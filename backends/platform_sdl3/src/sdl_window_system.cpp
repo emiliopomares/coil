@@ -1,4 +1,5 @@
 #include <coil/foundation/error.hpp>
+#include <coil/platform/clock.hpp>
 #include <coil/platform/window_system.hpp>
 #include <coil/platform_sdl3/sdl_window_system.hpp>
 
@@ -154,6 +155,11 @@ public:
             }
         }
         return events;
+    }
+
+    [[nodiscard]] std::vector<platform::WindowEvent>
+    waitEvents(platform::Clock::Duration /*timeout*/) override {
+        return {}; // SPEC-0009 Red stub
     }
 
     /// SDL's id for a live window (SPEC-0006 sdlWindowId).

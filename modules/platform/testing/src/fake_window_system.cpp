@@ -1,10 +1,13 @@
 #include <coil/foundation/error.hpp>
+#include <coil/platform/clock.hpp>
+#include <coil/platform/testing/fake_clock.hpp>
 #include <coil/platform/testing/fake_window_system.hpp>
 #include <coil/platform/window_system.hpp>
 
 #include <algorithm>
 #include <expected>
 #include <format>
+#include <functional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -20,6 +23,12 @@ std::unexpected<Error> notFound(WindowId id) {
 }
 
 } // namespace
+
+FakeWindowSystem::FakeWindowSystem()
+    : m_clock{&m_ownClock} {}
+
+FakeWindowSystem::FakeWindowSystem(FakeClock& clock)
+    : m_clock{&clock} {}
 
 auto* FakeWindowSystem::find(this auto& self, WindowId id) {
     const auto it = std::ranges::find(self.m_windows, id, &Window::id);
@@ -97,6 +106,19 @@ Expected<void> FakeWindowSystem::requestClose(WindowId id) {
     }
     m_events.emplace_back(CloseRequested{.window = id});
     return {};
+}
+
+// SPEC-0009 Red stub: never waits, never calls the hook, never moves the clock.
+std::vector<WindowEvent> FakeWindowSystem::waitEvents(Clock::Duration /*timeout*/) {
+    return {};
+}
+
+void FakeWindowSystem::setWaitHook(std::function<void()> hook) {
+    m_waitHook = std::move(hook);
+}
+
+const FakeClock& FakeWindowSystem::clock() const {
+    return *m_clock;
 }
 
 } // namespace coil::platform::testing

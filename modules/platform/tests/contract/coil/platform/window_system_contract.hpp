@@ -15,6 +15,7 @@
 #include <gtest/gtest.h>
 
 #include <array>
+#include <chrono>
 #include <cstdint>
 #include <format>
 #include <memory>
@@ -237,12 +238,49 @@ TYPED_TEST_P(WindowSystemContract, EV5_EventsForDestroyedWindowsAreDropped) {
     EXPECT_EQ(system.pollEvents(), std::vector<WindowEvent>{CloseRequested{.window = b}});
 }
 
+// SPEC-0009: waiting for events (WE<n> = SPEC-0009 AC-<n>).
+
+TYPED_TEST_P(WindowSystemContract, WE1_WaitReturnsPendingEvents) {
+    WindowSystem& system = this->system();
+    const WindowId a = this->create("A", {.width = 100, .height = 100});
+    this->requestClose(a);
+    EXPECT_EQ(system.waitEvents(std::chrono::seconds{1}),
+              std::vector<WindowEvent>{CloseRequested{.window = a}});
+}
+
+TYPED_TEST_P(WindowSystemContract, WE2_WaitTimesOutEmpty) {
+    WindowSystem& system = this->system();
+    this->create("A", {.width = 100, .height = 100});
+    EXPECT_EQ(system.waitEvents(std::chrono::milliseconds{10}), std::vector<WindowEvent>{});
+    EXPECT_EQ(system.waitEvents(std::chrono::milliseconds{0}), std::vector<WindowEvent>{});
+}
+
+TYPED_TEST_P(WindowSystemContract, WE3_WaitedEventsAreDeliveredOnce) {
+    WindowSystem& system = this->system();
+    const WindowId a = this->create("A", {.width = 100, .height = 100});
+    this->requestClose(a);
+    ASSERT_EQ(system.waitEvents(std::chrono::seconds{1}),
+              std::vector<WindowEvent>{CloseRequested{.window = a}});
+    EXPECT_EQ(system.pollEvents(), std::vector<WindowEvent>{});
+}
+
+TYPED_TEST_P(WindowSystemContract, WE4_NegativeTimeoutNeverBlocks) {
+    WindowSystem& system = this->system();
+    const WindowId a = this->create("A", {.width = 100, .height = 100});
+    EXPECT_EQ(system.waitEvents(std::chrono::milliseconds{-1}), std::vector<WindowEvent>{});
+    this->requestClose(a);
+    EXPECT_EQ(system.waitEvents(std::chrono::milliseconds{-1}),
+              std::vector<WindowEvent>{CloseRequested{.window = a}});
+}
+
 REGISTER_TYPED_TEST_SUITE_P(WindowSystemContract, AC1_CreateReturnsValidIdAndListsWindow,
                             AC2_ReportsTitleAndSizeFromDesc, AC3_SetTitleChangesOnlyThatWindow,
                             AC4_RejectsNonPositiveSize, AC5_DestroyedWindowIsNotFound,
                             AC6_UnknownIdsAreNotFound, AC7_IdsAreNeverReused,
                             EV1_EventsEmptyWhenNothingHappened, EV2_CloseRequestIsDeliveredOnce,
                             EV3_EventsKeepOrder, EV4_CloseRequestDoesNotCloseWindow,
-                            EV5_EventsForDestroyedWindowsAreDropped);
+                            EV5_EventsForDestroyedWindowsAreDropped, WE1_WaitReturnsPendingEvents,
+                            WE2_WaitTimesOutEmpty, WE3_WaitedEventsAreDeliveredOnce,
+                            WE4_NegativeTimeoutNeverBlocks);
 
 } // namespace coil::platform

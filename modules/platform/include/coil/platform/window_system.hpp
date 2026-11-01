@@ -1,6 +1,7 @@
 #pragma once
 
 #include <coil/foundation/error.hpp>
+#include <coil/platform/clock.hpp>
 
 #include <cstdint>
 #include <string>
@@ -76,6 +77,11 @@ public:
     /// Returns all events that occurred since the previous call, in order; each event is returned
     /// once. Events for windows destroyed before this call are dropped. Non-blocking.
     [[nodiscard]] virtual std::vector<WindowEvent> pollEvents() = 0;
+
+    /// Like pollEvents(), but if no event is pending it blocks until one arrives or `timeout`
+    /// elapses. May return early with no events (e.g. woken by an event this port does not map);
+    /// callers loop. A zero or negative timeout never blocks.
+    [[nodiscard]] virtual std::vector<WindowEvent> waitEvents(Clock::Duration timeout) = 0;
 
 protected:
     WindowSystem() = default;
