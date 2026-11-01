@@ -33,7 +33,7 @@ window's display.
 |---|------|--------|------------|
 | 1 | [SPEC-0010 `setSize` and the `Resized` event](../specs/0010-window-set-size-and-resized.md) | Done | EPIC-002 |
 | 2 | [SPEC-0011 Resizable flag and minimum/maximum size](../specs/0011-window-resizable-and-size-limits.md) | Done | 1 |
-| 3 | Pixel size, display scale and the `ScaleChanged` event | Planned | 1 |
+| 3 | [SPEC-0013 Pixel size, display scale and `ScaleChanged`](../specs/0013-window-pixel-size-and-scale.md) | Draft | 1 |
 | 4 | [SPEC-0012 `hello_window` resizable, logs size changes](../specs/0012-hello-window-resizable.md) | Done | 2 |
 
 ## Notes
