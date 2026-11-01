@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Done (pending acknowledgement) |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `backends/platform_sdl3` (new); build infrastructure (`vcpkg.json`, CMake helper, `tools/layering.json`) |
@@ -254,4 +254,5 @@ its own `SdlWindowSystem`.
 | 2026-11-01 | Spec and plan approved | Emilio Pomares |
 | 2026-11-01 | **Amendment (Red, before freezing): headless driver `offscreen` → `dummy`.** On macOS, SDL 3.4.18's `offscreen` driver needs an EGL library to create windows ("Could not initialize OpenGL / GLES library"); `dummy` creates windows, round-trips UTF-8 titles and reports sizes. `dummy` needs no graphics library on any platform. AC-1, AC-2, AC-4, AC-5, test plan and text updated. Also: AC-1 and AC-5 assert that SDL video is initialized while the system lives (stronger than planned: they fail in Red instead of passing as guards); AC-6 shown able to fail (SDL include leaked into the public header → test failed; reverted → passed). | Emilio Pomares |
 | 2026-11-01 | **Red** (commit `2af476d`): 7 contract + 4 adapter tests fail on assertions (stub never initializes SDL, ids 0, second instance and unknown driver succeed); AC-6 and layering pass as guards. Test code clang-tidy clean before freezing. | Emilio Pomares |
-| 2026-11-01 | **Green + Refactor**: `SdlWindowSystem` implemented (driver hint set or reset, `SDL_InitSubSystem`/`SDL_QuitSubSystem(SDL_INIT_VIDEO)`, windows owned by `unique_ptr` with `SDL_DestroyWindow` deleter, own id counter, SDL errors mapped to `Internal`/`Unavailable` with SDL's message). `tools/check.sh` exit 0 (format 16 files, layering, tidy 10 TUs, 47/47 tests); `ctest --preset asan` 47/47; `git diff 2af476d -- ':(glob)**/tests/**'` empty. **AC-5 leak check:** ASan's leak detector is unsupported on macOS ("detect_leaks is not supported on this platform"); verified instead with macOS `leaks --atExit`: 0 leaks for AC-5 and for contract AC-7 (100 create/destroy cycles). The ASan-based leak check will also run on Linux once the CI matrix exists. Docs: OVERVIEW §3 backend convention, CLAUDE.md §8 layout. | Emilio Pomares (acknowledgement pending) |
+| 2026-11-01 | **Green + Refactor**: `SdlWindowSystem` implemented (driver hint set or reset, `SDL_InitSubSystem`/`SDL_QuitSubSystem(SDL_INIT_VIDEO)`, windows owned by `unique_ptr` with `SDL_DestroyWindow` deleter, own id counter, SDL errors mapped to `Internal`/`Unavailable` with SDL's message). `tools/check.sh` exit 0 (format 16 files, layering, tidy 10 TUs, 47/47 tests); `ctest --preset asan` 47/47; `git diff 2af476d -- ':(glob)**/tests/**'` empty. **AC-5 leak check:** ASan's leak detector is unsupported on macOS ("detect_leaks is not supported on this platform"); verified instead with macOS `leaks --atExit`: 0 leaks for AC-5 and for contract AC-7 (100 create/destroy cycles). The ASan-based leak check will also run on Linux once the CI matrix exists. Docs: OVERVIEW §3 backend convention, CLAUDE.md §8 layout. | Emilio Pomares |
+| 2026-11-01 | Closed (Done) | Emilio Pomares |
