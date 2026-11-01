@@ -6,5 +6,5 @@ target_include_directories(coil_platform_contract INTERFACE ${CMAKE_CURRENT_SOUR
 target_link_libraries(coil_platform_contract INTERFACE coil::platform GTest::gtest)
 
 coil_add_tests(platform
-    SOURCES fake_window_system_test.cpp
+    SOURCES clock_test.cpp fake_window_system_test.cpp
     DEPENDS coil::platform_testing coil::platform_contract)

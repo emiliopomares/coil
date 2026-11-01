@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Draft |
+| Status | In Progress |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::platform` (port, `SystemClock`), `coil::platform_testing` (`FakeClock`) |
@@ -16,7 +16,7 @@
 > - [x] ≤ 8 acceptance criteria
 > - [x] Touches ≤ 2 modules (`platform` only, including its test support); no new dependency or edge
 > - [x] Out-of-scope section is filled in
-> - [ ] Open Questions section is empty (three confirmations pending, see §9)
+> - [x] Open Questions section is empty
 
 ---
 
@@ -175,7 +175,7 @@ change, approved together with this spec.
   checker). OVERVIEW §3 notes the exception.
 
 ## 9. Open Questions
-Recommended answers are written into the spec. **Approving the spec confirms them.**
+*None.* Q1–Q3 confirmed as recommended by approval on 2026-11-01. Rationale kept below.
 - **Q1 — Time type?** *Recommended: `std::chrono::steady_clock::time_point` and `duration`.* Familiar
   to every C++ developer, and works with `<chrono>` arithmetic and literals (`16ms`). The alternative, a
   custom `TimePoint` struct, is more type-safe across clocks but adds API for little gain now.
@@ -247,3 +247,5 @@ Recommended answers are written into the spec. **Approving the spec confirms the
 | Date | Change | Approved by |
 |------|--------|-------------|
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
+| 2026-11-01 | Spec and plan approved | Emilio Pomares |
+| 2026-11-01 | **Red**: AC-2…AC-6 fail on assertions (stub clocks fixed at zero; `advance` ignored); CL1 passes for both clocks as planned guards. Test code clang-tidy clean before freezing (only finding in stub code). | Emilio Pomares |

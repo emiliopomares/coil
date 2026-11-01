@@ -29,7 +29,7 @@ SDL3 adapter, and stays open until the user closes it.
 | 2 | [SPEC-0003 Window port + fake + contract tests](../specs/0003-window-port.md) | Done | SPEC-0002 |
 | 3 | [SPEC-0005 SDL3 window adapter](../specs/0005-sdl3-window-adapter.md) | Done | SPEC-0003, SPEC-0004 |
 | 4 | [SPEC-0006 Window close events](../specs/0006-window-close-events.md) | Done | SPEC-0003, SPEC-0005 |
-| 5 | [SPEC-0008 `Clock` port + `FakeClock`](../specs/0008-clock-port.md) | Draft | SPEC-0002, SPEC-0003 |
+| 5 | [SPEC-0008 `Clock` port + `FakeClock`](../specs/0008-clock-port.md) | In Progress | SPEC-0002, SPEC-0003 |
 | 6 | Window `waitEvents(timeout)` | Planned | `Clock` port, SPEC-0006 |
 | 7 | [SPEC-0007 `hello_window` example](../specs/0007-hello-window-example.md) | Draft (on hold: revise to use `waitEvents`) | `waitEvents`, SPEC-0005 |
 
