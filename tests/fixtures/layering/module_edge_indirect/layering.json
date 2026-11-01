@@ -1,0 +1,1 @@
+{ "modules": { "foundation": [], "a": [], "b": ["a"], "c": ["b"] }, "backends": {} }

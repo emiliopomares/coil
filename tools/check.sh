@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Coil local quality gate (SPEC-0001).
-#   tools/check.sh                  all gates: format, configure, build, tidy, tests
+#   tools/check.sh                  all gates: format, layering, configure, build, tidy, tests
 #   tools/check.sh format [files…]  format gate only (default: all sources)
+#   tools/check.sh layering [args…] include-layering gate only (args go to tools/check_layering.py)
 #   tools/check.sh tidy [files…]    lint gate only (default: all sources; needs a configured build)
 # Environment: COIL_PRESET (default: dev), CLANG_FORMAT and CLANG_TIDY (tool path overrides).
 set -euo pipefail
@@ -79,8 +80,14 @@ run_tidy() {
     "${clang_tidy}" --quiet -p "${build_dir}" "${sysroot_arg}" "$@"
 }
 
+run_layering() {
+    echo "== layering"
+    python3 "${repo_root}/tools/check_layering.py" "$@"
+}
+
 run_all() {
     run_format
+    run_layering
     echo "== configure (${preset})"
     cmake --preset "${preset}"
     echo "== build (${preset})"
@@ -96,9 +103,10 @@ command="${1:-all}"
 case "${command}" in
     all) run_all ;;
     format) run_format "$@" ;;
+    layering) run_layering "$@" ;;
     tidy) run_tidy "$@" ;;
     *)
-        echo "usage: tools/check.sh [all|format|tidy] [files…]" >&2
+        echo "usage: tools/check.sh [all|format|layering|tidy] [args…]" >&2
         exit 2
         ;;
 esac

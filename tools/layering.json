@@ -1,0 +1,18 @@
+{
+    "modules": {
+        "foundation": [],
+        "platform": ["foundation"],
+        "render": ["foundation"],
+        "tasks": ["foundation"],
+        "json": ["foundation"],
+        "core": ["foundation", "platform", "render", "tasks"],
+        "widgets": ["core"],
+        "automation": ["core"],
+        "docking": ["core", "widgets", "automation", "json"],
+        "mcp": ["automation", "core", "json"],
+        "remote": ["core"],
+        "plugin": ["core"],
+        "app": ["docking", "mcp", "remote", "plugin"]
+    },
+    "backends": {}
+}
