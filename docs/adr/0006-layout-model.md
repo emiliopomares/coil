@@ -1,5 +1,6 @@
 # ADR-0006: Two-pass layout in logical units
-Status: Accepted (2026-11-01)
+Status: Accepted (2026-11-01); amended by [ADR-0019](0019-layout-engine-and-modifiers.md) (layout
+module, `BoxConstraints`, modifier chains replace per-slot parameters)
 
 ## Decision
 - Layout has two passes: **measure** (bottom-up desired size given constraints) and **arrange**
