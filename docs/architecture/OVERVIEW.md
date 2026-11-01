@@ -77,6 +77,10 @@ strict TDD practical for a UI library.
 Rules:
 - No cycles. No module may include headers of a module not in its "may depend on" column.
 - Backends never depend on `core`, `widgets` or `docking`; they see only ports.
+- **Test support** (SPEC-0003): `modules/<m>/testing/` builds `coil::<m>_testing` (fakes of `<m>`'s
+  ports; may depend on `coil::<m>`). Reusable **contract suites** live in `modules/<m>/tests/contract/`
+  and are exposed as the INTERFACE target `coil::<m>_contract`. Only test executables may link either;
+  adapters' tests instantiate the contract suites for their implementation.
 - Executables (examples, the editor) choose adapters at composition time. The library never names a
   concrete backend.
 - Enforcement: CMake `target_link_libraries` mirrors this table, and `tools/check_layering.py` scans

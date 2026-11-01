@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | In Progress |
+| Status | Done (pending acknowledgement) |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::platform` (new), including its test-support library `coil::platform_testing` |
@@ -278,24 +278,24 @@ after Red. Future adapters reuse it but cannot weaken it.
   geometry for layout; window sizes can convert at that boundary.
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format` and `clang-tidy` clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally; other targets once the CI matrix exists)
-- [ ] Sanitizer preset passes
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented (Doxygen comments on new public declarations)
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format` and `clang-tidy` clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally; other targets once the CI matrix exists)
+- [x] Sanitizer preset passes
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented (Doxygen comments on new public declarations)
 
 ### AC verification
-- [ ] AC-1 → `WindowSystemContract.AC1_CreateReturnsValidIdAndListsWindow`
-- [ ] AC-2 → `WindowSystemContract.AC2_ReportsTitleAndSizeFromDesc`
-- [ ] AC-3 → `WindowSystemContract.AC3_SetTitleChangesOnlyThatWindow`
-- [ ] AC-4 → `WindowSystemContract.AC4_RejectsNonPositiveSize`
-- [ ] AC-5 → `WindowSystemContract.AC5_DestroyedWindowIsNotFound`
-- [ ] AC-6 → `WindowSystemContract.AC6_UnknownIdsAreNotFound`
-- [ ] AC-7 → `WindowSystemContract.AC7_IdsAreNeverReused`
-- [ ] AC-8 → `ctest -N` listing under `Fake/WindowSystemContract/…`
+- [x] AC-1 → `WindowSystemContract.AC1_CreateReturnsValidIdAndListsWindow`
+- [x] AC-2 → `WindowSystemContract.AC2_ReportsTitleAndSizeFromDesc`
+- [x] AC-3 → `WindowSystemContract.AC3_SetTitleChangesOnlyThatWindow`
+- [x] AC-4 → `WindowSystemContract.AC4_RejectsNonPositiveSize`
+- [x] AC-5 → `WindowSystemContract.AC5_DestroyedWindowIsNotFound`
+- [x] AC-6 → `WindowSystemContract.AC6_UnknownIdsAreNotFound`
+- [x] AC-7 → `WindowSystemContract.AC7_IdsAreNeverReused`
+- [x] AC-8 → `ctest -N` listing under `Fake/WindowSystemContract/…`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -304,3 +304,5 @@ after Red. Future adapters reuse it but cannot weaken it.
 | 2026-11-01 | Spec and plan approved; Q1–Q3 confirmed as recommended | Emilio Pomares |
 | 2026-11-01 | Pre-freeze lint of Red tests: `PrintTo` replaced by `operator<<`, one `const` added (test code); `readability-identifier-naming.ClassIgnoredRegexp: '^AC[0-9]+_[A-Za-z0-9]+$'` added to `modules/platform/tests/.clang-tidy` only, because `TYPED_TEST_P` uses test names as class names. | Emilio Pomares |
 | 2026-11-01 | **Red** (AppleClang 21): all 7 contract tests fail on assertions against the stub fake (ids `WindowId{0}`, empty titles, invalid sizes accepted, `NotFound` cases succeed, AC-7 id reused 100×); 15 pre-existing tests pass (15/22). Test code clang-tidy clean before freezing. | Emilio Pomares |
+| 2026-11-01 | `.gitignore` fix: `Testing/` matched `modules/platform/testing/` on case-insensitive macOS; pattern anchored to `/Testing/` and the local Red commit amended (`12e40bd`) to include the fake. | Emilio Pomares |
+| 2026-11-01 | **Green + Refactor**: `FakeWindowSystem` implemented (creation-ordered vector, id counter from 1, `NotFound`/`InvalidArgument` errors with messages). Apple linker duplicate-library notice silenced for test executables (`LINKER:-no_warn_duplicate_libraries`, with rationale in `CoilModule.cmake`). `tools/check.sh` exit 0 (format 12 files, tidy 7 TUs, 22/22 tests); `ctest --preset asan` 22/22; `git diff 12e40bd -- ':(glob)**/tests/**'` empty. OVERVIEW §3 documents the test-support and contract conventions. | Emilio Pomares (acknowledgement pending) |

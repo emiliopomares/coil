@@ -21,5 +21,10 @@ function(coil_add_tests name)
     add_executable(${target} ${ARG_SOURCES})
     target_link_libraries(${target} PRIVATE coil::${name} ${ARG_DEPENDS} GTest::gtest_main)
     coil_set_warnings(${target})
+    if(APPLE)
+        # Static libraries reached through several test-support targets are listed more than once on
+        # the link line by CMake (intentionally, for ordering); Apple's linker reports each repeat.
+        target_link_options(${target} PRIVATE LINKER:-no_warn_duplicate_libraries)
+    endif()
     gtest_discover_tests(${target})
 endfunction()

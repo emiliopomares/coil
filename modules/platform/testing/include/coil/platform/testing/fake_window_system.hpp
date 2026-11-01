@@ -3,6 +3,7 @@
 #include <coil/foundation/error.hpp>
 #include <coil/platform/window_system.hpp>
 
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -26,6 +27,19 @@ public:
     [[nodiscard]] Expected<std::string> title(WindowId id) const override;
     [[nodiscard]] Expected<void> setTitle(WindowId id, std::string_view title) override;
     [[nodiscard]] Expected<WindowSize> size(WindowId id) const override;
+
+private:
+    struct Window {
+        WindowId id;
+        std::string title;
+        WindowSize size;
+    };
+
+    /// The live window with `id`, or nullptr.
+    [[nodiscard]] auto* find(this auto& self, WindowId id);
+
+    std::vector<Window> m_windows; ///< Live windows, in creation order.
+    std::uint64_t m_nextId = 1;    ///< Next id to issue; ids are never reused.
 };
 
 } // namespace coil::platform::testing
