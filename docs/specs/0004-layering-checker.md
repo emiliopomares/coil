@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | In Progress |
+| Status | Done (pending acknowledgement) |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | tooling (`tools/`), gate tests (`tests/`). No library module changes |
@@ -261,25 +261,25 @@ and `EXPECT_COUNT_<n>=<regex>` arguments. It is created in this spec.
   need a configured build, and are not designed to enforce architectural edges.
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log), except
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log), except
       the over-rejection guards listed in §10.1
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format` and `clang-tidy` clean; no new `NOLINT`
-- [ ] `tools/check.sh` passes, now including the layering gate
-- [ ] Sanitizer preset passes
-- [ ] Every AC ticked below with its proving test
-- [ ] Usage documented (script `--help`, CLAUDE.md §7)
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format` and `clang-tidy` clean; no new `NOLINT`
+- [x] `tools/check.sh` passes, now including the layering gate
+- [x] Sanitizer preset passes
+- [x] Every AC ticked below with its proving test
+- [x] Usage documented (script `--help`, CLAUDE.md §7)
 
 ### AC verification
-- [ ] AC-1 → `gate.layering.AC1_RepositoryIsClean`
-- [ ] AC-2 → `gate.layering.AC2_RejectsDisallowedModuleEdge`, `gate.layering.AC2_RejectsIndirectEdge`, `gate.layering.AC2_AcceptsDirectEdgeAndFoundation`
-- [ ] AC-3 → `gate.layering.AC3_RejectsExternalHeadersInModules`
-- [ ] AC-4 → `gate.layering.AC4_RejectsTestOnlyIncludesInProduction`, `gate.layering.AC4_AcceptsTestOnlyIncludesInTests`
-- [ ] AC-5 → `gate.layering.AC5_RejectsEscapingAndUnresolvedIncludes`, `gate.layering.AC5_AcceptsConfiguredHeaderTemplate`
-- [ ] AC-6 → `gate.layering.AC6_EnforcesBackendEdgesAndKnownFolders`
-- [ ] AC-7 → `gate.layering.AC7_RejectsConfigCycle`, `gate.layering.AC7_RejectsUndefinedDependency`
-- [ ] AC-8 → `gate.layering.AC8_CheckShPropagatesFailure`
+- [x] AC-1 → `gate.layering.AC1_RepositoryIsClean`
+- [x] AC-2 → `gate.layering.AC2_RejectsDisallowedModuleEdge`, `gate.layering.AC2_RejectsIndirectEdge`, `gate.layering.AC2_AcceptsDirectEdgeAndFoundation`
+- [x] AC-3 → `gate.layering.AC3_RejectsExternalHeadersInModules`
+- [x] AC-4 → `gate.layering.AC4_RejectsTestOnlyIncludesInProduction`, `gate.layering.AC4_AcceptsTestOnlyIncludesInTests`
+- [x] AC-5 → `gate.layering.AC5_RejectsEscapingAndUnresolvedIncludes`, `gate.layering.AC5_AcceptsConfiguredHeaderTemplate`
+- [x] AC-6 → `gate.layering.AC6_EnforcesBackendEdgesAndKnownFolders`
+- [x] AC-7 → `gate.layering.AC7_RejectsConfigCycle`, `gate.layering.AC7_RejectsUndefinedDependency`
+- [x] AC-8 → `gate.layering.AC8_CheckShPropagatesFailure`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -288,3 +288,5 @@ and `EXPECT_COUNT_<n>=<regex>` arguments. It is created in this spec.
 | 2026-11-01 | Q1 decided: direct edges only + `foundation` always allowed (option C); rules 1 and 7, AC-2, AC-6 and test plan updated | Emilio Pomares |
 | 2026-11-01 | Spec and plan approved (Q2: `tools/layering.json`; Q3: Python ≥ 3.9 stdlib). Docs step also fixes the OVERVIEW §2 diagram (fakes in `modules/<m>/testing/`) and narrows ADR-0003 to that location. | Emilio Pomares |
 | 2026-11-01 | Amendment (found while preparing Red): generated headers. `version.hpp` includes `<coil/foundation/version_config.hpp>`, which only exists in the build tree. Rule 5 now resolves configured headers through their `.hpp.in` template under a module's `include/` root; the template moves there; new acceptance test `AC5_AcceptsConfiguredHeaderTemplate`. | Emilio Pomares |
+| 2026-11-01 | **Red** (commit `8ad0841`): 9 rejection tests fail (stub exits 0); 4 acceptance guards pass (AC1, AC2-accept, AC4-accept, AC5-accept). Every assertion validated beforehand against simulated ideal checker output. | Emilio Pomares |
+| 2026-11-01 | **Green + Refactor**: checker implemented (include scanning with block-comment skipping, header index over include/testing/contract roots incl. `.hpp.in` templates, direct-edge + foundation rules, config validation with cycle detection, sorted output). Template moved to `modules/foundation/include/coil/foundation/version_config.hpp.in`. `tools/check.sh` exit 0 (format, layering, tidy, 35/35 tests); `ctest --preset asan` 35/35; `git diff 8ad0841 -- ':(glob)**/tests/**'` empty. Docs: OVERVIEW §2 diagram (fakes not in `backends/`) and §3 (direct edges + foundation; `layering.json` authoritative), ADR-0002 (Python ≥ 3.9), ADR-0003 (fakes only in `modules/<m>/testing/`), CLAUDE.md §1/§4/§7. | Emilio Pomares (acknowledgement pending) |

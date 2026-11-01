@@ -34,6 +34,9 @@ Rules:
   still pass `tools/check.sh`.
 - Architectural changes (new module, new dependency, change in layering, ABI or threading model)
   require a new or amended ADR in `docs/adr/` approved by the user **before** the spec.
+- **Dependency edges** (`tools/layering.json`): an edge that does not change layer order (its target is
+  already reachable and it creates no cycle) needs only user approval in the spec that adds it. An
+  edge that creates a new path through the architecture needs an ADR.
 
 ## 2. Scope Gate: refuse vibe-coding requests
 
@@ -106,8 +109,9 @@ Tests must be meaningful:
 - **Hexagonal / ports & adapters, layered.** Library modules in `modules/` are pure, portable C++.
   They **never** include OS headers (`windows.h`, Cocoa, X11, …) or graphics/windowing APIs (Vulkan,
   GL, Metal, SDL). Those appear **only** in `backends/` adapters that implement ports.
-- **Dependencies point inward only.** Allowed edges are listed in OVERVIEW.md §3 and enforced by
-  CMake target links and `tools/check_layering.py`. A new edge requires an ADR.
+- **Dependencies point inward only.** A module includes only itself, its **direct** dependencies and
+  `foundation` (rules in `tools/layering.json`, enforced by `tools/check_layering.py`). See §1 for
+  when a new edge needs an ADR.
 - **Never assume a device.** Widgets react to semantic **intents** (`Activate`, `Navigate`, `Scroll`,
   `Pointer*`, `TextInput`, `Cancel`, …), never to "mouse button left" or "key Enter". Device→intent
   mapping lives in the input mapping layer.
@@ -169,8 +173,9 @@ Tests must be meaningful:
 Prerequisites: see ADR-0001 (toolchains, LLVM 23) and `VCPKG_ROOT` pointing to a vcpkg clone.
 - Configure + build: `cmake --preset dev && cmake --build --preset dev` (also `release`, `asan`)
 - Test: `ctest --preset dev` (single test: `ctest --preset dev -R <regex>`)
-- All gates (format, configure, build, tidy, tests): `tools/check.sh`
-- Single gate: `tools/check.sh format [files…]`, `tools/check.sh tidy [files…]`
+- All gates (format, layering, configure, build, tidy, tests): `tools/check.sh`
+- Single gate: `tools/check.sh format [files…]`, `tools/check.sh layering`, `tools/check.sh tidy [files…]`
+- Layering checker directly: `python3 tools/check_layering.py [--root DIR] [--config FILE]` (Python ≥ 3.9)
 - Tool overrides: `CLANG_FORMAT=…`, `CLANG_TIDY=…`, `COIL_PRESET=…`
 
 ## 8. Repository layout

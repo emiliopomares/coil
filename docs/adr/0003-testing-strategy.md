@@ -4,8 +4,9 @@ Status: Accepted (2026-11-01)
 ## Decision
 - **GoogleTest + GoogleMock**: mature, runs on every target, integrates with CTest
   (`gtest_discover_tests`), and supports death tests for contract violations.
-- **Prefer fakes to mocks.** Every port ships with a deterministic fake in `backends/*_fake` or
-  `modules/<m>/testing/`: `FakeClock`, `FakeInputSource`, `FakeWindowSystem`,
+- **Prefer fakes to mocks.** Every port ships with a deterministic fake in `modules/<m>/testing/`
+  (built as `coil::<m>_testing`, linked only by tests; amended 2026-11-01, SPEC-0004: fakes never live
+  in `backends/`): `FakeClock`, `FakeInputSource`, `FakeWindowSystem`,
   `RecordingRenderBackend` (stores DrawLists for assertions), `LoopbackTransport`,
   `InlineTaskScheduler`. Use mocks only to verify interaction protocols.
 - **Test levels.**

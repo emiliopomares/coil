@@ -25,7 +25,7 @@ on every supported platform, locally and in CI.
 |---|------|--------|------------|
 | 1 | [SPEC-0001 Build skeleton](../specs/0001-build-skeleton.md) | Done | — |
 | 2 | CI matrix | Planned | SPEC-0001 |
-| 3 | [SPEC-0004 Layering checker](../specs/0004-layering-checker.md) | In Progress | SPEC-0001, SPEC-0003 |
+| 3 | [SPEC-0004 Layering checker](../specs/0004-layering-checker.md) | Done (pending acknowledgement) | SPEC-0001, SPEC-0003 |
 | 4 | Compiler feature check | Planned | CI matrix; ADR-0001 amendment |
 
 ## Notes

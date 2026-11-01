@@ -44,10 +44,11 @@
                             │ implements                     │ implements
             ┌───────────────┴──────────┐      ┌─────────────┴─────────────┐
             │ backends/platform_sdl3    │      │ backends/render_vulkan    │
-            │ backends/platform_fake    │      │ backends/render_opengl    │
-            │ backends/transport_socket │      │ backends/render_recording │
+            │ backends/transport_socket │      │ backends/render_opengl    │
             │ backends/mcp_http, _stdio │      │ backends/render_software  │
             └───────────────────────────┘      └───────────────────────────┘
+            Test fakes (FakeWindowSystem, RecordingRenderBackend, …) are not backends:
+            they live in modules/<m>/testing/ (see §3).
 ```
 
 **Core idea:** everything that touches the outside world (OS, windows, input hardware, GPU, sockets,
@@ -75,7 +76,10 @@ strict TDD practical for a UI library.
 | `json` | `Value` ↔ JSON codec (nlohmann/json kept private) | foundation |
 
 Rules:
-- No cycles. No module may include headers of a module not in its "may depend on" column.
+- No cycles. A module may include headers only of itself, of the modules in its "may depend on"
+  column (**direct** edges only, so no layer can be bypassed), and of `foundation`, which every module
+  and backend may include. **[tools/layering.json](../../tools/layering.json) is the authoritative copy
+  of this column**; the table mirrors it and both change together.
 - Backends never depend on `core`, `widgets` or `docking`; they see only ports.
 - **Test support** (SPEC-0003): `modules/<m>/testing/` builds `coil::<m>_testing` (fakes of `<m>`'s
   ports; may depend on `coil::<m>`). Reusable **contract suites** live in `modules/<m>/tests/contract/`
@@ -83,8 +87,9 @@ Rules:
   adapters' tests instantiate the contract suites for their implementation.
 - Executables (examples, the editor) choose adapters at composition time. The library never names a
   concrete backend.
-- Enforcement: CMake `target_link_libraries` mirrors this table, and `tools/check_layering.py` scans
-  `#include` directives in CI.
+- Enforcement: `tools/check_layering.py` (SPEC-0004) checks every `#include` in `modules/` and
+  `backends/` and runs in `tools/check.sh`; CMake `target_link_libraries` mirrors the same edges.
+  Configured headers keep their `.hpp.in` template at the include path they are generated to.
 
 ## 4. Key runtime flows
 
