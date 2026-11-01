@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Draft |
+| Status | In Progress |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::platform` (port, fake, contract suite); `backends/platform_sdl3` |
@@ -16,7 +16,7 @@
 > - [x] ≤ 8 acceptance criteria
 > - [x] Touches ≤ 2 areas (`platform`, `backends/platform_sdl3`); no new dependency or edge
 > - [x] Out-of-scope section is filled in
-> - [ ] Open Questions section is empty (four confirmations pending, see §9)
+> - [x] Open Questions section is empty
 
 ---
 
@@ -185,7 +185,7 @@ The SDL traits simulate the OS by pushing a `SDL_EVENT_WINDOW_CLOSE_REQUESTED` e
   (rule 7 of SPEC-0005 still holds).
 
 ## 9. Open Questions
-Recommended answers are written into the spec. **Approving the spec confirms them.**
+*None.* Q1–Q4 confirmed as recommended by approval on 2026-11-01. Rationale kept below.
 - **Q1 — How are events represented?** *Recommended: `std::variant` of small structs.* It's type-safe
   and each event carries exactly its own data. The alternative, one struct with an `enum kind` plus
   optional fields, gets messy as events with different payloads arrive.
@@ -269,3 +269,4 @@ Recommended answers are written into the spec. **Approving the spec confirms the
 | Date | Change | Approved by |
 |------|--------|-------------|
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
+| 2026-11-01 | Spec and plan approved | Emilio Pomares |
