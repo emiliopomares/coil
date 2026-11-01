@@ -25,7 +25,7 @@
 The window port exists and has a contract, but only a fake implements it. This spec adds the first real
 adapter: `SdlWindowSystem`, backed by SDL3. It proves that the port, the contract suite and the layering
 rules work with a real third-party library, and it is the step before an app can open a visible window.
-The adapter is tested **headlessly** with SDL's `offscreen` video driver, so tests need no display.
+The adapter is tested **headlessly** with SDL's `dummy` video driver, so tests need no display.
 
 ## 2. Scope
 - `sdl3` added to `vcpkg.json` (version from the pinned baseline: 3.4.18).
@@ -64,7 +64,7 @@ namespace coil::platform_sdl3 {
 
 /// Options for creating the SDL3-backed window system.
 struct SdlWindowSystemOptions {
-    /// SDL video driver to use (e.g. "cocoa", "x11", "wayland", "windows", "offscreen").
+    /// SDL video driver to use (e.g. "cocoa", "x11", "wayland", "windows", "offscreen", "dummy").
     /// Empty: let SDL choose the platform default.
     std::string videoDriver;
 };
@@ -86,7 +86,7 @@ createSdlWindowSystem(const SdlWindowSystemOptions& options = {});
    text in the message, and leave SDL video **not** initialized.
 3. Windows are created **visible**, with the requested title and size. `size()` reports the size SDL
    reports for the window (SDL may differ from the request on real displays, e.g. tiling window
-   managers. Under `offscreen` it matches).
+   managers. Under `dummy` it matches).
 4. If SDL's video subsystem is already initialized when `createSdlWindowSystem` is called (by another
    `SdlWindowSystem` or by the host application), it MUST return `Unavailable` and change nothing
    (§9 Q2).
@@ -119,10 +119,10 @@ Not applicable.
 Not applicable (no widgets).
 
 ## 5. Acceptance Criteria
-- **AC-1** — Given `videoDriver = "offscreen"`, `createSdlWindowSystem` succeeds and returns a usable
+- **AC-1** — Given `videoDriver = "dummy"`, `createSdlWindowSystem` succeeds and returns a usable
   system with no windows.
 - **AC-2** — The complete `WindowSystemContract` suite (SPEC-0003, AC-1…AC-7) passes for the SDL
-  adapter, instantiated as `Sdl3` and run under the `offscreen` driver. The contract header is reused
+  adapter, instantiated as `Sdl3` and run under the `dummy` driver. The contract header is reused
   unchanged.
 - **AC-3** — Given `videoDriver = "no-such-driver"`, `createSdlWindowSystem` returns `Unavailable` with
   a non-empty message, and afterwards `SDL_WasInit(SDL_INIT_VIDEO)` is 0.
@@ -140,8 +140,8 @@ Not applicable (no widgets).
 ## 6. Test Plan
 | AC | Test name | Type | Notes |
 |----|-----------|------|-------|
-| AC-1 | `SdlWindowSystem.AC1_CreatesWithOffscreenDriver` | backend unit | |
-| AC-2 | `Sdl3/WindowSystemContract.AC1…AC7` | contract | traits `make()` uses `offscreen` |
+| AC-1 | `SdlWindowSystem.AC1_CreatesWithHeadlessDriver` | backend unit | |
+| AC-2 | `Sdl3/WindowSystemContract.AC1…AC7` | contract | traits `make()` uses `dummy` |
 | AC-3 | `SdlWindowSystem.AC3_UnknownDriverIsUnavailable` | backend unit | checks `SDL_WasInit` |
 | AC-4 | `SdlWindowSystem.AC4_SecondInstanceIsUnavailableUntilFirstIsDestroyed` | backend unit | |
 | AC-5 | `SdlWindowSystem.AC5_DestructionClosesWindowsAndShutsDownVideo` | backend unit + `asan` run | |
@@ -165,7 +165,7 @@ its own `SdlWindowSystem`.
 *None.* Q1–Q4 confirmed as recommended by approval on 2026-11-01 (Q2 clarified: one `SdlWindowSystem` manages any number of windows; only a second *system* is rejected). Rationale kept below.
 - **Q1 — How do tests select the headless driver?** *Recommended: an options struct
   (`videoDriver`).* It's a real feature (apps may force `wayland` or `x11`), and tests can pick
-  `offscreen` or a broken driver per test. The alternative, the `SDL_VIDEODRIVER` environment variable,
+  `dummy` or a broken driver per test. The alternative, the `SDL_VIDEODRIVER` environment variable,
   works per process only, so AC-3 would need its own executable, and it hides an important setting.
 - **Q2 — More than one live `SdlWindowSystem`?** *Recommended: no; the second gets `Unavailable`.*
   SDL's video state is process-global (one driver, one event queue). Two owners would silently share
@@ -174,7 +174,7 @@ its own `SdlWindowSystem`.
   are never reused per instance. SDL's ids are process-wide and not specified as never reused across
   re-initialization.
 - **Q4 — Windows visible on creation?** *Recommended: yes.* That's what `hello_window` needs. A
-  `hidden` option comes later if needed. Under `offscreen` nothing is shown anyway.
+  `hidden` option comes later if needed. Under `dummy` nothing is shown anyway.
 
 ---
 
@@ -188,7 +188,7 @@ its own `SdlWindowSystem`.
      behaves like the SPEC-0003 stub fake (ids 0, empty values, success everywhere).
    - **Tests:** contract instantiation, adapter tests, the AC-6 header target and gate test, and a test
      `.clang-tidy` (same override as `modules/platform/tests`). Pre-freeze: lint the tests and confirm
-     the `offscreen` driver exists in the vcpkg SDL build (§10.3).
+     the `dummy` driver exists in the vcpkg SDL build (§10.3).
    - **Expected Red:**
      - Fail: contract AC1–AC7, AC3 (no error), AC4 (second instance succeeds).
      - Pass as guards: AC1 (creation "succeeds", no windows), AC5 (`SDL_WasInit` is 0 because the stub
@@ -217,13 +217,13 @@ its own `SdlWindowSystem`.
 | `docs/architecture/OVERVIEW.md`, EPIC-002 | modify | docs |
 
 ### 10.3 Risks / alternatives considered
-- **`offscreen` driver availability:** SDL enables it by default and the vcpkg port does not disable
-  it, but this will be verified in Red before freezing. If it's missing, SDL's `dummy` driver is the
-  fallback. Switching would be a spec amendment brought to you.
+- **Headless driver (amended in Red):** `offscreen` was the original choice, but on macOS it needs an
+  EGL library to create windows. Tests use SDL's `dummy` driver instead: it is built in on every
+  platform, needs no graphics library, and never renders (not needed by this spec or the events spec).
 - **macOS main thread:** GoogleTest runs tests on the main thread. Tests must never create SDL objects
   on other threads.
 - **Build time:** building SDL3 the first time takes minutes; vcpkg caches it afterwards.
-- **Real-display size differences** (rule 3) don't affect tests (offscreen), but they mean the contract
+- **Real-display size differences** (rule 3) don't affect tests (dummy driver), but they mean the contract
   suite should not be expected to pass against every real window manager. This is noted for the CI
   matrix spec.
 
@@ -239,7 +239,7 @@ its own `SdlWindowSystem`.
 - [ ] Public API documented (Doxygen comments on new public declarations)
 
 ### AC verification
-- [ ] AC-1 → `SdlWindowSystem.AC1_CreatesWithOffscreenDriver`
+- [ ] AC-1 → `SdlWindowSystem.AC1_CreatesWithHeadlessDriver`
 - [ ] AC-2 → `Sdl3/WindowSystemContract.AC1…AC7`
 - [ ] AC-3 → `SdlWindowSystem.AC3_UnknownDriverIsUnavailable`
 - [ ] AC-4 → `SdlWindowSystem.AC4_SecondInstanceIsUnavailableUntilFirstIsDestroyed`
@@ -252,3 +252,4 @@ its own `SdlWindowSystem`.
 |------|--------|-------------|
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
 | 2026-11-01 | Spec and plan approved | Emilio Pomares |
+| 2026-11-01 | **Amendment (Red, before freezing): headless driver `offscreen` → `dummy`.** On macOS, SDL 3.4.18's `offscreen` driver needs an EGL library to create windows ("Could not initialize OpenGL / GLES library"); `dummy` creates windows, round-trips UTF-8 titles and reports sizes. `dummy` needs no graphics library on any platform. AC-1, AC-2, AC-4, AC-5, test plan and text updated. Also: AC-1 and AC-5 assert that SDL video is initialized while the system lives (stronger than planned: they fail in Red instead of passing as guards); AC-6 shown able to fail (SDL include leaked into the public header → test failed; reverted → passed). | Emilio Pomares |

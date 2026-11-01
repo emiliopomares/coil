@@ -13,6 +13,15 @@ function(coil_add_module name)
     coil_set_warnings(${target})
 endfunction()
 
+# coil_add_backend(<name> SOURCES <src>... [DEPENDS <target>...] [PRIVATE_DEPENDS <target>...])
+# Creates adapter library coil_<name> (alias coil::<name>) from backends/<name>/. Third-party libraries
+# go in PRIVATE_DEPENDS so their headers never reach users of the backend (ADR-0018).
+function(coil_add_backend name)
+    cmake_parse_arguments(ARG "" "" "SOURCES;DEPENDS;PRIVATE_DEPENDS" ${ARGN})
+    coil_add_module(${name} SOURCES ${ARG_SOURCES} DEPENDS ${ARG_DEPENDS})
+    target_link_libraries(coil_${name} PRIVATE ${ARG_PRIVATE_DEPENDS})
+endfunction()
+
 # coil_add_tests(<name> SOURCES <src>... [DEPENDS <target>...])
 # Creates GoogleTest executable coil_<name>_tests linked to coil::<name>; tests are discovered by CTest.
 function(coil_add_tests name)

@@ -23,4 +23,5 @@ include(GoogleTest)
 
 add_subdirectory(modules/foundation)
 add_subdirectory(modules/platform)
+add_subdirectory(backends/platform_sdl3)
 add_subdirectory(tests)
