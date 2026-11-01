@@ -131,6 +131,10 @@ public:
         }
         return result;
     }
+
+    [[nodiscard]] std::vector<platform::WindowEvent> pollEvents() override {
+        return {}; // SPEC-0006 Red stub
+    }
 };
 
 } // namespace
@@ -149,6 +153,11 @@ createSdlWindowSystem(const SdlWindowSystemOptions& options) {
         return sdlFailure(ErrorCode::Unavailable, "cannot initialize SDL video");
     }
     return std::make_unique<SdlWindowSystem>();
+}
+
+Expected<std::uint32_t> sdlWindowId(const platform::WindowSystem& /*system*/,
+                                    platform::WindowId /*id*/) {
+    return std::uint32_t{0}; // SPEC-0006 Red stub
 }
 
 } // namespace coil::platform_sdl3

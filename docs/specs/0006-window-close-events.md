@@ -270,3 +270,6 @@ The SDL traits simulate the OS by pushing a `SDL_EVENT_WINDOW_CLOSE_REQUESTED` e
 |------|--------|-------------|
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
 | 2026-11-01 | Spec and plan approved | Emilio Pomares |
+| 2026-11-01 | Pre-Red probe: with the `dummy` driver, `SDL_PushEvent` close requests come back from `SDL_PollEvent` in order with the right `windowID`, and no `SDL_EVENT_QUIT` is added. Window creation itself emits startup events (shown, exposed, …) that must be discarded (rule 5, guarded by EV1). SDL window ids started at 2. | — |
+| 2026-11-01 | **Red**: 10 tests fail on assertions: EV2–EV5 for Fake and Sdl3, AC-6, AC-7. EV5 is stronger than planned (it also expects B's event, so it fails instead of being a guard). EV1 (×2) and all existing contract tests pass. Test code clang-tidy clean before freezing; the only finding was in stub code. | Emilio Pomares |
+

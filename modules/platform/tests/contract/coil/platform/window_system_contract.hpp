@@ -4,6 +4,8 @@
 // To run it for an implementation `Impl`, in a test source inside namespace coil::platform:
 //   template <> struct WindowSystemContractTraits<Impl> {
 //       static std::unique_ptr<WindowSystem> make();
+//       // Simulates the OS asking to close `id` (SPEC-0006).
+//       static void requestClose(WindowSystem& system, WindowId id);
 //   };
 //   INSTANTIATE_TYPED_TEST_SUITE_P(Name, WindowSystemContract, ::testing::Types<Impl>);
 
@@ -20,6 +22,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 namespace coil::platform {
@@ -35,6 +38,13 @@ inline std::ostream& operator<<(std::ostream& os, WindowId id) {
 
 inline std::ostream& operator<<(std::ostream& os, WindowSize size) {
     return os << "WindowSize{" << size.width << ", " << size.height << "}";
+}
+
+inline std::ostream& operator<<(std::ostream& os, const WindowEvent& event) {
+    if (const auto* close = std::get_if<CloseRequested>(&event)) {
+        return os << "CloseRequested{" << close->window << "}";
+    }
+    return os << "WindowEvent{unknown}";
 }
 
 template <typename T>
@@ -69,6 +79,11 @@ protected:
             m_system->createWindow(WindowDesc{.title = std::move(title), .size = size});
         EXPECT_TRUE(succeeds(result));
         return result.value_or(WindowId{});
+    }
+
+    /// Simulates the OS asking to close `id`, in the implementation's own way (SPEC-0006).
+    void requestClose(WindowId id) {
+        WindowSystemContractTraits<Impl>::requestClose(*m_system, id);
     }
 
     /// Title of a window, or a marker describing the error.
@@ -177,9 +192,57 @@ TYPED_TEST_P(WindowSystemContract, AC7_IdsAreNeverReused) {
     }
 }
 
+// SPEC-0006: window events (EV<n> = SPEC-0006 AC-<n>).
+
+TYPED_TEST_P(WindowSystemContract, EV1_EventsEmptyWhenNothingHappened) {
+    WindowSystem& system = this->system();
+    this->create("A", {.width = 100, .height = 100});
+    EXPECT_EQ(system.pollEvents(), std::vector<WindowEvent>{});
+}
+
+TYPED_TEST_P(WindowSystemContract, EV2_CloseRequestIsDeliveredOnce) {
+    WindowSystem& system = this->system();
+    const WindowId a = this->create("A", {.width = 100, .height = 100});
+    this->requestClose(a);
+    EXPECT_EQ(system.pollEvents(), std::vector<WindowEvent>{CloseRequested{.window = a}});
+    EXPECT_EQ(system.pollEvents(), std::vector<WindowEvent>{});
+}
+
+TYPED_TEST_P(WindowSystemContract, EV3_EventsKeepOrder) {
+    WindowSystem& system = this->system();
+    const WindowId a = this->create("A", {.width = 100, .height = 100});
+    const WindowId b = this->create("B", {.width = 100, .height = 100});
+    this->requestClose(b);
+    this->requestClose(a);
+    EXPECT_EQ(system.pollEvents(),
+              (std::vector<WindowEvent>{CloseRequested{.window = b}, CloseRequested{.window = a}}));
+}
+
+TYPED_TEST_P(WindowSystemContract, EV4_CloseRequestDoesNotCloseWindow) {
+    WindowSystem& system = this->system();
+    const WindowId a = this->create("A", {.width = 100, .height = 100});
+    this->requestClose(a);
+    EXPECT_EQ(system.pollEvents(), std::vector<WindowEvent>{CloseRequested{.window = a}});
+    EXPECT_EQ(system.windows(), std::vector<WindowId>{a});
+    EXPECT_EQ(this->titleOf(a), "A");
+}
+
+TYPED_TEST_P(WindowSystemContract, EV5_EventsForDestroyedWindowsAreDropped) {
+    WindowSystem& system = this->system();
+    const WindowId a = this->create("A", {.width = 100, .height = 100});
+    const WindowId b = this->create("B", {.width = 100, .height = 100});
+    this->requestClose(a);
+    this->requestClose(b);
+    ASSERT_TRUE(succeeds(system.destroyWindow(a)));
+    EXPECT_EQ(system.pollEvents(), std::vector<WindowEvent>{CloseRequested{.window = b}});
+}
+
 REGISTER_TYPED_TEST_SUITE_P(WindowSystemContract, AC1_CreateReturnsValidIdAndListsWindow,
                             AC2_ReportsTitleAndSizeFromDesc, AC3_SetTitleChangesOnlyThatWindow,
                             AC4_RejectsNonPositiveSize, AC5_DestroyedWindowIsNotFound,
-                            AC6_UnknownIdsAreNotFound, AC7_IdsAreNeverReused);
+                            AC6_UnknownIdsAreNotFound, AC7_IdsAreNeverReused,
+                            EV1_EventsEmptyWhenNothingHappened, EV2_CloseRequestIsDeliveredOnce,
+                            EV3_EventsKeepOrder, EV4_CloseRequestDoesNotCloseWindow,
+                            EV5_EventsForDestroyedWindowsAreDropped);
 
 } // namespace coil::platform

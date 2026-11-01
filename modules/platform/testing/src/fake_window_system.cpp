@@ -78,4 +78,14 @@ Expected<WindowSize> FakeWindowSystem::size(WindowId id) const {
     return window->size;
 }
 
+// SPEC-0006 Red stubs: no events are ever queued or delivered.
+
+std::vector<WindowEvent> FakeWindowSystem::pollEvents() {
+    return {};
+}
+
+Expected<void> FakeWindowSystem::requestClose(WindowId /*id*/) {
+    return {};
+}
+
 } // namespace coil::platform::testing

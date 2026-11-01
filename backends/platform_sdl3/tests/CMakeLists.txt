@@ -1,6 +1,6 @@
 coil_add_tests(platform_sdl3
     SOURCES sdl_window_system_test.cpp
-    DEPENDS coil::platform_contract SDL3::SDL3)
+    DEPENDS coil::platform_contract coil::platform_testing SDL3::SDL3)
 
 # AC-6: a translation unit including only the public header, built without SDL's include path.
 add_library(coil_platform_sdl3_public_header_only OBJECT EXCLUDE_FROM_ALL public_header_only.cpp)

@@ -3,6 +3,7 @@
 #include <coil/foundation/error.hpp>
 #include <coil/platform/window_system.hpp>
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -20,5 +21,11 @@ struct SdlWindowSystemOptions {
 /// Fails with Unavailable if SDL video cannot be initialized or is already initialized.
 [[nodiscard]] Expected<std::unique_ptr<platform::WindowSystem>>
 createSdlWindowSystem(const SdlWindowSystemOptions& options = {});
+
+/// SDL's window id (SDL_WindowID) of a window created by an SDL window system, so callers can
+/// address the window through SDL directly. Fails with InvalidArgument if `system` was not created
+/// by createSdlWindowSystem, and with NotFound if `id` is not a live window.
+[[nodiscard]] Expected<std::uint32_t> sdlWindowId(const platform::WindowSystem& system,
+                                                  platform::WindowId id);
 
 } // namespace coil::platform_sdl3

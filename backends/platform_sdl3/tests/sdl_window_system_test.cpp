@@ -1,9 +1,13 @@
 #include <coil/foundation/error.hpp>
+#include <coil/platform/testing/fake_window_system.hpp>
 #include <coil/platform/window_system.hpp>
 #include <coil/platform/window_system_contract.hpp>
 #include <coil/platform_sdl3/sdl_window_system.hpp>
 
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_events.h>
 #include <SDL3/SDL_init.h>
+#include <SDL3/SDL_video.h>
 
 #include <gtest/gtest.h>
 
@@ -16,7 +20,9 @@ namespace {
 
 using coil::ErrorCode;
 using coil::platform::WindowDesc;
+using coil::platform::WindowId;
 using coil::platform_sdl3::createSdlWindowSystem;
+using coil::platform_sdl3::sdlWindowId;
 using coil::platform_sdl3::SdlWindowSystemOptions;
 
 /// Headless options: SDL's dummy video driver needs no display and no graphics library.
@@ -67,6 +73,30 @@ TEST(SdlWindowSystem, AC5_DestructionClosesWindowsAndShutsDownVideo) {
     EXPECT_EQ(SDL_WasInit(SDL_INIT_VIDEO), 0U);
 }
 
+TEST(SdlWindowSystem, AC7_SdlWindowIdMatchesSdl) {
+    auto system = createSdlWindowSystem(headless());
+    ASSERT_TRUE(system.has_value()) << std::format("{}", system.error());
+    const auto id =
+        (*system)->createWindow(WindowDesc{.title = "A", .size = {.width = 64, .height = 64}});
+    ASSERT_TRUE(id.has_value());
+
+    const auto sdlId = sdlWindowId(**system, *id);
+    ASSERT_TRUE(sdlId.has_value()) << std::format("{}", sdlId.error());
+    EXPECT_NE(*sdlId, 0U);
+    SDL_Window* window = SDL_GetWindowFromID(*sdlId);
+    ASSERT_NE(window, nullptr);
+    EXPECT_STREQ(SDL_GetWindowTitle(window), "A");
+
+    const auto unknown = sdlWindowId(**system, WindowId{.value = 999});
+    ASSERT_FALSE(unknown.has_value());
+    EXPECT_EQ(unknown.error().code(), ErrorCode::NotFound);
+
+    const coil::platform::testing::FakeWindowSystem fake;
+    const auto notSdl = sdlWindowId(fake, WindowId{.value = 1});
+    ASSERT_FALSE(notSdl.has_value());
+    EXPECT_EQ(notSdl.error().code(), ErrorCode::InvalidArgument);
+}
+
 } // namespace
 
 namespace coil::platform {
@@ -86,6 +116,16 @@ struct WindowSystemContractTraits<Sdl3> {
             std::abort();
         }
         return std::move(*system);
+    }
+
+    /// Simulates the OS: pushes a real SDL close-request event for the window.
+    static void requestClose(WindowSystem& system, WindowId id) {
+        const auto sdlId = platform_sdl3::sdlWindowId(system, id);
+        ASSERT_TRUE(succeeds(sdlId));
+        SDL_Event event{};
+        event.type = SDL_EVENT_WINDOW_CLOSE_REQUESTED;
+        event.window.windowID = *sdlId;
+        ASSERT_TRUE(SDL_PushEvent(&event)) << SDL_GetError();
     }
 };
 

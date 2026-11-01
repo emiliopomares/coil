@@ -27,6 +27,11 @@ public:
     [[nodiscard]] Expected<std::string> title(WindowId id) const override;
     [[nodiscard]] Expected<void> setTitle(WindowId id, std::string_view title) override;
     [[nodiscard]] Expected<WindowSize> size(WindowId id) const override;
+    [[nodiscard]] std::vector<WindowEvent> pollEvents() override;
+
+    /// Test control: queues CloseRequested for `id`, as if the OS had sent it.
+    /// Fails with NotFound if `id` is not a live window.
+    [[nodiscard]] Expected<void> requestClose(WindowId id);
 
 private:
     struct Window {

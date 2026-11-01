@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <string>
 #include <string_view>
+#include <variant>
 #include <vector>
 
 namespace coil::platform {
@@ -30,6 +31,17 @@ struct WindowDesc {
     std::string title; ///< UTF-8. May be empty.
     WindowSize size;   ///< Both dimensions must be > 0.
 };
+
+/// The OS or the user asked to close a window (close button, Cmd+W, Alt+F4, ...).
+/// The window stays open until the application destroys it.
+struct CloseRequested {
+    WindowId window;
+
+    friend constexpr bool operator==(CloseRequested, CloseRequested) = default;
+};
+
+/// An event about a window. New alternatives are added by later specs.
+using WindowEvent = std::variant<CloseRequested>;
 
 /// Port: creates and manages OS windows. Implemented by adapters in backends/.
 /// The WindowSystem owns every window it creates; callers refer to windows by WindowId.
@@ -60,6 +72,10 @@ public:
 
     /// Client-area size of a window. Fails with NotFound if `id` is not a live window.
     [[nodiscard]] virtual Expected<WindowSize> size(WindowId id) const = 0;
+
+    /// Returns all events that occurred since the previous call, in order; each event is returned
+    /// once. Events for windows destroyed before this call are dropped. Non-blocking.
+    [[nodiscard]] virtual std::vector<WindowEvent> pollEvents() = 0;
 
 protected:
     WindowSystem() = default;
