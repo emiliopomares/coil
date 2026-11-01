@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Draft |
+| Status | In Progress |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `backends/platform_sdl3` (new); build infrastructure (`vcpkg.json`, CMake helper, `tools/layering.json`) |
@@ -17,7 +17,7 @@
 > - [x] Touches ≤ 2 areas (new backend; build files). SDL3 already approved by ADR-0018; the
 >   `platform_sdl3 → platform` edge is the one ADR-0018 designed
 > - [x] Out-of-scope section is filled in
-> - [ ] Open Questions section is empty (four confirmations pending, see §9)
+> - [x] Open Questions section is empty
 
 ---
 
@@ -162,7 +162,7 @@ its own `SdlWindowSystem`.
   approval of this spec.
 
 ## 9. Open Questions
-Recommended answers are written into the spec. **Approving the spec confirms them.**
+*None.* Q1–Q4 confirmed as recommended by approval on 2026-11-01 (Q2 clarified: one `SdlWindowSystem` manages any number of windows; only a second *system* is rejected). Rationale kept below.
 - **Q1 — How do tests select the headless driver?** *Recommended: an options struct
   (`videoDriver`).* It's a real feature (apps may force `wayland` or `x11`), and tests can pick
   `offscreen` or a broken driver per test. The alternative, the `SDL_VIDEODRIVER` environment variable,
@@ -251,3 +251,4 @@ Recommended answers are written into the spec. **Approving the spec confirms the
 | Date | Change | Approved by |
 |------|--------|-------------|
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
+| 2026-11-01 | Spec and plan approved | Emilio Pomares |
