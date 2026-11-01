@@ -6,7 +6,7 @@ a new ADR that supersedes it.
 
 | ADR | Title | Status |
 |-----|-------|--------|
-| [0001](0001-language-and-toolchain.md) | Language, build system, dependencies | Accepted |
+| [0001](0001-language-and-toolchain.md) | Language, build system, dependencies | Accepted (incl. Amendment 1) |
 | [0002](0002-quality-gates-and-ci.md) | Lint, warnings, sanitizers, CI matrix | Accepted |
 | [0003](0003-testing-strategy.md) | Testing framework and strategy | Accepted |
 | [0004](0004-layered-hexagonal-architecture.md) | Layered hexagonal architecture | Accepted |

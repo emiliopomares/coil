@@ -133,7 +133,8 @@ Tests must be meaningful:
 
 ## 5. C++ rules
 
-- **Standard:** C++23. Toolchains: MSVC ≥ 19.40, Clang ≥ 18, AppleClang ≥ 16, GCC ≥ 14.
+- **Standard:** C++23. Toolchains: AppleClang ≥ 21 (verified); Clang ≥ 18, GCC ≥ 14, MSVC ≥ 19.40
+  (provisional). See ADR-0001 Amendment 1. **Do not use `std::move_only_function`.**
   No compiler extensions in `modules/` (`CMAKE_CXX_EXTENSIONS OFF`).
 - **Ownership:** RAII everywhere. No naked `new`/`delete`. `std::unique_ptr` for ownership,
   `std::shared_ptr` only when justified in review. Long-lived references to widgets use `WidgetHandle`
@@ -155,7 +156,7 @@ Tests must be meaningful:
 ## 6. Quality gates (must pass before any phase is declared complete)
 
 - **Format:** `clang-format` ([.clang-format](.clang-format)). No diffs allowed.
-- **Lint:** `clang-tidy` ([.clang-tidy](.clang-tidy)) with warnings as errors. `NOLINT` only with a
+- **Lint:** `clang-tidy` ([.clang-tidy](.clang-tidy)) with warnings as errors, LLVM 23 (ADR-0001). `NOLINT` only with a
   specific check name plus a justification comment, and only with user approval.
 - **Warnings:** `-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror` / `/W4 /WX /permissive-`.
 - **Sanitizers:** ASan+UBSan preset, and TSan for threaded code, on Linux/macOS CI.
@@ -165,10 +166,12 @@ Tests must be meaningful:
 
 ## 7. Commands
 
-> To be filled in by spec 0001 (build scaffolding). Expected shape:
-> - Configure/build: `cmake --preset dev && cmake --build --preset dev`
-> - Test: `ctest --preset dev`
-> - All gates: `tools/check.sh`
+Prerequisites: see ADR-0001 (toolchains, LLVM 23) and `VCPKG_ROOT` pointing to a vcpkg clone.
+- Configure + build: `cmake --preset dev && cmake --build --preset dev` (also `release`, `asan`)
+- Test: `ctest --preset dev` (single test: `ctest --preset dev -R <regex>`)
+- All gates (format, configure, build, tidy, tests): `tools/check.sh`
+- Single gate: `tools/check.sh format [files…]`, `tools/check.sh tidy [files…]`
+- Tool overrides: `CLANG_FORMAT=…`, `CLANG_TIDY=…`, `COIL_PRESET=…`
 
 ## 8. Repository layout
 
