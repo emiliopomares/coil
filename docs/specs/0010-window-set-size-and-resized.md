@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Done (pending acknowledgement) |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::platform` (port, fake, contract suite); `backends/platform_sdl3` |
@@ -267,6 +267,7 @@ All resolved as recommended (2026-11-01, Emilio Pomares).
 |------|--------|-------------|
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
 | 2026-11-01 | Q1–Q4 confirmed as recommended; spec and plan approved | Emilio Pomares |
-| 2026-11-01 | **Red**: 11 tests fail on assertions: RS1, RS3, RS4, RS5 and RS6 for both Fake and Sdl3 (missing `Resized` events; stubs succeed where `InvalidArgument` / `NotFound` is required), and RS7 (fake). RS2 (×2) passes as the planned guard; the other 84 tests pass. File list amended: `hello_window`'s two test doubles gain `setSize` (forwarding, and `NotFound`), forced by the new pure virtual. The fake's `userResize` stub delegates to the `setSize` stub (shared path, rule 8). `tools/check.sh` format, layering and tidy clean. | Emilio Pomares (amendment pending acknowledgement) |
+| 2026-11-01 | **Red**: 11 tests fail on assertions: RS1, RS3, RS4, RS5 and RS6 for both Fake and Sdl3 (missing `Resized` events; stubs succeed where `InvalidArgument` / `NotFound` is required), and RS7 (fake). RS2 (×2) passes as the planned guard; the other 84 tests pass. File list amended: `hello_window`'s two test doubles gain `setSize` (forwarding, and `NotFound`), forced by the new pure virtual. The fake's `userResize` stub delegates to the `setSize` stub (shared path, rule 8). `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
 | 2026-11-01 | **Amendment A** (found in Green: SDL coalesces pending `RESIZED` events per window): rule 9 added, §4.3 and AC-5 changed, RS5 renamed `RS5_PendingResizesAreCoalesced` and now expects one coalesced event. Out of Scope keeps only throttling. Per CLAUDE.md §3 the corrected test goes through Red again. | Emilio Pomares |
-| 2026-11-01 | **Green + Refactor**: fake `setSize` validates, updates the size, replaces any pending `Resized` for the window and queues the new one (`userResize` shares it). SDL `setSize` validates and calls `SDL_SetWindowSize`; `SDL_EVENT_WINDOW_RESIZED` (data1, data2) translates to `Resized`. The size-validation message is shared by `createWindow` and `setSize`. `tools/check.sh` exit 0 (97/97 tests); `ctest --preset asan` 97/97; macOS `leaks`: 0 leaks for Sdl3 RS1–RS6. `git diff c0920e8 -- ':(glob)**/tests/**'` empty. | Emilio Pomares (acknowledgement pending) |
+| 2026-11-01 | **Green + Refactor**: fake `setSize` validates, updates the size, replaces any pending `Resized` for the window and queues the new one (`userResize` shares it). SDL `setSize` validates and calls `SDL_SetWindowSize`; `SDL_EVENT_WINDOW_RESIZED` (data1, data2) translates to `Resized`. The size-validation message is shared by `createWindow` and `setSize`. `tools/check.sh` exit 0 (97/97 tests); `ctest --preset asan` 97/97; macOS `leaks`: 0 leaks for Sdl3 RS1–RS6. `git diff c0920e8 -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
+| 2026-11-01 | Acknowledged (including the `hello_window` test-double file-list amendment); Status → Done | Emilio Pomares |
