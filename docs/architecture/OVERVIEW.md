@@ -81,6 +81,9 @@ Rules:
   and backend may include. **[tools/layering.json](../../tools/layering.json) is the authoritative copy
   of this column**; the table mirrors it and both change together.
 - Backends never depend on `core`, `widgets` or `docking`; they see only ports.
+- **Port implementations in `modules/`** (SPEC-0008): an implementation that needs only the C++
+  standard library may live next to its port (e.g. `SystemClock` over `std::chrono::steady_clock`).
+  Anything needing OS or third-party headers goes to `backends/`.
 - **Backends** (SPEC-0005): `backends/<name>/` is built with `coil_add_backend` as `coil::<name>`. Its
   public header (`include/coil/<name>/`) exposes only a factory returning the port and options, never
   third-party types, and third-party libraries are linked `PRIVATE`. Each backend's tests instantiate

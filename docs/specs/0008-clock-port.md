@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | In Progress |
+| Status | Done (pending acknowledgement) |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::platform` (port, `SystemClock`), `coil::platform_testing` (`FakeClock`) |
@@ -225,23 +225,23 @@ change, approved together with this spec.
 - **AC-6 on a coarse clock** is still valid, because the bounds are inclusive.
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log), except
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log), except
       the guards listed in §10.1
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally)
-- [ ] Sanitizer preset passes
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented (Doxygen comments on new public declarations)
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally)
+- [x] Sanitizer preset passes
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented (Doxygen comments on new public declarations)
 
 ### AC verification
-- [ ] AC-1 → `Fake/ClockContract.CL1_NowNeverDecreases`, `System/ClockContract.CL1_NowNeverDecreases`
-- [ ] AC-2 → `FakeClock.AC2_StartsAtStartAndStandsStill`
-- [ ] AC-3 → `FakeClock.AC3_AdvanceMovesByExactlyTheStep`
-- [ ] AC-4 → `FakeClock.AC4_NegativeAdvanceIsRejected`
-- [ ] AC-5 → `SystemClock.AC5_TimeMoves`
-- [ ] AC-6 → `SystemClock.AC6_TracksSteadyClock`
+- [x] AC-1 → `Fake/ClockContract.CL1_NowNeverDecreases`, `System/ClockContract.CL1_NowNeverDecreases`
+- [x] AC-2 → `FakeClock.AC2_StartsAtStartAndStandsStill`
+- [x] AC-3 → `FakeClock.AC3_AdvanceMovesByExactlyTheStep`
+- [x] AC-4 → `FakeClock.AC4_NegativeAdvanceIsRejected`
+- [x] AC-5 → `SystemClock.AC5_TimeMoves`
+- [x] AC-6 → `SystemClock.AC6_TracksSteadyClock`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -249,3 +249,4 @@ change, approved together with this spec.
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
 | 2026-11-01 | Spec and plan approved | Emilio Pomares |
 | 2026-11-01 | **Red**: AC-2…AC-6 fail on assertions (stub clocks fixed at zero; `advance` ignored); CL1 passes for both clocks as planned guards. Test code clang-tidy clean before freezing (only finding in stub code). | Emilio Pomares |
+| 2026-11-01 | **Green + Refactor**: `SystemClock` returns `steady_clock::now()`; `FakeClock` stores its time, `advance` rejects negative steps with `InvalidArgument`. `tools/check.sh` exit 0 (66/66 tests); `ctest --preset asan` 66/66; `git diff e510518 -- ':(glob)**/tests/**'` empty. OVERVIEW §3 notes std-only port implementations may live in `modules/`. | Emilio Pomares (acknowledgement pending) |
