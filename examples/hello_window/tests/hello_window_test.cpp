@@ -8,6 +8,7 @@
 
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
+#include <SDL3/SDL_video.h>
 
 #include <gtest/gtest.h>
 
@@ -15,6 +16,7 @@
 #include <format>
 #include <functional>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -34,6 +36,7 @@ using coil::platform::WindowSizeLimits;
 using coil::platform::WindowSystem;
 using coil::platform::testing::FakeWindowSystem;
 using hello_window::kIdleTimeout;
+using hello_window::kMinSize;
 using hello_window::runHelloWindow;
 
 /// After this many event calls the program is considered stuck (SPEC-0007 §6 loop guard).
@@ -202,6 +205,22 @@ ObservedWindowSystem::CloseRequester closeOnSdl(WindowSystem& sdl) {
     };
 }
 
+/// Resizes a window of an SDL window system directly, as a user drag would (outside the port).
+void resizeOnSdl(WindowSystem& sdl, WindowId id, WindowSize size) {
+    const auto sdlId = coil::platform_sdl3::sdlWindowId(sdl, id);
+    ASSERT_TRUE(sdlId.has_value()) << std::format("{}", sdlId.error());
+    SDL_Window* window = SDL_GetWindowFromID(*sdlId);
+    ASSERT_NE(window, nullptr) << SDL_GetError();
+    ASSERT_TRUE(SDL_SetWindowSize(window, size.width, size.height)) << SDL_GetError();
+}
+
+/// The program's window on `system`, which must be the only one (else a test failure, id 0).
+WindowId onlyWindow(const WindowSystem& system) {
+    const auto ids = system.windows();
+    EXPECT_EQ(ids.size(), 1U);
+    return ids.empty() ? WindowId{} : ids.front();
+}
+
 TEST(HelloWindow, AC1_OpensOneTitledWindow) {
     FakeWindowSystem fake;
     ObservedWindowSystem observed{fake, closeOnFake(fake)};
@@ -218,7 +237,8 @@ TEST(HelloWindow, AC1_OpensOneTitledWindow) {
         EXPECT_TRUE(fake.requestClose(ids.front()).has_value());
     });
 
-    EXPECT_EQ(runHelloWindow(observed), 0);
+    std::ostringstream log;
+    EXPECT_EQ(runHelloWindow(observed, log), 0);
     EXPECT_TRUE(checked) << "runHelloWindow never asked for events";
 }
 
@@ -233,7 +253,8 @@ TEST(HelloWindow, AC2_WaitsUntilItsWindowIsClosed) {
         }
     });
 
-    EXPECT_EQ(runHelloWindow(observed), 0);
+    std::ostringstream log;
+    EXPECT_EQ(runHelloWindow(observed, log), 0);
     EXPECT_EQ(observed.eventCalls(), 3);
     EXPECT_EQ(observed.pollCalls(), 0);
     EXPECT_EQ(observed.waitTimeouts(), std::vector<Clock::Duration>(3, kIdleTimeout));
@@ -261,7 +282,8 @@ TEST(HelloWindow, AC3_IgnoresCloseRequestsForOtherWindows) {
         }
     });
 
-    EXPECT_EQ(runHelloWindow(observed), 0);
+    std::ostringstream log;
+    EXPECT_EQ(runHelloWindow(observed, log), 0);
     EXPECT_EQ(observed.eventCalls(), 2);
     ASSERT_TRUE(otherWindow.has_value());
     EXPECT_EQ(fake.windows(), std::vector<WindowId>{otherWindow.value_or(WindowId{})});
@@ -271,7 +293,8 @@ TEST(HelloWindow, AC4_FailsWhenWindowCannotBeCreated) {
     FailingWindowSystem failing;
     ObservedWindowSystem observed{failing, [](WindowId /*id*/) {}};
 
-    EXPECT_EQ(runHelloWindow(observed), 1);
+    std::ostringstream log;
+    EXPECT_EQ(runHelloWindow(observed, log), 1);
     EXPECT_EQ(observed.createCalls(), 1);
     EXPECT_EQ(observed.eventCalls(), 0);
 }
@@ -289,9 +312,113 @@ TEST(HelloWindow, AC5_RunsOnSdlUntilClosed) {
         }
     });
 
-    EXPECT_EQ(runHelloWindow(observed), 0);
+    std::ostringstream log;
+    EXPECT_EQ(runHelloWindow(observed, log), 0);
     EXPECT_EQ(observed.createCalls(), 1);
     EXPECT_TRUE(system.windows().empty());
+}
+
+// SPEC-0012: resizable window and size log (R<n> = SPEC-0012 AC-<n>).
+
+TEST(HelloWindow, R1_WindowIsResizableWithMinimumSize) {
+    FakeWindowSystem fake;
+    ObservedWindowSystem observed{fake, closeOnFake(fake)};
+    bool checked = false;
+    observed.setBeforeEvents([&](int call) {
+        if (call != 1) {
+            return;
+        }
+        const WindowId program = onlyWindow(fake);
+        const auto resizable = fake.resizable(program);
+        ASSERT_TRUE(resizable.has_value());
+        EXPECT_TRUE(*resizable) << "the window is not resizable";
+        const auto limits = fake.sizeLimits(program);
+        ASSERT_TRUE(limits.has_value());
+        EXPECT_TRUE(*limits == (WindowSizeLimits{.min = kMinSize}))
+            << "the limits are not exactly {min 320x240, no max}";
+        checked = true;
+        EXPECT_TRUE(fake.requestClose(program).has_value());
+    });
+
+    std::ostringstream log;
+    EXPECT_EQ(runHelloWindow(observed, log), 0);
+    EXPECT_TRUE(checked) << "runHelloWindow never asked for events";
+}
+
+TEST(HelloWindow, R2_LogsEachResizeOfItsWindow) {
+    FakeWindowSystem fake;
+    ObservedWindowSystem observed{fake, closeOnFake(fake)};
+    observed.setBeforeEvents([&](int call) {
+        const WindowId program = onlyWindow(fake);
+        if (call == 1) {
+            EXPECT_TRUE(fake.userResize(program, {.width = 1024, .height = 768}).has_value());
+        } else if (call == 2) {
+            EXPECT_TRUE(fake.userResize(program, {.width = 640, .height = 480}).has_value());
+        } else if (call == 3) {
+            EXPECT_TRUE(fake.requestClose(program).has_value());
+        }
+    });
+
+    std::ostringstream log;
+    EXPECT_EQ(runHelloWindow(observed, log), 0);
+    EXPECT_EQ(log.str(), "hello_window: resized to 1024x768\nhello_window: resized to 640x480\n");
+}
+
+TEST(HelloWindow, R3_IgnoresResizesOfOtherWindows) {
+    FakeWindowSystem fake;
+    ObservedWindowSystem observed{fake, closeOnFake(fake)};
+    std::optional<WindowId> programWindow;
+    observed.setBeforeEvents([&](int call) {
+        if (call == 1) {
+            programWindow = onlyWindow(fake);
+            const auto other =
+                fake.createWindow({.title = "Other", .size = {.width = 64, .height = 64}});
+            ASSERT_TRUE(other.has_value());
+            EXPECT_TRUE(fake.userResize(*other, {.width = 500, .height = 400}).has_value());
+        } else if (call == 2 && programWindow) {
+            EXPECT_TRUE(fake.requestClose(*programWindow).has_value());
+        }
+    });
+
+    std::ostringstream log;
+    EXPECT_EQ(runHelloWindow(observed, log), 0);
+    EXPECT_EQ(log.str(), "");
+}
+
+TEST(HelloWindow, R4_LogsTheClampedSize) {
+    FakeWindowSystem fake;
+    ObservedWindowSystem observed{fake, closeOnFake(fake)};
+    observed.setBeforeEvents([&](int call) {
+        const WindowId program = onlyWindow(fake);
+        if (call == 1) {
+            EXPECT_TRUE(fake.userResize(program, {.width = 100, .height = 100}).has_value());
+        } else if (call == 2) {
+            EXPECT_TRUE(fake.requestClose(program).has_value());
+        }
+    });
+
+    std::ostringstream log;
+    EXPECT_EQ(runHelloWindow(observed, log), 0);
+    EXPECT_EQ(log.str(), "hello_window: resized to 320x240\n");
+}
+
+TEST(HelloWindow, R5_LogsResizesOnSdl) {
+    auto sdl = coil::platform_sdl3::createSdlWindowSystem({.videoDriver = "dummy"});
+    ASSERT_TRUE(sdl.has_value()) << std::format("{}", sdl.error());
+    WindowSystem& system = **sdl;
+    ObservedWindowSystem observed{system, closeOnSdl(system)};
+    observed.setBeforeEvents([&](int call) {
+        const WindowId program = onlyWindow(system);
+        if (call == 1) {
+            resizeOnSdl(system, program, {.width = 1024, .height = 768});
+        } else if (call == 2) {
+            closeOnSdl(system)(program);
+        }
+    });
+
+    std::ostringstream log;
+    EXPECT_EQ(runHelloWindow(observed, log), 0);
+    EXPECT_EQ(log.str(), "hello_window: resized to 1024x768\n");
 }
 
 } // namespace

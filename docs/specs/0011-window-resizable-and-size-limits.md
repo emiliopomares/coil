@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Done (pending acknowledgement) |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::platform` (port, fake, contract suite); `backends/platform_sdl3` |
@@ -274,4 +274,5 @@ All resolved as recommended (2026-11-01, Emilio Pomares).
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
 | 2026-11-01 | Q1–Q4 confirmed as recommended; spec and plan approved | Emilio Pomares |
 | 2026-11-01 | **Red**: 14 tests fail on assertions: SL1–SL7 for both Fake and Sdl3 (stubs report `false` / empty limits, ignore limits and clamping, and succeed where `InvalidArgument` / `NotFound` is required). No guards, as planned; the other 97 tests pass. The `hello_window` test doubles gain the three overrides. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
-| 2026-11-01 | **Green + Refactor**: fake stores `resizable` and limits, validates them, and clamps every size change through one `resize` helper (which also coalesces `Resized`). SDL creates windows with `SDL_WINDOW_RESIZABLE`, validates limits before calling SDL, applies them in the order clear max → min → max, and lets SDL clamp; limits are recorded only after SDL accepts them. `tools/check.sh` exit 0 (111/111 tests); `ctest --preset asan` 111/111; macOS `leaks`: 0 leaks for Sdl3 SL1–SL7. `git diff 8b711f0 -- ':(glob)**/tests/**'` empty. | Emilio Pomares (acknowledgement pending) |
+| 2026-11-01 | **Green + Refactor**: fake stores `resizable` and limits, validates them, and clamps every size change through one `resize` helper (which also coalesces `Resized`). SDL creates windows with `SDL_WINDOW_RESIZABLE`, validates limits before calling SDL, applies them in the order clear max → min → max, and lets SDL clamp; limits are recorded only after SDL accepts them. `tools/check.sh` exit 0 (111/111 tests); `ctest --preset asan` 111/111; macOS `leaks`: 0 leaks for Sdl3 SL1–SL7. `git diff 8b711f0 -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
+| 2026-11-01 | Acknowledged; Status → Done | Emilio Pomares |

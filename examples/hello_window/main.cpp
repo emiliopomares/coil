@@ -4,6 +4,7 @@
 #include <coil/platform_sdl3/sdl_window_system.hpp>
 
 #include <cstdio>
+#include <iostream>
 #include <string_view>
 
 namespace {
@@ -34,5 +35,5 @@ int main() {
         reportError(windows.error());
         return 1;
     }
-    return hello_window::runHelloWindow(**windows);
+    return hello_window::runHelloWindow(**windows, std::cout);
 }

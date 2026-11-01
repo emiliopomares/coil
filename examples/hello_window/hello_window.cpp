@@ -4,12 +4,13 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <ostream>
 #include <print>
 #include <string>
 
 namespace hello_window {
 
-int runHelloWindow(coil::platform::WindowSystem& windows) {
+int runHelloWindow(coil::platform::WindowSystem& windows, std::ostream& /*log*/) {
     const auto window = windows.createWindow({.title = std::string{kTitle}, .size = kSize});
     if (!window) {
         std::println(stderr, "hello_window: cannot create window: {}", window.error());
@@ -17,7 +18,7 @@ int runHelloWindow(coil::platform::WindowSystem& windows) {
     }
     const coil::platform::WindowEvent closeRequested =
         coil::platform::CloseRequested{.window = *window};
-    while (true) {
+    while (true) { // Red stub (SPEC-0012): not resizable, no limits, nothing logged.
         const auto events = windows.waitEvents(kIdleTimeout);
         if (std::ranges::contains(events, closeRequested)) {
             // The program is ending either way: a failed destroy is reported but does not change

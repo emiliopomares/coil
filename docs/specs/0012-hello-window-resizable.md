@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Draft |
+| Status | Approved |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `examples/hello_window` only |
@@ -16,7 +16,7 @@
 > - [x] ≤ 8 acceptance criteria
 > - [x] Touches 1 area (`examples/hello_window`); no new dependency
 > - [x] Out-of-scope section is filled in
-> - [ ] Open Questions section is empty (recommended answers; approving the spec confirms them, §9)
+> - [x] Open Questions section is resolved (§9)
 
 ---
 
@@ -127,7 +127,7 @@ same `HelloWindow` suite.
 None. The example remains the only composition root, and only `main.cpp` names SDL or `std::cout`.
 
 ## 9. Open Questions
-Recommended answers are written into the spec. **Approving the spec confirms them.**
+All resolved as recommended (2026-11-01, Emilio Pomares).
 - **Q1 — How does the program write its log?** *Recommended: an injected `std::ostream&`*, with `main`
   passing `std::cout`. Tests can then compare the exact text, with no globals and no captured stdout.
   The alternative is a callback per resize, which leaves the printing in untested `main`.
@@ -208,3 +208,5 @@ Recommended answers are written into the spec. **Approving the spec confirms the
 | Date | Change | Approved by |
 |------|--------|-------------|
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
+| 2026-11-01 | Q1–Q4 confirmed as recommended; spec and plan approved | Emilio Pomares |
+| 2026-11-01 | **Red**: R1 (not resizable, no limits), R2, R4 and R5 (empty log) fail on assertions; R3 passes as the planned guard; the five SPEC-0007 tests pass with the added stream argument (assertions unchanged); the other 107 tests pass. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
