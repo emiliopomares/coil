@@ -66,3 +66,17 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# Build trees and tooling caches
+build/
+out/
+vcpkg_installed/
+.cache/
+compile_commands.json
+CMakeUserPresets.json
+Testing/
+
+# OS / editor noise
+.DS_Store
+*.swp
+.idea/
