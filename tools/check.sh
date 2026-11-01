@@ -37,7 +37,7 @@ find_tool() {
 all_sources() {
     local roots=""
     local dir
-    for dir in modules backends; do
+    for dir in modules backends examples; do
         if [[ -d "${repo_root}/${dir}" ]]; then
             roots="${roots} ${repo_root}/${dir}"
         fi

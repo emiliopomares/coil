@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Done (pending acknowledgement) |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::platform` (port, fake, contract suite); `backends/platform_sdl3` |
@@ -243,4 +243,5 @@ Contract tests reuse the existing `requestClose` traits (SPEC-0006). No existing
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
 | 2026-11-01 | Spec and plan approved | Emilio Pomares |
 | 2026-11-01 | **Red**: 10 tests fail on assertions: WE1, WE3 and WE4 for Fake and Sdl3, and AC-5…AC-8. WE4 is stronger than planned (it also checks that a pending event is returned with a negative timeout, so it fails instead of being a guard); WE2 (×2) passes as a guard. SDL tests get CTest `TIMEOUT 30` via a new `coil_add_tests(... TIMEOUT)` option. Test code clang-tidy clean before freezing. | Emilio Pomares |
-| 2026-11-01 | **Green + Refactor**: fake: poll, then (timeout > 0) hook and re-poll, then advance its clock by the timeout; SDL: poll, then `SDL_WaitEventTimeout` with the timeout rounded up to ms and clamped to `Sint32`, then drain; event translation shared with `pollEvents`. `tools/check.sh` exit 0 (78/78 tests); `ctest --preset asan` 78/78; macOS `leaks`: 0 leaks for Sdl3 WE1–WE4; observed (not asserted) SDL WE2 duration 10 ms, i.e. a real wait rather than a spin. `git diff 8df881c -- ':(glob)**/tests/**'` empty. | Emilio Pomares (acknowledgement pending) |
+| 2026-11-01 | **Green + Refactor**: fake: poll, then (timeout > 0) hook and re-poll, then advance its clock by the timeout; SDL: poll, then `SDL_WaitEventTimeout` with the timeout rounded up to ms and clamped to `Sint32`, then drain; event translation shared with `pollEvents`. `tools/check.sh` exit 0 (78/78 tests); `ctest --preset asan` 78/78; macOS `leaks`: 0 leaks for Sdl3 WE1–WE4; observed (not asserted) SDL WE2 duration 10 ms, i.e. a real wait rather than a spin. `git diff 8df881c -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
+| 2026-11-01 | Acknowledged; Status → Done | Emilio Pomares |

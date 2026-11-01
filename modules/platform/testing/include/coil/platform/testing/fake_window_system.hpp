@@ -59,11 +59,10 @@ private:
 
     std::vector<Window> m_windows;     ///< Live windows, in creation order.
     std::vector<WindowEvent> m_events; ///< Events not yet returned by pollEvents().
-    std::uint64_t m_nextId = 1;
-    FakeClock m_ownClock;             ///< Used when no external clock is given.
-    FakeClock* m_clock;               ///< The clock waits advance (never null).
-    std::function<void()> m_waitHook; ///< Optional; see setWaitHook().        ///< Next id to
-                                      ///< issue; ids are never reused.
+    std::uint64_t m_nextId = 1;        ///< Next id to issue; ids are never reused.
+    FakeClock m_ownClock;              ///< Used when no external clock is given.
+    FakeClock* m_clock;                ///< The clock waits advance (never null).
+    std::function<void()> m_waitHook;  ///< Optional; see setWaitHook().
 };
 
 } // namespace coil::platform::testing
