@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | In Progress |
 | Date | 2026-11-01 |
 | Origin | "Make the library just open up a window with a title" |
 
@@ -25,7 +25,7 @@ SDL3 adapter, and stays open until the user closes it.
 ## Specs (in dependency order)
 | # | Spec | Status | Depends on |
 |---|------|--------|------------|
-| 1 | `coil::Error` | Planned | SPEC-0001 |
+| 1 | [SPEC-0002 `coil::Error`](../specs/0002-coil-error.md) | In Progress | SPEC-0001 |
 | 2 | Window port + fake + contract tests | Planned | `coil::Error` |
 | 3 | SDL3 window adapter | Planned | Window port |
 | 4 | Window events (`CloseRequested`) | Planned | SDL3 window adapter |
