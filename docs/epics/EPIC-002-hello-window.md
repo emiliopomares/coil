@@ -28,8 +28,8 @@ SDL3 adapter, and stays open until the user closes it.
 | 1 | [SPEC-0002 `coil::Error`](../specs/0002-coil-error.md) | Done | SPEC-0001 |
 | 2 | [SPEC-0003 Window port + fake + contract tests](../specs/0003-window-port.md) | Done | SPEC-0002 |
 | 3 | [SPEC-0005 SDL3 window adapter](../specs/0005-sdl3-window-adapter.md) | Done | SPEC-0003, SPEC-0004 |
-| 4 | [SPEC-0006 Window close events](../specs/0006-window-close-events.md) | Done (pending acknowledgement) | SPEC-0003, SPEC-0005 |
-| 5 | `hello_window` example | Planned | Window events |
+| 4 | [SPEC-0006 Window close events](../specs/0006-window-close-events.md) | Done | SPEC-0003, SPEC-0005 |
+| 5 | [SPEC-0007 `hello_window` example](../specs/0007-hello-window-example.md) | Draft | SPEC-0005, SPEC-0006 |
 
 ## Notes
 - Open questions for the window port spec: window ownership (system-owned `WindowId`, recommended,

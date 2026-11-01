@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Done (pending acknowledgement) |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::platform` (port, fake, contract suite); `backends/platform_sdl3` |
@@ -272,4 +272,5 @@ The SDL traits simulate the OS by pushing a `SDL_EVENT_WINDOW_CLOSE_REQUESTED` e
 | 2026-11-01 | Spec and plan approved | Emilio Pomares |
 | 2026-11-01 | Pre-Red probe: with the `dummy` driver, `SDL_PushEvent` close requests come back from `SDL_PollEvent` in order with the right `windowID`, and no `SDL_EVENT_QUIT` is added. Window creation itself emits startup events (shown, exposed, …) that must be discarded (rule 5, guarded by EV1). SDL window ids started at 2. | — |
 | 2026-11-01 | **Red**: 10 tests fail on assertions: EV2–EV5 for Fake and Sdl3, AC-6, AC-7. EV5 is stronger than planned (it also expects B's event, so it fails instead of being a guard). EV1 (×2) and all existing contract tests pass. Test code clang-tidy clean before freezing; the only finding was in stub code. | Emilio Pomares |
-| 2026-11-01 | **Green + Refactor**: fake keeps an event queue (`requestClose` validates; `pollEvents` drains and drops events of destroyed windows); SDL adapter drains `SDL_PollEvent`, maps `SDL_EVENT_WINDOW_CLOSE_REQUESTED` through `SDL_GetWindowFromEvent` to live windows only, discards everything else; `sdlWindowId` via `dynamic_cast` + `SDL_GetWindowID`. `tools/check.sh` exit 0 (59/59 tests); `ctest --preset asan` 59/59; macOS `leaks`: 0 leaks for Sdl3 EV1–EV5 and AC-7; `git diff 24e1301 -- ':(glob)**/tests/**'` empty. | Emilio Pomares (acknowledgement pending) |
+| 2026-11-01 | **Green + Refactor**: fake keeps an event queue (`requestClose` validates; `pollEvents` drains and drops events of destroyed windows); SDL adapter drains `SDL_PollEvent`, maps `SDL_EVENT_WINDOW_CLOSE_REQUESTED` through `SDL_GetWindowFromEvent` to live windows only, discards everything else; `sdlWindowId` via `dynamic_cast` + `SDL_GetWindowID`. `tools/check.sh` exit 0 (59/59 tests); `ctest --preset asan` 59/59; macOS `leaks`: 0 leaks for Sdl3 EV1–EV5 and AC-7; `git diff 24e1301 -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
+| 2026-11-01 | Closed (Done) | Emilio Pomares |
