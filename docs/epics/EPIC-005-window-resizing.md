@@ -34,7 +34,7 @@ window's display.
 | 1 | [SPEC-0010 `setSize` and the `Resized` event](../specs/0010-window-set-size-and-resized.md) | Done | EPIC-002 |
 | 2 | [SPEC-0011 Resizable flag and minimum/maximum size](../specs/0011-window-resizable-and-size-limits.md) | Done (pending acknowledgement) | 1 |
 | 3 | Pixel size, display scale and the `ScaleChanged` event | Planned | 1 |
-| 4 | `hello_window`: resizable window that logs its size events (manual check) | Planned | 2 |
+| 4 | [SPEC-0012 `hello_window` resizable, logs size changes](../specs/0012-hello-window-resizable.md) | Draft | 2 |
 
 ## Notes
 - Builds on the `WindowSystem` port (SPEC-0003), its events (SPEC-0006) and `waitEvents` (SPEC-0009).
@@ -54,3 +54,4 @@ window's display.
 |------|--------|-------------|
 | 2026-11-01 | Epic proposed (separate epic, ordered before EPIC-004) | Emilio Pomares |
 | 2026-11-01 | Epic approved | Emilio Pomares |
+| 2026-11-01 | Work order changed: spec 4 (`hello_window`) before spec 3, to see resizing on screen first (spec 4 does not depend on 3) | Emilio Pomares |
