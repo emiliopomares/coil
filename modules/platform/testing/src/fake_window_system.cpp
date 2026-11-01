@@ -108,9 +108,23 @@ Expected<void> FakeWindowSystem::requestClose(WindowId id) {
     return {};
 }
 
-// SPEC-0009 Red stub: never waits, never calls the hook, never moves the clock.
-std::vector<WindowEvent> FakeWindowSystem::waitEvents(Clock::Duration /*timeout*/) {
-    return {};
+std::vector<WindowEvent> FakeWindowSystem::waitEvents(Clock::Duration timeout) {
+    std::vector<WindowEvent> events = pollEvents();
+    if (!events.empty() || timeout <= Clock::Duration::zero()) {
+        return events;
+    }
+    // The fake would block here: let the test deliver an event "during" the wait (SPEC-0009 rule
+    // 5).
+    if (m_waitHook) {
+        m_waitHook();
+        events = pollEvents();
+        if (!events.empty()) {
+            return events;
+        }
+    }
+    // Cannot fail: timeout is positive here.
+    [[maybe_unused]] const Expected<void> advanced = m_clock->advance(timeout);
+    return events;
 }
 
 void FakeWindowSystem::setWaitHook(std::function<void()> hook) {

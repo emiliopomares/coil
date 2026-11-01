@@ -7,12 +7,15 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>
+#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_video.h>
 
 #include <algorithm>
+#include <chrono>
 #include <cstdint>
 #include <expected>
 #include <format>
+#include <limits>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -37,6 +40,14 @@ std::unexpected<Error> notFound(platform::WindowId id) {
     return makeUnexpected(ErrorCode::NotFound, std::format("no window with id {}", id.value));
 }
 
+/// Positive timeout in whole milliseconds, rounded up and clamped to SDL's Sint32 range
+/// (SPEC-0009 rule 7). Callers never pass zero or negative values.
+Sint32 toSdlTimeout(platform::Clock::Duration timeout) {
+    const auto milliseconds = std::chrono::ceil<std::chrono::milliseconds>(timeout).count();
+    return static_cast<Sint32>(
+        std::min<std::int64_t>(milliseconds, std::numeric_limits<Sint32>::max()));
+}
+
 /// WindowSystem backed by SDL3. Owns SDL's video subsystem for its lifetime (SPEC-0005).
 class SdlWindowSystem final : public platform::WindowSystem {
 private:
@@ -56,6 +67,18 @@ private:
         const auto it = std::ranges::find(m_windows, handle,
                                           [](const Window& window) { return window.handle.get(); });
         return it == m_windows.end() ? nullptr : &*it;
+    }
+
+    /// Appends the Coil event for `event`, if it maps to one for a live window (SPEC-0006 rules 4,
+    /// 5).
+    void translate(const SDL_Event& event, std::vector<platform::WindowEvent>& events) const {
+        if (event.type != SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
+            return;
+        }
+        const Window* window = findByHandle(SDL_GetWindowFromEvent(&event));
+        if (window != nullptr) {
+            events.emplace_back(platform::CloseRequested{.window = window->id});
+        }
     }
 
     std::vector<Window> m_windows; ///< Live windows, in creation order.
@@ -145,21 +168,25 @@ public:
         std::vector<platform::WindowEvent> events;
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
-            if (event.type != SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
-                continue; // Not mapped yet (SPEC-0006 rule 5).
-            }
-            // Destroyed or foreign windows resolve to no live window and are dropped (rules 4, 5).
-            const Window* window = findByHandle(SDL_GetWindowFromEvent(&event));
-            if (window != nullptr) {
-                events.emplace_back(platform::CloseRequested{.window = window->id});
-            }
+            translate(event, events);
         }
         return events;
     }
 
     [[nodiscard]] std::vector<platform::WindowEvent>
-    waitEvents(platform::Clock::Duration /*timeout*/) override {
-        return {}; // SPEC-0009 Red stub
+    waitEvents(platform::Clock::Duration timeout) override {
+        std::vector<platform::WindowEvent> events = pollEvents();
+        if (!events.empty() || timeout <= platform::Clock::Duration::zero()) {
+            return events;
+        }
+        SDL_Event event;
+        if (SDL_WaitEventTimeout(&event, toSdlTimeout(timeout))) {
+            translate(event, events);
+            while (SDL_PollEvent(&event)) {
+                translate(event, events);
+            }
+        }
+        return events;
     }
 
     /// SDL's id for a live window (SPEC-0006 sdlWindowId).
