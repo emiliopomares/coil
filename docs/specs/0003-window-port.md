@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Draft |
+| Status | In Progress |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::platform` (new), including its test-support library `coil::platform_testing` |
@@ -17,7 +17,7 @@
 > - [x] Touches ≤ 2 modules (`platform`, using `foundation`); no new dependency or layering edge
 >   (`platform → foundation` is already allowed by OVERVIEW §3)
 > - [x] Out-of-scope section is filled in
-> - [ ] Open Questions section is empty (three confirmations pending, see §9)
+> - [x] Open Questions section is empty
 
 ---
 
@@ -221,7 +221,7 @@ after Red. Future adapters reuse it but cannot weaken it.
 - No ABI or plugin impact yet.
 
 ## 9. Open Questions
-Recommended answers are written into the spec. **Approving the spec confirms them.**
+*None.* Resolved 2026-11-01 by approval: Q1 system-owned windows with `WindowId`; Q2 empty titles allowed; Q3 reject only `<= 0`. Rationale kept below.
 - **Q1 — Who owns windows?** *Recommended:* the `WindowSystem` owns them, and callers hold
   `WindowId`s. Ids can't dangle (misuse gives `NotFound`), they serialize naturally for workspaces,
   remote and MCP, and they suit multi-window docking. The alternative, caller-owned
@@ -301,3 +301,4 @@ Recommended answers are written into the spec. **Approving the spec confirms the
 | Date | Change | Approved by |
 |------|--------|-------------|
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
+| 2026-11-01 | Spec and plan approved; Q1–Q3 confirmed as recommended | Emilio Pomares |
