@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Proposed |
+| Status | Approved |
 | Date | 2026-11-01 |
 | Origin | Pacing discussion for `hello_window` (EPIC-002): "this combination of B, D and E is the right way to go" |
 
@@ -41,4 +41,4 @@ application) owns the loop.
 ## Change Log
 | Date | Change | Approved by |
 |------|--------|-------------|
-| 2026-11-01 | Epic proposed | |
+| 2026-11-01 | Epic proposed and approved | Emilio Pomares |
