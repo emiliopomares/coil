@@ -86,10 +86,13 @@ Terminology: a file is **test code** if it is under a `tests/` or `testing/` fol
 backend. Otherwise it is **production code** (`include/`, `src/`). An angle include `<coil/…>` is
 **resolved** by locating the header under the known include roots: `modules/*/include`,
 `modules/*/testing/include` (test-support), `modules/*/tests/contract` (contract) and
-`backends/*/include`.
+`backends/*/include`. `foundation` is the dependency-free base layer: every module and backend may
+include it without listing it.
 
-1. **`module-edge`.** A file in module *M* may include `<coil/X/…>` only if *X* = *M* or *X* is in the
-   **transitive closure** of *M*'s dependencies (§9 Q1).
+1. **`module-edge`.** A file in module *M* may include `<coil/X/…>` only if *X* = *M*, *X* is listed in
+   *M*'s **direct** dependencies, or *X* = `foundation`, which every module may include (§9 Q1).
+   Headers of indirect dependencies are rejected, so a module cannot bypass the layer below it (e.g.
+   `widgets` reaching the `platform` or `render` ports around `core`).
 2. **`external-header`.** In `modules/`, an angle include that is not a `coil/` header MUST be a C++
    standard library header (fixed list in the script, e.g. `<vector>`, `<cstdint>`, `<format>`). OS,
    windowing, GPU and other third-party headers (`<windows.h>`, `<SDL3/SDL.h>`, `<vulkan/vulkan.h>`, …)
@@ -102,7 +105,7 @@ backend. Otherwise it is **production code** (`include/`, `src/`). An angle incl
 6. **`quote-include`.** `"…"` includes MUST resolve, relative to the including file's folder, to a file
    inside the same module or backend.
 7. **`backend-edge`.** A file in backend *B* may include `<coil/X/…>` only if *X* is in *B*'s list or
-   that list's transitive closure. External headers are allowed in backends (that is where they belong).
+   *X* = `foundation`. External headers are allowed in backends (that is where they belong).
 8. **`unknown-module`** / **`unknown-backend`.** A folder under `modules/` or `backends/` without an entry
    in the config is a violation.
 9. **Config validation** (exit 2): the config MUST be valid JSON with the two objects above. Every
@@ -132,8 +135,10 @@ Not applicable.
   exits 0 with no output lines starting with a path.
 - **AC-2** — Given a fixture where `modules/foundation/src/a.cpp` includes
   `<coil/platform/window_system.hpp>`, the checker exits 1 and reports
-  `modules/foundation/src/a.cpp:<line>: error: … [module-edge]`. A transitive include (module `c`
-  depending on `b`, `b` on `a`, `c` including `<coil/a/…>`) is **accepted**.
+  `modules/foundation/src/a.cpp:<line>: error: … [module-edge]`. An indirect include (module `c`
+  depending on `b`, `b` on `a`, `c` including `<coil/a/…>`) is **also rejected** with `[module-edge]`.
+  In a separate fixture, `c` including `<coil/b/…>` (direct) and `<coil/foundation/…>` (always allowed)
+  is accepted (exit 0).
 - **AC-3** — Given a fixture where `modules/platform/src/a.cpp` includes `<SDL3/SDL.h>` and
   `<windows.h>`, the checker exits 1 with two `[external-header]` violations. Standard headers in the
   same file (`<vector>`, `<cstdint>`) are not reported.
@@ -144,8 +149,8 @@ Not applicable.
   `"../../other/src/x.hpp"` escaping it, and `<coil/foundation/missing.hpp>` matching no file, the checker
   exits 1 with exactly one `[quote-include]` and one `[unresolved-coil-header]` violation.
 - **AC-6** — Given a fixture with backend `sdl` allowed `["platform"]`, including
-  `<coil/platform/…>`, `<coil/foundation/…>` (transitive) and `<SDL3/SDL.h>` is accepted, and including
-  `<coil/core/…>` gives `[backend-edge]`. An extra folder `modules/ghost/` (no config entry) gives
+  `<coil/platform/…>`, `<coil/foundation/…>` (always allowed) and `<SDL3/SDL.h>` is accepted, and
+  including `<coil/core/…>` gives `[backend-edge]`. An extra folder `modules/ghost/` (no config entry) gives
   `[unknown-module]`.
 - **AC-7** — Given a config with a cycle (`a → b → a`), the checker exits 2 and prints the cycle with
   `[config-cycle]`. A config naming an undefined module dependency also exits 2.
@@ -162,7 +167,8 @@ each with its own `layering.json` and a minimal `modules/`/`backends/` tree.
 |----|-----------|-------------|
 | AC-1 | `gate.layering.AC1_RepositoryIsClean` | `tools/check.sh layering` exits 0 |
 | AC-2 | `gate.layering.AC2_RejectsDisallowedModuleEdge` | fail, regex `foundation/src/a\.cpp:[0-9]+: error: .*\[module-edge\]` |
-| AC-2 | `gate.layering.AC2_AcceptsTransitiveEdge` | exit 0 |
+| AC-2 | `gate.layering.AC2_RejectsIndirectEdge` | fail, regex `c/src/.*\[module-edge\]` |
+| AC-2 | `gate.layering.AC2_AcceptsDirectEdgeAndFoundation` | exit 0 |
 | AC-3 | `gate.layering.AC3_RejectsExternalHeadersInModules` | fail, `SDL3/SDL\.h.*\[external-header\]` and `windows\.h.*\[external-header\]` (script checks the count of 2) |
 | AC-4 | `gate.layering.AC4_RejectsTestOnlyIncludesInProduction` | fail, `[test-framework]` + 2 × `[test-support]` |
 | AC-4 | `gate.layering.AC4_AcceptsTestOnlyIncludesInTests` | exit 0 |
@@ -190,10 +196,14 @@ and `EXPECT_COUNT_<n>=<regex>` arguments. It is created in this spec.
 
 ## 9. Open Questions
 Recommended answers are written into the spec. **Approving the spec confirms them.**
-- **Q1 — May a module include headers of its *indirect* dependencies?** *Recommended: yes (transitive
-  closure).* `widgets` depends on `core`, `core` on `foundation`. `widgets` code will naturally use
-  `coil::Error` from foundation, and core's public headers already expose foundation types. Requiring
-  every transitive edge to be listed adds noise without protecting anything. Cycles remain impossible.
+- **Q1 — May a module include headers of its *indirect* dependencies?** **Decided 2026-11-01: no
+  (option C).** Only direct dependencies, plus `foundation`, which every module and backend may
+  include. Transitive inclusion was rejected because it lets a module bypass the layer below it (e.g.
+  `widgets` calling the `WindowSystem` or `RenderBackend` ports directly instead of going through
+  `core`). It also makes dependencies shift when a middle layer is refactored. Listing `foundation`
+  everywhere would add noise without protecting anything. Process consequence (CLAUDE.md §1): an edge
+  that does not change layer order (its target is already reachable and it creates no cycle) needs
+  only user approval in the spec adding it; an edge creating a new path needs an ADR.
 - **Q2 — Where do the rules live?** *Recommended: `tools/layering.json`* as the authoritative copy,
   mirrored by the OVERVIEW table. The alternative, parsing the Markdown table in OVERVIEW, is fragile
   and couples documentation layout to tooling.
@@ -212,9 +222,9 @@ Recommended answers are written into the spec. **Approving the spec confirms the
      wired into the all-gates run. The wiring is part of AC-8 and is exercised with the stub.
    - **Tests:** fixtures, the `expect_output.cmake` helper, and gate tests in `tests/CMakeLists.txt`.
    - **Expected Red:**
-     - Fail: AC2-reject, AC3, AC4-reject, AC5, AC6, AC7 (×2), AC8. The stub exits 0 where a failure
+     - Fail: AC2-reject (×2: disallowed and indirect), AC3, AC4-reject, AC5, AC6, AC7 (×2), AC8. The stub exits 0 where a failure
        is required.
-     - Already pass: AC1, AC2-transitive, AC4-accept. These are over-rejection guards, like
+     - Already pass: AC1, AC2-accept (direct edge + foundation), AC4-accept. These are over-rejection guards, like
        `gate.format_accepts_good`.
 2. **Green:** implement the checker (include scanning, header resolution, closure computation, config
    validation, sorted output).
@@ -230,7 +240,8 @@ Recommended answers are written into the spec. **Approving the spec confirms the
 | `tests/CMakeLists.txt` | modify | `gate.layering.*` tests; `find_package(Python3 3.9 COMPONENTS Interpreter REQUIRED)` |
 | `tests/gates/expect_output.cmake` | create | Exit-code + counted-regex assertions |
 | `tests/fixtures/layering/<case>/…` | create | One tree per case (§6) |
-| `docs/architecture/OVERVIEW.md`, `docs/adr/0002-…`, `CLAUDE.md`, EPIC-001 | modify | §8 notes |
+| `docs/architecture/OVERVIEW.md`, `docs/adr/0002-…`, EPIC-001 | modify | §8 notes; OVERVIEW §3 states the direct-edges + foundation rule |
+| `CLAUDE.md` | modify | §1 edge rule (Q1 consequence); §7 `tools/check.sh layering` |
 
 ### 10.3 Risks / alternatives considered
 - **Header resolution:** a `<coil/…>` path could in principle exist under two roots (for example the
@@ -256,7 +267,7 @@ Recommended answers are written into the spec. **Approving the spec confirms the
 
 ### AC verification
 - [ ] AC-1 → `gate.layering.AC1_RepositoryIsClean`
-- [ ] AC-2 → `gate.layering.AC2_RejectsDisallowedModuleEdge`, `gate.layering.AC2_AcceptsTransitiveEdge`
+- [ ] AC-2 → `gate.layering.AC2_RejectsDisallowedModuleEdge`, `gate.layering.AC2_RejectsIndirectEdge`, `gate.layering.AC2_AcceptsDirectEdgeAndFoundation`
 - [ ] AC-3 → `gate.layering.AC3_RejectsExternalHeadersInModules`
 - [ ] AC-4 → `gate.layering.AC4_RejectsTestOnlyIncludesInProduction`, `gate.layering.AC4_AcceptsTestOnlyIncludesInTests`
 - [ ] AC-5 → `gate.layering.AC5_RejectsEscapingAndUnresolvedIncludes`
@@ -268,3 +279,4 @@ Recommended answers are written into the spec. **Approving the spec confirms the
 | Date | Change | Approved by |
 |------|--------|-------------|
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
+| 2026-11-01 | Q1 decided: direct edges only + `foundation` always allowed (option C); rules 1 and 7, AC-2, AC-6 and test plan updated | Emilio Pomares |
