@@ -204,7 +204,7 @@ Not applicable (no widgets).
   so the test does not merely re-read the header under test.
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
 - [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
 - [ ] Full test suite passes
 - [ ] `clang-format` and `clang-tidy` clean; no new `NOLINT`
@@ -230,3 +230,4 @@ Not applicable (no widgets).
 | 2026-11-01 | Q1 (vcpkg via `VCPKG_ROOT`) and Q2 (macOS-only local) resolved; plan added | Emilio Pomares (answers) |
 | 2026-11-01 | Spec and implementation plan approved | Emilio Pomares |
 | 2026-11-01 | Attached to EPIC-001; forward references to unnumbered specs replaced by names (docs only) | Emilio Pomares |
+| 2026-11-01 | **Red** on AppleClang 15.0.0, CMake 4.4.5, gtest 1.18.0 (vcpkg). `ctest -N` lists 6 tests. 5 fail for the planned reason: `AC2` (`kVersion.minor` 0 ≠ 1), `AC3` (`versionString()` `""` ≠ `"0.1.0"`), `gate.warnings_are_errors` / `gate.format_rejects_bad` / `gate.tidy_rejects_bad_naming` ("Expected the command to fail, but it succeeded"). `gate.format_accepts_good` passes (over-rejection guard, as planned). | Emilio Pomares (Red started on request) |
