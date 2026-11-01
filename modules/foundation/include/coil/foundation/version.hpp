@@ -1,5 +1,7 @@
 #pragma once
 
+#include <coil/foundation/version_config.hpp>
+
 #include <string_view>
 
 namespace coil::foundation {
@@ -14,7 +16,8 @@ struct Version {
 };
 
 /// Version of the Coil library, generated from the CMake project version.
-inline constexpr Version kVersion{0, 0, 0}; // SPEC-0001 Red stub
+inline constexpr Version kVersion{
+    .major = detail::kVersionMajor, .minor = detail::kVersionMinor, .patch = detail::kVersionPatch};
 
 /// Returns the library version formatted as "MAJOR.MINOR.PATCH".
 [[nodiscard]] std::string_view versionString() noexcept;

@@ -23,14 +23,14 @@ on every supported platform, locally and in CI.
 ## Specs (in dependency order)
 | # | Spec | Status | Depends on |
 |---|------|--------|------------|
-| 1 | [SPEC-0001 Build skeleton](../specs/0001-build-skeleton.md) | In Progress | — |
+| 1 | [SPEC-0001 Build skeleton](../specs/0001-build-skeleton.md) | Done (pending acknowledgement) | — |
 | 2 | CI matrix | Planned | SPEC-0001 |
 | 3 | Layering checker (`tools/check_layering.py`) | Planned | SPEC-0001 |
 | 4 | Compiler feature check | Planned | CI matrix; ADR-0001 amendment |
 
 ## Notes
-- ADR-0001 minimum toolchain versions are pending the developer machine update (see ADR-0001/0014
-  amendment discussion). The compiler feature check will encode the final decision.
+- ADR-0001 Amendment 1 (accepted) defines the required C++23 feature set and pins LLVM 23; the compiler
+  feature check spec verifies the provisional toolchain minimums in CI.
 
 ## Change Log
 | Date | Change | Approved by |

@@ -14,6 +14,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include(CoilWarnings)
+include(CoilSanitizers)
 include(CoilModule)
 
 enable_testing()

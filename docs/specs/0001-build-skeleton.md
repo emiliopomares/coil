@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | In Progress |
+| Status | Done (pending acknowledgement) |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | build infrastructure (`CMakeLists.txt`, `cmake/`, `tools/`), `coil::foundation` |
@@ -205,23 +205,23 @@ Not applicable (no widgets).
 
 ## 11. Definition of Done
 - [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format` and `clang-tidy` clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally; other targets in the "CI matrix" spec)
-- [ ] Sanitizer preset passes
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented (Doxygen comments on new public declarations)
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format` and `clang-tidy` clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally; other targets in the "CI matrix" spec)
+- [x] Sanitizer preset passes
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented (Doxygen comments on new public declarations)
 
 ### AC verification
-- [ ] AC-1 → configure/build
-- [ ] AC-2 → `Version.AC2_MatchesProjectVersion`
-- [ ] AC-3 → `Version.AC3_StringMatchesComponents`
-- [ ] AC-4 → `ctest -N` listing
-- [ ] AC-5 → `gate.warnings_are_errors`
-- [ ] AC-6 → `gate.format_rejects_bad`, `gate.format_accepts_good`
-- [ ] AC-7 → `gate.tidy_rejects_bad_naming`
-- [ ] AC-8 → `tools/check.sh` output, `ctest --preset asan` output
+- [x] AC-1 → configure/build
+- [x] AC-2 → `Version.AC2_MatchesProjectVersion`
+- [x] AC-3 → `Version.AC3_StringMatchesComponents`
+- [x] AC-4 → `ctest -N` listing
+- [x] AC-5 → `gate.warnings_are_errors`
+- [x] AC-6 → `gate.format_rejects_bad`, `gate.format_accepts_good`
+- [x] AC-7 → `gate.tidy_rejects_bad_naming`
+- [x] AC-8 → `tools/check.sh` output, `ctest --preset asan` output
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -231,3 +231,7 @@ Not applicable (no widgets).
 | 2026-11-01 | Spec and implementation plan approved | Emilio Pomares |
 | 2026-11-01 | Attached to EPIC-001; forward references to unnumbered specs replaced by names (docs only) | Emilio Pomares |
 | 2026-11-01 | **Red** on AppleClang 15.0.0, CMake 4.4.5, gtest 1.18.0 (vcpkg). `ctest -N` lists 6 tests. 5 fail for the planned reason: `AC2` (`kVersion.minor` 0 ≠ 1), `AC3` (`versionString()` `""` ≠ `"0.1.0"`), `gate.warnings_are_errors` / `gate.format_rejects_bad` / `gate.tidy_rejects_bad_naming` ("Expected the command to fail, but it succeeded"). `gate.format_accepts_good` passes (over-rejection guard, as planned). | Emilio Pomares (Red started on request) |
+| 2026-11-01 | Red re-verified on AppleClang 21.0.0 (macOS 27.2, Xcode 27.2 CLT): identical 5 failures. | Emilio Pomares |
+| 2026-11-01 | Plan deviation: the generated `version_config.hpp` is emitted to the build tree and exposed on the **public** include path (a public header includes it); behavior unchanged. | — (implementation detail) |
+| 2026-11-01 | clang-tidy 23 findings: `portability-avoid-pragma-once` and `readability-trailing-comma` disabled in `.clang-tidy`; `modernize-use-designated-initializers` kept; test amended (AC2 expected value uses designated initializers) and re-Red shown failing (`kVersion.minor` 0 ≠ 1), commit `8eefb3b`. LLVM pinned to 23 (ADR-0001 Amendment 1). | Emilio Pomares |
+| 2026-11-01 | **Green + Refactor**: `tools/check.sh` exit 0 (format 3 files, tidy 2 TUs, 6/6 tests); `ctest --preset asan` 6/6; `git diff 8eefb3b -- ':(glob)**/tests/**'` empty. All ACs verified. | Emilio Pomares (acknowledgement pending) |
