@@ -29,15 +29,23 @@ SDL3 adapter, and stays open until the user closes it.
 | 2 | [SPEC-0003 Window port + fake + contract tests](../specs/0003-window-port.md) | Done | SPEC-0002 |
 | 3 | [SPEC-0005 SDL3 window adapter](../specs/0005-sdl3-window-adapter.md) | Done | SPEC-0003, SPEC-0004 |
 | 4 | [SPEC-0006 Window close events](../specs/0006-window-close-events.md) | Done | SPEC-0003, SPEC-0005 |
-| 5 | [SPEC-0007 `hello_window` example](../specs/0007-hello-window-example.md) | Draft | SPEC-0005, SPEC-0006 |
+| 5 | `Clock` port + `FakeClock` | Planned | SPEC-0002 |
+| 6 | Window `waitEvents(timeout)` | Planned | `Clock` port, SPEC-0006 |
+| 7 | [SPEC-0007 `hello_window` example](../specs/0007-hello-window-example.md) | Draft (on hold: revise to use `waitEvents`) | `waitEvents`, SPEC-0005 |
 
 ## Notes
 - Open questions for the window port spec: window ownership (system-owned `WindowId`, recommended,
   vs caller-owned `unique_ptr<Window>`); empty title allowed (recommended) or error; size limits
   (reject ≤ 0 only, recommended).
+- 2026-11-01: event-loop pacing decided as **option B** (block in `waitEvents(timeout)` until an event
+  arrives or the timeout expires) instead of a fixed sleep. Testing the timeout deterministically needs
+  a `Clock` port with a `FakeClock` (CLAUDE.md §3: no wall-clock time in unit tests), hence specs 5 and
+  6. The full loop design (wait when idle, continuous frames when animating, host-owned loops) is
+  EPIC-003.
 - Relies on ADR-0004 (ports & adapters), ADR-0006 (logical units), ADR-0013 (errors), ADR-0018 (SDL3).
 
 ## Change Log
 | Date | Change | Approved by |
 |------|--------|-------------|
 | 2026-11-01 | Epic proposed and approved | Emilio Pomares |
+| 2026-11-01 | Spec list changed: `Clock` port and `waitEvents(timeout)` inserted before `hello_window` (pacing option B) | Emilio Pomares |

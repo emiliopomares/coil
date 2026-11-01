@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Draft |
+| Status | Draft (on hold: to be revised to use `waitEvents` once its spec is done) |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `examples/hello_window` (new); `tools/check.sh` (format and tidy cover `examples/`) |
@@ -228,3 +228,4 @@ Recommended answers are written into the spec. **Approving the spec confirms the
 | Date | Change | Approved by |
 |------|--------|-------------|
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
+| 2026-11-01 | Q1 decided: **option B** (`waitEvents(timeout)`) instead of the injected `idle` sleep. Spec on hold; §4, §5 and §10 will be revised after the `Clock` and `waitEvents` specs. | Emilio Pomares |
