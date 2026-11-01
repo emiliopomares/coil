@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `examples/hello_window` only |
@@ -187,22 +187,22 @@ All resolved as recommended (2026-11-01, Emilio Pomares).
   stays non-throwing (`bugprone-exception-escape` will confirm).
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log), except
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log), except
       the guard listed in §10.1
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally)
-- [ ] Sanitizer preset passes; macOS `leaks` reports 0 leaks for R5
-- [ ] Every AC ticked below with its proving test
-- [ ] **Manual check** (resize by dragging, minimum enforced, lines printed) done on macOS and recorded
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally)
+- [x] Sanitizer preset passes; macOS `leaks` reports 0 leaks for R5
+- [x] Every AC ticked below with its proving test
+- [x] **Manual check** (resize by dragging, minimum enforced, lines printed) done on macOS and recorded
 
 ### AC verification
-- [ ] AC-1 → `HelloWindow.R1_WindowIsResizableWithMinimumSize`
-- [ ] AC-2 → `HelloWindow.R2_LogsEachResizeOfItsWindow`
-- [ ] AC-3 → `HelloWindow.R3_IgnoresResizesOfOtherWindows`
-- [ ] AC-4 → `HelloWindow.R4_LogsTheClampedSize`
-- [ ] AC-5 → `HelloWindow.R5_LogsResizesOnSdl`
+- [x] AC-1 → `HelloWindow.R1_WindowIsResizableWithMinimumSize`
+- [x] AC-2 → `HelloWindow.R2_LogsEachResizeOfItsWindow`
+- [x] AC-3 → `HelloWindow.R3_IgnoresResizesOfOtherWindows`
+- [x] AC-4 → `HelloWindow.R4_LogsTheClampedSize`
+- [x] AC-5 → `HelloWindow.R5_LogsResizesOnSdl`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -210,3 +210,5 @@ All resolved as recommended (2026-11-01, Emilio Pomares).
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
 | 2026-11-01 | Q1–Q4 confirmed as recommended; spec and plan approved | Emilio Pomares |
 | 2026-11-01 | **Red**: R1 (not resizable, no limits), R2, R4 and R5 (empty log) fail on assertions; R3 passes as the planned guard; the five SPEC-0007 tests pass with the added stream argument (assertions unchanged); the other 107 tests pass. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
+| 2026-11-01 | **Green + Refactor**: the window is created with `resizable = true` and `{.min = kMinSize}`; each `Resized` event for it is written to `log` (`std::println`) before the close check. `tools/check.sh` exit 0 (116/116 tests); `ctest --preset asan` 116/116; macOS `leaks`: 0 leaks for R5. `git diff 37af2a5 -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
+| 2026-11-01 | **Manual check** (macOS 27.2, arm64): dragging resized the window; log `917x615`, `1512x949` (zoom to screen), `917x615`, `774x539`; exit code 0. Confirmed by the user ("all a-ok"). Acknowledged; Status → Done. | Emilio Pomares |
