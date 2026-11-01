@@ -346,7 +346,7 @@ TYPED_TEST_P(WindowSystemContract, RS4_UserResizeIsReportedAsResized) {
     EXPECT_EQ(this->sizeOf(a), newSize);
 }
 
-TYPED_TEST_P(WindowSystemContract, RS5_ResizesAreReportedInOrder) {
+TYPED_TEST_P(WindowSystemContract, RS5_PendingResizesAreCoalesced) {
     WindowSystem& system = this->system();
     const WindowId a = this->create("A", {.width = 100, .height = 100});
     const WindowSize first{.width = 200, .height = 150};
@@ -354,8 +354,7 @@ TYPED_TEST_P(WindowSystemContract, RS5_ResizesAreReportedInOrder) {
     ASSERT_TRUE(succeeds(system.setSize(a, first)));
     ASSERT_TRUE(succeeds(system.setSize(a, second)));
     EXPECT_EQ(system.waitEvents(std::chrono::seconds{1}),
-              (std::vector<WindowEvent>{Resized{.window = a, .size = first},
-                                        Resized{.window = a, .size = second}}));
+              (std::vector<WindowEvent>{Resized{.window = a, .size = second}}));
     EXPECT_EQ(this->sizeOf(a), second);
 }
 
@@ -381,7 +380,7 @@ REGISTER_TYPED_TEST_SUITE_P(WindowSystemContract, AC1_CreateReturnsValidIdAndLis
                             WE2_WaitTimesOutEmpty, WE3_WaitedEventsAreDeliveredOnce,
                             WE4_NegativeTimeoutNeverBlocks, RS1_SetSizeIsReportedAsResized,
                             RS2_SetSameSizeProducesNoEvent, RS3_SetSizeRejectsBadInputWithoutEvents,
-                            RS4_UserResizeIsReportedAsResized, RS5_ResizesAreReportedInOrder,
+                            RS4_UserResizeIsReportedAsResized, RS5_PendingResizesAreCoalesced,
                             RS6_ResizesOfDestroyedWindowsAreDropped);
 
 } // namespace coil::platform

@@ -40,7 +40,7 @@ logical size. Later specs add the resizable flag and limits (spec 2) and pixel s
   fixed-size, so only the program (or a test) can resize them.
 - Pixel size, display scale, `PIXEL_SIZE_CHANGED`, `DISPLAY_SCALE_CHANGED` (EPIC-005 spec 3).
 - Position, maximize, minimize and fullscreen.
-- Coalescing or throttling resize events during a live drag.
+- Throttling resize events during a live drag (beyond the coalescing in rule 9).
 - `hello_window` changes (EPIC-005 spec 4).
 
 ## 4. Behavior Specification
@@ -103,6 +103,11 @@ public:
    window. Other SDL window events remain ignored. If `SDL_SetWindowSize` fails, `setSize` fails with
    `Internal` and SDL's message.
 8. Fake: `userResize` follows rules 1–4 exactly like `setSize` (errors, change, no-op on the same size).
+9. **Coalescing** (amendment, 2026-11-01): at most one `Resized` per window is pending at a time. A new
+   resize of a window whose previous `Resized` has not been returned yet removes that older event,
+   and the new event goes to the end of the queue. The latest size is therefore never lost, but
+   intermediate sizes may never be seen. This is SDL's own behavior: `SDL_windowevents.c` drops
+   superseded `RESIZED` events "to fix queue overflow". The fake does the same.
 
 ### 4.3 Error handling and edge cases
 | Condition | Result |
@@ -110,7 +115,7 @@ public:
 | Unknown or destroyed id | `NotFound`, no event |
 | Width or height ≤ 0 | `InvalidArgument`, no event, size unchanged |
 | Same size as current | Success, no event |
-| Two resizes before polling | Two `Resized` events, in order; `size()` = the last one |
+| Two resizes before polling | One `Resized` with the last size (rule 9); `size()` = the last one |
 | OS adjusts the requested size (e.g. limits, spec 2) | Success; `Resized` carries the applied size |
 
 ### 4.4 Threading and lifetime
@@ -134,7 +139,7 @@ Contract tests run on both the fake and SDL (`dummy`). RS<n> = AC-<n>.
 - **AC-4 (RS4)** — Given a window resized by the user (trait `userResize`, to 320×240), waiting for
   events yields exactly `Resized{id, 320×240}`, and `size(id)` is 320×240.
 - **AC-5 (RS5)** — Given two `setSize` calls (200×150, then 300×200) before any event call, the events
-  are `Resized{200×150}` then `Resized{300×200}`, in that order, and `size(id)` is 300×200.
+  are exactly `Resized{300×200}` (coalesced, rule 9), and `size(id)` is 300×200.
 - **AC-6 (RS6)** — Given windows A and B, both resized, and A destroyed before events are read, only
   B's `Resized` is delivered.
 - **AC-7 (RS7)** — Fake: `userResize` fails with `NotFound` for an unknown id and with
@@ -147,7 +152,7 @@ Contract tests run on both the fake and SDL (`dummy`). RS<n> = AC-<n>.
 | AC-2 | `…RS2_SetSameSizeProducesNoEvent` | contract | |
 | AC-3 | `…RS3_SetSizeRejectsBadInputWithoutEvents` | contract | |
 | AC-4 | `…RS4_UserResizeIsReportedAsResized` | contract | trait `userResize` |
-| AC-5 | `…RS5_ResizesAreReportedInOrder` | contract | |
+| AC-5 | `…RS5_PendingResizesAreCoalesced` | contract | |
 | AC-6 | `…RS6_ResizesOfDestroyedWindowsAreDropped` | contract | |
 | AC-7 | `FakeWindowSystem.RS7_UserResizeValidatesLikeSetSize` | unit | fake only |
 
@@ -203,8 +208,8 @@ All resolved as recommended (2026-11-01, Emilio Pomares).
      - Fail, fake only: RS7 (the `userResize` stub succeeds).
      - Pass as guard: RS2 (no event is correct for a same-size resize, which is where the stubs start).
 2. **Green:**
-   - Fake: validate the id and size; if the size differs, update it and queue `Resized`. `userResize`
-     shares the same code path.
+   - Fake: validate the id and size; if the size differs, update it, remove any pending `Resized` for
+     that window, and queue the new one. `userResize` shares the same code path.
    - SDL: validate; call `SDL_SetWindowSize` (and report its error if it fails); translate
      `SDL_EVENT_WINDOW_RESIZED`.
 3. **Refactor:** `tools/check.sh`, `asan`, macOS `leaks` on the SDL RS tests; update docs (EPIC-005, Change Log).
@@ -253,7 +258,7 @@ All resolved as recommended (2026-11-01, Emilio Pomares).
 - [ ] AC-2 → `…RS2_SetSameSizeProducesNoEvent` (Fake, Sdl3)
 - [ ] AC-3 → `…RS3_SetSizeRejectsBadInputWithoutEvents` (Fake, Sdl3)
 - [ ] AC-4 → `…RS4_UserResizeIsReportedAsResized` (Fake, Sdl3)
-- [ ] AC-5 → `…RS5_ResizesAreReportedInOrder` (Fake, Sdl3)
+- [ ] AC-5 → `…RS5_PendingResizesAreCoalesced` (Fake, Sdl3)
 - [ ] AC-6 → `…RS6_ResizesOfDestroyedWindowsAreDropped` (Fake, Sdl3)
 - [ ] AC-7 → `FakeWindowSystem.RS7_UserResizeValidatesLikeSetSize`
 
@@ -263,3 +268,4 @@ All resolved as recommended (2026-11-01, Emilio Pomares).
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
 | 2026-11-01 | Q1–Q4 confirmed as recommended; spec and plan approved | Emilio Pomares |
 | 2026-11-01 | **Red**: 11 tests fail on assertions: RS1, RS3, RS4, RS5 and RS6 for both Fake and Sdl3 (missing `Resized` events; stubs succeed where `InvalidArgument` / `NotFound` is required), and RS7 (fake). RS2 (×2) passes as the planned guard; the other 84 tests pass. File list amended: `hello_window`'s two test doubles gain `setSize` (forwarding, and `NotFound`), forced by the new pure virtual. The fake's `userResize` stub delegates to the `setSize` stub (shared path, rule 8). `tools/check.sh` format, layering and tidy clean. | Emilio Pomares (amendment pending acknowledgement) |
+| 2026-11-01 | **Amendment A** (found in Green: SDL coalesces pending `RESIZED` events per window): rule 9 added, §4.3 and AC-5 changed, RS5 renamed `RS5_PendingResizesAreCoalesced` and now expects one coalesced event. Out of Scope keeps only throttling. Per CLAUDE.md §3 the corrected test goes through Red again. | Emilio Pomares |
