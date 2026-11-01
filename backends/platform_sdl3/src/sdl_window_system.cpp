@@ -193,6 +193,20 @@ public:
         return {};
     }
 
+    [[nodiscard]] Expected<bool> resizable(platform::WindowId /*id*/) const override {
+        return false; // Red stub (SPEC-0011).
+    }
+
+    [[nodiscard]] Expected<platform::WindowSizeLimits>
+    sizeLimits(platform::WindowId /*id*/) const override {
+        return platform::WindowSizeLimits{}; // Red stub (SPEC-0011).
+    }
+
+    [[nodiscard]] Expected<void> setSizeLimits(platform::WindowId /*id*/,
+                                               platform::WindowSizeLimits /*limits*/) override {
+        return {}; // Red stub (SPEC-0011).
+    }
+
     [[nodiscard]] std::vector<platform::WindowEvent> pollEvents() override {
         std::vector<platform::WindowEvent> events;
         SDL_Event event;

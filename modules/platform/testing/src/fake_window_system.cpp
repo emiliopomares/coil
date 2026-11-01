@@ -113,6 +113,18 @@ Expected<void> FakeWindowSystem::setSize(WindowId id, WindowSize size) {
     return {};
 }
 
+Expected<bool> FakeWindowSystem::resizable(WindowId /*id*/) const {
+    return false; // Red stub (SPEC-0011).
+}
+
+Expected<WindowSizeLimits> FakeWindowSystem::sizeLimits(WindowId /*id*/) const {
+    return WindowSizeLimits{}; // Red stub (SPEC-0011).
+}
+
+Expected<void> FakeWindowSystem::setSizeLimits(WindowId /*id*/, WindowSizeLimits /*limits*/) {
+    return {}; // Red stub (SPEC-0011).
+}
+
 std::vector<WindowEvent> FakeWindowSystem::pollEvents() {
     std::vector<WindowEvent> events = std::exchange(m_events, {});
     // Events for windows destroyed since they were queued are dropped (SPEC-0006 rule 4).

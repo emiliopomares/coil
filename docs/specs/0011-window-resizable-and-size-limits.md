@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Draft |
+| Status | Approved |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::platform` (port, fake, contract suite); `backends/platform_sdl3` |
@@ -17,7 +17,7 @@
 > - [x] Touches ≤ 2 modules (`platform`, `backends/platform_sdl3`); no new dependency or edge. The
 >       `hello_window` test doubles get mechanical overrides, as in SPEC-0010.
 > - [x] Out-of-scope section is filled in
-> - [ ] Open Questions section is empty (recommended answers; approving the spec confirms them, §9)
+> - [x] Open Questions section is resolved (§9)
 
 ---
 
@@ -186,7 +186,7 @@ clamping to the limits the adapter set. That is exactly the path a user drag tak
   `hello_window` test doubles.
 
 ## 9. Open Questions
-Recommended answers are written into the spec. **Approving the spec confirms them.**
+All resolved as recommended (2026-11-01, Emilio Pomares).
 - **Q1 — Default for `resizable`?** *Recommended: `false`.* It keeps today's behavior, and
   `hello_window` opts in explicitly in spec 4. The alternative, `true`, would match most desktop apps
   but silently changes existing windows.
@@ -272,3 +272,5 @@ Recommended answers are written into the spec. **Approving the spec confirms the
 | Date | Change | Approved by |
 |------|--------|-------------|
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
+| 2026-11-01 | Q1–Q4 confirmed as recommended; spec and plan approved | Emilio Pomares |
+| 2026-11-01 | **Red**: 14 tests fail on assertions: SL1–SL7 for both Fake and Sdl3 (stubs report `false` / empty limits, ignore limits and clamping, and succeed where `InvalidArgument` / `NotFound` is required). No guards, as planned; the other 97 tests pass. The `hello_window` test doubles gain the three overrides. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |

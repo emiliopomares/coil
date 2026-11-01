@@ -34,6 +34,9 @@ public:
     [[nodiscard]] Expected<void> setTitle(WindowId id, std::string_view title) override;
     [[nodiscard]] Expected<WindowSize> size(WindowId id) const override;
     [[nodiscard]] Expected<void> setSize(WindowId id, WindowSize size) override;
+    [[nodiscard]] Expected<bool> resizable(WindowId id) const override;
+    [[nodiscard]] Expected<WindowSizeLimits> sizeLimits(WindowId id) const override;
+    [[nodiscard]] Expected<void> setSizeLimits(WindowId id, WindowSizeLimits limits) override;
     [[nodiscard]] std::vector<WindowEvent> pollEvents() override;
     [[nodiscard]] std::vector<WindowEvent> waitEvents(Clock::Duration timeout) override;
 

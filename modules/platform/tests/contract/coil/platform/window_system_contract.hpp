@@ -21,6 +21,7 @@
 #include <cstdint>
 #include <format>
 #include <memory>
+#include <optional>
 #include <ostream>
 #include <set>
 #include <string>
@@ -41,6 +42,17 @@ inline std::ostream& operator<<(std::ostream& os, WindowId id) {
 
 inline std::ostream& operator<<(std::ostream& os, WindowSize size) {
     return os << "WindowSize{" << size.width << ", " << size.height << "}";
+}
+
+inline std::ostream& operator<<(std::ostream& os, const std::optional<WindowSize>& bound) {
+    if (bound.has_value()) {
+        return os << *bound;
+    }
+    return os << "none";
+}
+
+inline std::ostream& operator<<(std::ostream& os, const WindowSizeLimits& limits) {
+    return os << "WindowSizeLimits{min=" << limits.min << ", max=" << limits.max << "}";
 }
 
 inline std::ostream& operator<<(std::ostream& os, const WindowEvent& event) {
@@ -85,6 +97,20 @@ protected:
             m_system->createWindow(WindowDesc{.title = std::move(title), .size = size});
         EXPECT_TRUE(succeeds(result));
         return result.value_or(WindowId{});
+    }
+
+    /// Creates a window from a full description; returns WindowId{} on failure.
+    WindowId createWith(const WindowDesc& desc) {
+        const Expected<WindowId> result = m_system->createWindow(desc);
+        EXPECT_TRUE(succeeds(result));
+        return result.value_or(WindowId{});
+    }
+
+    /// Size limits of a window; empty limits (and a test failure) if the query fails.
+    WindowSizeLimits limitsOf(WindowId id) {
+        const Expected<WindowSizeLimits> result = m_system->sizeLimits(id);
+        EXPECT_TRUE(succeeds(result));
+        return result.value_or(WindowSizeLimits{});
     }
 
     /// Simulates the OS asking to close `id`, in the implementation's own way (SPEC-0006).
@@ -370,6 +396,146 @@ TYPED_TEST_P(WindowSystemContract, RS6_ResizesOfDestroyedWindowsAreDropped) {
               (std::vector<WindowEvent>{Resized{.window = b, .size = newSize}}));
 }
 
+// SPEC-0011: resizable windows and size limits (SL<n> = SPEC-0011 AC-<n>).
+
+TYPED_TEST_P(WindowSystemContract, SL1_ResizableIsSetAtCreation) {
+    const WindowSystem& system = this->system();
+    const WindowId fixed = this->create("Fixed", {.width = 100, .height = 100});
+    const WindowId resizable = this->createWith(
+        {.title = "Resizable", .size = {.width = 100, .height = 100}, .resizable = true});
+
+    const Expected<bool> resizableFlag = system.resizable(resizable);
+    ASSERT_TRUE(succeeds(resizableFlag));
+    EXPECT_TRUE(*resizableFlag);
+    const Expected<bool> fixedFlag = system.resizable(fixed);
+    ASSERT_TRUE(succeeds(fixedFlag));
+    EXPECT_FALSE(*fixedFlag);
+}
+
+TYPED_TEST_P(WindowSystemContract, SL2_LimitsAreSetAtCreation) {
+    const WindowSizeLimits limits{.min = WindowSize{.width = 200, .height = 100},
+                                  .max = WindowSize{.width = 800, .height = 600}};
+    const WindowId limited = this->createWith(
+        {.title = "Limited", .size = {.width = 400, .height = 300}, .limits = limits});
+    const WindowId unlimited = this->create("Unlimited", {.width = 400, .height = 300});
+
+    EXPECT_EQ(this->limitsOf(limited), limits);
+    EXPECT_EQ(this->limitsOf(unlimited), WindowSizeLimits{});
+}
+
+TYPED_TEST_P(WindowSystemContract, SL3_CreateRejectsInvalidLimitsAndSizes) {
+    WindowSystem& system = this->system();
+    const WindowSize size{.width = 400, .height = 300};
+    const WindowSize min{.width = 200, .height = 100};
+    const WindowSize max{.width = 800, .height = 600};
+    const std::array<WindowDesc, 6> invalid{{
+        {.title = "MinWiderThanMax",
+         .size = size,
+         .limits = {.min = WindowSize{.width = 900, .height = 100}, .max = max}},
+        {.title = "MinTallerThanMax",
+         .size = size,
+         .limits = {.min = WindowSize{.width = 200, .height = 700}, .max = max}},
+        {.title = "ZeroMin",
+         .size = size,
+         .limits = {.min = WindowSize{.width = 0, .height = 100}}},
+        {.title = "NegativeMax",
+         .size = size,
+         .limits = {.max = WindowSize{.width = 800, .height = -1}}},
+        {.title = "BelowMin", .size = {.width = 100, .height = 300}, .limits = {.min = min}},
+        {.title = "AboveMax", .size = {.width = 900, .height = 300}, .limits = {.max = max}},
+    }};
+    for (const WindowDesc& desc : invalid) {
+        EXPECT_TRUE(failsWith(system.createWindow(desc), ErrorCode::InvalidArgument)) << desc.title;
+    }
+    EXPECT_TRUE(system.windows().empty());
+}
+
+TYPED_TEST_P(WindowSystemContract, SL4_SetSizeIsClampedToLimits) {
+    WindowSystem& system = this->system();
+    const WindowSizeLimits limits{.min = WindowSize{.width = 200, .height = 100},
+                                  .max = WindowSize{.width = 800, .height = 600}};
+    const WindowId a =
+        this->createWith({.title = "A", .size = {.width = 400, .height = 300}, .limits = limits});
+    const WindowSize clamped{.width = 800, .height = 100};
+
+    ASSERT_TRUE(succeeds(system.setSize(a, {.width = 1000, .height = 50})));
+    EXPECT_EQ(system.waitEvents(std::chrono::seconds{1}),
+              (std::vector<WindowEvent>{Resized{.window = a, .size = clamped}}));
+    EXPECT_EQ(this->sizeOf(a), clamped);
+
+    EXPECT_TRUE(succeeds(system.setSize(a, clamped)));
+    EXPECT_EQ(system.pollEvents(), std::vector<WindowEvent>{});
+}
+
+TYPED_TEST_P(WindowSystemContract, SL5_NewLimitsResizeTheWindow) {
+    WindowSystem& system = this->system();
+    const WindowId a = this->create("A", {.width = 400, .height = 300});
+
+    const WindowSizeLimits maxOnly{.max = WindowSize{.width = 300, .height = 200}};
+    ASSERT_TRUE(succeeds(system.setSizeLimits(a, maxOnly)));
+    EXPECT_EQ(
+        system.waitEvents(std::chrono::seconds{1}),
+        (std::vector<WindowEvent>{Resized{.window = a, .size = {.width = 300, .height = 200}}}));
+    EXPECT_EQ(this->limitsOf(a), maxOnly);
+
+    const WindowSizeLimits minOnly{.min = WindowSize{.width = 500, .height = 400}};
+    ASSERT_TRUE(succeeds(system.setSizeLimits(a, minOnly)));
+    EXPECT_EQ(
+        system.waitEvents(std::chrono::seconds{1}),
+        (std::vector<WindowEvent>{Resized{.window = a, .size = {.width = 500, .height = 400}}}));
+    EXPECT_EQ(this->limitsOf(a), minOnly);
+    EXPECT_EQ(this->sizeOf(a), (WindowSize{.width = 500, .height = 400}));
+}
+
+TYPED_TEST_P(WindowSystemContract, SL6_SetLimitsRejectsBadInputWithoutEvents) {
+    WindowSystem& system = this->system();
+    const WindowSize initial{.width = 400, .height = 300};
+    const WindowId a = this->create("A", initial);
+    const WindowId destroyed = this->create("B", initial);
+    ASSERT_TRUE(succeeds(system.destroyWindow(destroyed)));
+
+    const WindowSize max{.width = 800, .height = 600};
+    const std::array<WindowSizeLimits, 4> invalid{{
+        {.min = WindowSize{.width = 900, .height = 100}, .max = max},
+        {.min = WindowSize{.width = 200, .height = 700}, .max = max},
+        {.min = WindowSize{.width = 0, .height = 100}},
+        {.max = WindowSize{.width = 800, .height = -1}},
+    }};
+    for (const WindowSizeLimits& limits : invalid) {
+        EXPECT_TRUE(failsWith(system.setSizeLimits(a, limits), ErrorCode::InvalidArgument))
+            << ::testing::PrintToString(limits);
+    }
+    EXPECT_EQ(system.pollEvents(), std::vector<WindowEvent>{});
+    EXPECT_EQ(this->limitsOf(a), WindowSizeLimits{});
+    EXPECT_EQ(this->sizeOf(a), initial);
+
+    for (const WindowId gone : {destroyed, WindowId{.value = 999}}) {
+        EXPECT_TRUE(failsWith(system.resizable(gone), ErrorCode::NotFound));
+        EXPECT_TRUE(failsWith(system.sizeLimits(gone), ErrorCode::NotFound));
+        EXPECT_TRUE(failsWith(system.setSizeLimits(gone, {}), ErrorCode::NotFound));
+    }
+}
+
+TYPED_TEST_P(WindowSystemContract, SL7_UserResizeIsClampedToLimits) {
+    WindowSystem& system = this->system();
+    const WindowId a =
+        this->createWith({.title = "A",
+                          .size = {.width = 200, .height = 100},
+                          .resizable = true,
+                          .limits = {.max = WindowSize{.width = 300, .height = 200}}});
+    const WindowSize requested{.width = 640, .height = 480};
+
+    this->userResize(a, requested);
+    EXPECT_EQ(
+        system.waitEvents(std::chrono::seconds{1}),
+        (std::vector<WindowEvent>{Resized{.window = a, .size = {.width = 300, .height = 200}}}));
+
+    ASSERT_TRUE(succeeds(system.setSizeLimits(a, {})));
+    this->userResize(a, requested);
+    EXPECT_EQ(system.waitEvents(std::chrono::seconds{1}),
+              (std::vector<WindowEvent>{Resized{.window = a, .size = requested}}));
+}
+
 REGISTER_TYPED_TEST_SUITE_P(WindowSystemContract, AC1_CreateReturnsValidIdAndListsWindow,
                             AC2_ReportsTitleAndSizeFromDesc, AC3_SetTitleChangesOnlyThatWindow,
                             AC4_RejectsNonPositiveSize, AC5_DestroyedWindowIsNotFound,
@@ -381,6 +547,10 @@ REGISTER_TYPED_TEST_SUITE_P(WindowSystemContract, AC1_CreateReturnsValidIdAndLis
                             WE4_NegativeTimeoutNeverBlocks, RS1_SetSizeIsReportedAsResized,
                             RS2_SetSameSizeProducesNoEvent, RS3_SetSizeRejectsBadInputWithoutEvents,
                             RS4_UserResizeIsReportedAsResized, RS5_PendingResizesAreCoalesced,
-                            RS6_ResizesOfDestroyedWindowsAreDropped);
+                            RS6_ResizesOfDestroyedWindowsAreDropped, SL1_ResizableIsSetAtCreation,
+                            SL2_LimitsAreSetAtCreation, SL3_CreateRejectsInvalidLimitsAndSizes,
+                            SL4_SetSizeIsClampedToLimits, SL5_NewLimitsResizeTheWindow,
+                            SL6_SetLimitsRejectsBadInputWithoutEvents,
+                            SL7_UserResizeIsClampedToLimits);
 
 } // namespace coil::platform

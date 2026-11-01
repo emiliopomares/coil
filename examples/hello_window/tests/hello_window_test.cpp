@@ -30,6 +30,7 @@ using coil::platform::WindowDesc;
 using coil::platform::WindowEvent;
 using coil::platform::WindowId;
 using coil::platform::WindowSize;
+using coil::platform::WindowSizeLimits;
 using coil::platform::WindowSystem;
 using coil::platform::testing::FakeWindowSystem;
 using hello_window::kIdleTimeout;
@@ -87,6 +88,18 @@ public:
 
     [[nodiscard]] Expected<void> setSize(WindowId id, WindowSize size) override {
         return m_inner.setSize(id, size);
+    }
+
+    [[nodiscard]] Expected<bool> resizable(WindowId id) const override {
+        return m_inner.resizable(id);
+    }
+
+    [[nodiscard]] Expected<WindowSizeLimits> sizeLimits(WindowId id) const override {
+        return m_inner.sizeLimits(id);
+    }
+
+    [[nodiscard]] Expected<void> setSizeLimits(WindowId id, WindowSizeLimits limits) override {
+        return m_inner.setSizeLimits(id, limits);
     }
 
     [[nodiscard]] std::vector<WindowEvent> pollEvents() override {
@@ -147,6 +160,16 @@ public:
     [[nodiscard]] Expected<WindowSize> size(WindowId id) const override { return notFound(id); }
 
     [[nodiscard]] Expected<void> setSize(WindowId id, WindowSize /*size*/) override {
+        return notFound(id);
+    }
+
+    [[nodiscard]] Expected<bool> resizable(WindowId id) const override { return notFound(id); }
+
+    [[nodiscard]] Expected<WindowSizeLimits> sizeLimits(WindowId id) const override {
+        return notFound(id);
+    }
+
+    [[nodiscard]] Expected<void> setSizeLimits(WindowId id, WindowSizeLimits /*limits*/) override {
         return notFound(id);
     }
 

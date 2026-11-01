@@ -4,6 +4,7 @@
 #include <coil/platform/clock.hpp>
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <variant>
@@ -27,10 +28,21 @@ struct WindowSize {
     friend constexpr bool operator==(WindowSize, WindowSize) = default;
 };
 
+/// The range a window's size must stay in (SPEC-0011). Each bound is optional; both dimensions of
+/// a bound must be > 0, and min must not exceed max in either dimension.
+struct WindowSizeLimits {
+    std::optional<WindowSize> min; ///< No minimum when empty.
+    std::optional<WindowSize> max; ///< No maximum when empty.
+
+    friend constexpr bool operator==(const WindowSizeLimits&, const WindowSizeLimits&) = default;
+};
+
 /// Parameters for creating a window.
 struct WindowDesc {
-    std::string title; ///< UTF-8. May be empty.
-    WindowSize size;   ///< Both dimensions must be > 0.
+    std::string title;         ///< UTF-8. May be empty.
+    WindowSize size;           ///< Both dimensions must be > 0, and within `limits`.
+    bool resizable = false;    ///< Whether the user may resize the window (e.g. by dragging edges).
+    WindowSizeLimits limits{}; ///< Applies to every size change.
 };
 
 /// The OS or the user asked to close a window (close button, Cmd+W, Alt+F4, ...).
@@ -86,6 +98,17 @@ public:
     /// size by the time that event has been returned. No event if the size does not change.
     /// Fails with InvalidArgument for a non-positive size and NotFound for an unknown window.
     [[nodiscard]] virtual Expected<void> setSize(WindowId id, WindowSize size) = 0;
+
+    /// Whether the user may resize the window. Fails with NotFound for an unknown window.
+    [[nodiscard]] virtual Expected<bool> resizable(WindowId id) const = 0;
+
+    /// The window's current size limits. Fails with NotFound for an unknown window.
+    [[nodiscard]] virtual Expected<WindowSizeLimits> sizeLimits(WindowId id) const = 0;
+
+    /// Replaces the window's size limits. If the current size is outside them, the window is
+    /// resized to the nearest size inside (reported by Resized). Fails with InvalidArgument for
+    /// invalid limits and NotFound for an unknown window.
+    [[nodiscard]] virtual Expected<void> setSizeLimits(WindowId id, WindowSizeLimits limits) = 0;
 
     /// Returns all events that occurred since the previous call, in order; each event is returned
     /// once. Events for windows destroyed before this call are dropped. Non-blocking.
