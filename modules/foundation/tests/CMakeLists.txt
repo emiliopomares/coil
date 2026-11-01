@@ -1,4 +1,4 @@
-coil_add_tests(foundation SOURCES version_test.cpp)
+coil_add_tests(foundation SOURCES error_test.cpp version_test.cpp)
 
 # The expected version comes straight from the CMake project, so the test does not re-read the
 # header under test (SPEC-0001, section 10.3).
