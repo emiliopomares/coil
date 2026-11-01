@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Done (pending acknowledgement) |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | tooling (`tools/`), gate tests (`tests/`). No library module changes |
@@ -289,4 +289,5 @@ and `EXPECT_COUNT_<n>=<regex>` arguments. It is created in this spec.
 | 2026-11-01 | Spec and plan approved (Q2: `tools/layering.json`; Q3: Python ≥ 3.9 stdlib). Docs step also fixes the OVERVIEW §2 diagram (fakes in `modules/<m>/testing/`) and narrows ADR-0003 to that location. | Emilio Pomares |
 | 2026-11-01 | Amendment (found while preparing Red): generated headers. `version.hpp` includes `<coil/foundation/version_config.hpp>`, which only exists in the build tree. Rule 5 now resolves configured headers through their `.hpp.in` template under a module's `include/` root; the template moves there; new acceptance test `AC5_AcceptsConfiguredHeaderTemplate`. | Emilio Pomares |
 | 2026-11-01 | **Red** (commit `8ad0841`): 9 rejection tests fail (stub exits 0); 4 acceptance guards pass (AC1, AC2-accept, AC4-accept, AC5-accept). Every assertion validated beforehand against simulated ideal checker output. | Emilio Pomares |
-| 2026-11-01 | **Green + Refactor**: checker implemented (include scanning with block-comment skipping, header index over include/testing/contract roots incl. `.hpp.in` templates, direct-edge + foundation rules, config validation with cycle detection, sorted output). Template moved to `modules/foundation/include/coil/foundation/version_config.hpp.in`. `tools/check.sh` exit 0 (format, layering, tidy, 35/35 tests); `ctest --preset asan` 35/35; `git diff 8ad0841 -- ':(glob)**/tests/**'` empty. Docs: OVERVIEW §2 diagram (fakes not in `backends/`) and §3 (direct edges + foundation; `layering.json` authoritative), ADR-0002 (Python ≥ 3.9), ADR-0003 (fakes only in `modules/<m>/testing/`), CLAUDE.md §1/§4/§7. | Emilio Pomares (acknowledgement pending) |
+| 2026-11-01 | **Green + Refactor**: checker implemented (include scanning with block-comment skipping, header index over include/testing/contract roots incl. `.hpp.in` templates, direct-edge + foundation rules, config validation with cycle detection, sorted output). Template moved to `modules/foundation/include/coil/foundation/version_config.hpp.in`. `tools/check.sh` exit 0 (format, layering, tidy, 35/35 tests); `ctest --preset asan` 35/35; `git diff 8ad0841 -- ':(glob)**/tests/**'` empty. Docs: OVERVIEW §2 diagram (fakes not in `backends/`) and §3 (direct edges + foundation; `layering.json` authoritative), ADR-0002 (Python ≥ 3.9), ADR-0003 (fakes only in `modules/<m>/testing/`), CLAUDE.md §1/§4/§7. | Emilio Pomares |
+| 2026-11-01 | Closed (Done) | Emilio Pomares |
