@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Done (pending acknowledgement) |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::platform` (port, `SystemClock`), `coil::platform_testing` (`FakeClock`) |
@@ -249,4 +249,5 @@ change, approved together with this spec.
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
 | 2026-11-01 | Spec and plan approved | Emilio Pomares |
 | 2026-11-01 | **Red**: AC-2…AC-6 fail on assertions (stub clocks fixed at zero; `advance` ignored); CL1 passes for both clocks as planned guards. Test code clang-tidy clean before freezing (only finding in stub code). | Emilio Pomares |
-| 2026-11-01 | **Green + Refactor**: `SystemClock` returns `steady_clock::now()`; `FakeClock` stores its time, `advance` rejects negative steps with `InvalidArgument`. `tools/check.sh` exit 0 (66/66 tests); `ctest --preset asan` 66/66; `git diff e510518 -- ':(glob)**/tests/**'` empty. OVERVIEW §3 notes std-only port implementations may live in `modules/`. | Emilio Pomares (acknowledgement pending) |
+| 2026-11-01 | **Green + Refactor**: `SystemClock` returns `steady_clock::now()`; `FakeClock` stores its time, `advance` rejects negative steps with `InvalidArgument`. `tools/check.sh` exit 0 (66/66 tests); `ctest --preset asan` 66/66; `git diff e510518 -- ':(glob)**/tests/**'` empty. OVERVIEW §3 notes std-only port implementations may live in `modules/`. | Emilio Pomares |
+| 2026-11-01 | Closed (Done) | Emilio Pomares |
