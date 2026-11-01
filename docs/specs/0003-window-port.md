@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Done (pending acknowledgement) |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::platform` (new), including its test-support library `coil::platform_testing` |
@@ -305,4 +305,5 @@ after Red. Future adapters reuse it but cannot weaken it.
 | 2026-11-01 | Pre-freeze lint of Red tests: `PrintTo` replaced by `operator<<`, one `const` added (test code); `readability-identifier-naming.ClassIgnoredRegexp: '^AC[0-9]+_[A-Za-z0-9]+$'` added to `modules/platform/tests/.clang-tidy` only, because `TYPED_TEST_P` uses test names as class names. | Emilio Pomares |
 | 2026-11-01 | **Red** (AppleClang 21): all 7 contract tests fail on assertions against the stub fake (ids `WindowId{0}`, empty titles, invalid sizes accepted, `NotFound` cases succeed, AC-7 id reused 100×); 15 pre-existing tests pass (15/22). Test code clang-tidy clean before freezing. | Emilio Pomares |
 | 2026-11-01 | `.gitignore` fix: `Testing/` matched `modules/platform/testing/` on case-insensitive macOS; pattern anchored to `/Testing/` and the local Red commit amended (`12e40bd`) to include the fake. | Emilio Pomares |
-| 2026-11-01 | **Green + Refactor**: `FakeWindowSystem` implemented (creation-ordered vector, id counter from 1, `NotFound`/`InvalidArgument` errors with messages). Apple linker duplicate-library notice silenced for test executables (`LINKER:-no_warn_duplicate_libraries`, with rationale in `CoilModule.cmake`). `tools/check.sh` exit 0 (format 12 files, tidy 7 TUs, 22/22 tests); `ctest --preset asan` 22/22; `git diff 12e40bd -- ':(glob)**/tests/**'` empty. OVERVIEW §3 documents the test-support and contract conventions. | Emilio Pomares (acknowledgement pending) |
+| 2026-11-01 | **Green + Refactor**: `FakeWindowSystem` implemented (creation-ordered vector, id counter from 1, `NotFound`/`InvalidArgument` errors with messages). Apple linker duplicate-library notice silenced for test executables (`LINKER:-no_warn_duplicate_libraries`, with rationale in `CoilModule.cmake`). `tools/check.sh` exit 0 (format 12 files, tidy 7 TUs, 22/22 tests); `ctest --preset asan` 22/22; `git diff 12e40bd -- ':(glob)**/tests/**'` empty. OVERVIEW §3 documents the test-support and contract conventions. | Emilio Pomares |
+| 2026-11-01 | Closed (Done) | Emilio Pomares |
