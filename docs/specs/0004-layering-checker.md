@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Draft |
+| Status | In Progress |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | tooling (`tools/`), gate tests (`tests/`). No library module changes |
@@ -16,7 +16,7 @@
 > - [x] ≤ 8 acceptance criteria
 > - [x] Touches ≤ 2 areas (tools, gate tests); no new library dependency
 > - [x] Out-of-scope section is filled in
-> - [ ] Open Questions section is empty (three confirmations pending, see §9)
+> - [x] Open Questions section is empty
 
 ---
 
@@ -195,7 +195,7 @@ and `EXPECT_COUNT_<n>=<regex>` arguments. It is created in this spec.
 - No library or ABI impact.
 
 ## 9. Open Questions
-Recommended answers are written into the spec. **Approving the spec confirms them.**
+*None.* Q1 decided (option C); Q2 and Q3 confirmed as recommended by approval on 2026-11-01. Rationale kept below.
 - **Q1 — May a module include headers of its *indirect* dependencies?** **Decided 2026-11-01: no
   (option C).** Only direct dependencies, plus `foundation`, which every module and backend may
   include. Transitive inclusion was rejected because it lets a module bypass the layer below it (e.g.
@@ -280,3 +280,4 @@ Recommended answers are written into the spec. **Approving the spec confirms the
 |------|--------|-------------|
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
 | 2026-11-01 | Q1 decided: direct edges only + `foundation` always allowed (option C); rules 1 and 7, AC-2, AC-6 and test plan updated | Emilio Pomares |
+| 2026-11-01 | Spec and plan approved (Q2: `tools/layering.json`; Q3: Python ≥ 3.9 stdlib). Docs step also fixes the OVERVIEW §2 diagram (fakes in `modules/<m>/testing/`) and narrows ADR-0003 to that location. | Emilio Pomares |
