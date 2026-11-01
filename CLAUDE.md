@@ -18,7 +18,7 @@ Every change to production code goes through these phases in order. Do not skip 
 | # | Phase | Output | Gate |
 |---|-------|--------|------|
 | 0 | **Intake** | Request checked against the Scope Gate (§2) | Request is scoped, or user accepts a proposed decomposition |
-| 1 | **Spec** | `docs/specs/NNNN-slug.md` from [TEMPLATE](docs/specs/TEMPLATE.md) | **User approves the spec** (Status → `Approved`) |
+| 1 | **Spec** | `docs/specs/NNNN-slug.md` from [TEMPLATE](docs/specs/TEMPLATE.md), linked to its epic | **User approves the spec** (Status → `Approved`) |
 | 2 | **Plan** | "Implementation Plan" section of the spec filled in | **User approves the plan** |
 | 3 | **Red** | Tests for every acceptance criterion + compile-only stubs; tests run and **fail on assertions** | Failing output shown to user; committed as `test(NNNN): …` |
 | 4 | **Green** | Minimal production code that makes the tests pass. **Test files are frozen** (§3) | All tests pass, including the full suite |
@@ -52,9 +52,21 @@ A request passes the gate only if **all** of these hold:
 When a request fails the gate:
 - Say which criteria fail, briefly.
 - Propose a **decomposition** into 3–7 candidate specs, each one passing the gate, ordered by dependency.
+- Record it as an **epic** in `docs/epics/EPIC-NNN-slug.md` from [TEMPLATE](docs/epics/TEMPLATE.md),
+  with status `Proposed`. The user approves the epic (goal, done-when, spec list) before any of its
+  specs is drafted.
 - Offer to draft the first spec from [docs/specs/TEMPLATE.md](docs/specs/TEMPLATE.md) and ask the user
   the specific questions needed to fill it in.
 - Do not "just start with something reasonable." Agreeing on scope is part of the work.
+
+### Epics, specs and numbering
+- **Epic** = a goal broken into specs; it has no code of its own and is `Done` when all its specs are.
+  **Spec** = one work item. **ADR** = a decision constraining all work.
+- Every spec names its epic (or `—` for a standalone item). When a spec changes status, update the
+  epic's spec table in the same change.
+- A spec gets its number **only when its file is created** (next free number). Planned specs are
+  referred to by name, never by a guessed number. Adding, removing or reordering specs in an approved
+  epic needs user approval.
 
 ## 3. TDD integrity: no test trickery
 
@@ -62,7 +74,7 @@ Tests exist to prove behavior. Making a test pass by any means other than correc
 is a serious violation. Specifically, **forbidden**:
 
 - Modifying, deleting, renaming or weakening any test during the Green phase. Tests committed in the
-  Red phase are frozen. Verify with: `git diff <red-commit> HEAD -- '*/tests/*'` → must be empty.
+  Red phase are frozen. Verify with: `git diff <red-commit> HEAD -- ':(glob)**/tests/**'` → must be empty.
 - Disabling or skipping tests (`DISABLED_`, `GTEST_SKIP()`, commenting out, `#if 0`, excluding from CMake).
 - Loosening assertions: widening tolerances, `EXPECT_TRUE(true)`, replacing `EXPECT_EQ` with weaker
   checks, asserting only "no crash" where behavior was specified.
@@ -165,7 +177,7 @@ modules/<name>/{include/coil/<name>/, src/, tests/}   # portable library modules
 backends/<name>/{src/, tests/}                         # adapters: OS, windowing, GPU APIs, sockets
 examples/                                              # sample apps (not part of the library)
 tools/                                                 # check.sh, check_layering.py, scripts
-docs/architecture/  docs/adr/  docs/specs/
+docs/architecture/  docs/adr/  docs/epics/  docs/specs/
 ```
 
 ## 9. Working agreements for Claude

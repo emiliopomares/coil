@@ -2,10 +2,11 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | In Progress |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | build infrastructure (`CMakeLists.txt`, `cmake/`, `tools/`), `coil::foundation` |
+| Epic | [EPIC-001](../epics/EPIC-001-engineering-foundation.md) |
 | Related ADRs | ADR-0001, ADR-0002, ADR-0003, ADR-0018 |
 | Depends on | — |
 
@@ -42,12 +43,12 @@ real module (`foundation`) and a single local entry point for every quality gate
 - Test fixtures proving the gates actually reject bad code (§5).
 
 ## 3. Out of Scope
-- CI workflows and the platform matrix (SPEC-0002).
+- CI workflows and the platform matrix (EPIC-001 "CI matrix" spec).
 - `tools/check_layering.py` (separate spec).
 - Shared-library builds, symbol export macros and `COIL_BUILD_SHARED` (comes with the plugin host).
 - TSan preset (added with the first threaded code, `UiDispatcher`).
 - `coil::Error`, assertions, or any foundation content beyond the version header.
-- Windows-specific local tooling (`check.ps1`). CI will cover Windows in SPEC-0002.
+- Windows-specific local tooling (`check.ps1`). CI will cover Windows ("CI matrix" spec).
 
 ## 4. Behavior Specification
 
@@ -141,7 +142,7 @@ Not applicable (no widgets).
 ## 9. Open Questions
 *None.* Resolved 2026-11-01:
 - Q1 vcpkg → user-installed, located via `VCPKG_ROOT`.
-- Q2 local verification on macOS only; other platforms via CI in SPEC-0002.
+- Q2 local verification on macOS only; other platforms via the "CI matrix" spec.
 
 ---
 
@@ -204,10 +205,10 @@ Not applicable (no widgets).
 
 ## 11. Definition of Done
 - [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- '*/tests/*'` empty)
+- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
 - [ ] Full test suite passes
 - [ ] `clang-format` and `clang-tidy` clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally; other targets in SPEC-0002)
+- [ ] Builds with warnings-as-errors (macOS locally; other targets in the "CI matrix" spec)
 - [ ] Sanitizer preset passes
 - [ ] Every AC ticked below with its proving test
 - [ ] Public API documented (Doxygen comments on new public declarations)
@@ -228,3 +229,4 @@ Not applicable (no widgets).
 | 2026-11-01 | Spec created (Draft) | |
 | 2026-11-01 | Q1 (vcpkg via `VCPKG_ROOT`) and Q2 (macOS-only local) resolved; plan added | Emilio Pomares (answers) |
 | 2026-11-01 | Spec and implementation plan approved | Emilio Pomares |
+| 2026-11-01 | Attached to EPIC-001; forward references to unnumbered specs replaced by names (docs only) | Emilio Pomares |

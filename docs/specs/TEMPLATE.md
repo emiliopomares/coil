@@ -6,6 +6,7 @@
 | Author | |
 | Date | YYYY-MM-DD |
 | Module(s) | e.g. `coil::core` (max 2) |
+| Epic | e.g. EPIC-002 (or `—` for a standalone work item) |
 | Related ADRs | e.g. ADR-0007 |
 | Depends on | e.g. SPEC-0003 |
 
@@ -118,7 +119,7 @@ namespace coil::<m> {
 
 ## 11. Definition of Done
 - [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- '*/tests/*'` empty)
+- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
 - [ ] Full test suite passes
 - [ ] `clang-format` and `clang-tidy` clean; no new `NOLINT`
 - [ ] Builds with warnings-as-errors on all CI targets
