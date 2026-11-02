@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved (complete; awaiting acknowledgement) |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-02 |
 | Module(s) | `examples/hello_window` only |
@@ -178,3 +178,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares), including Q2 (SPEC-001
 | 2026-11-02 | **Red**: S1–S5 fail on assertions (no scale line), and R2–R5 fail with their amended expectations (start line missing); the other 122 tests pass. No stub needed (the current code is the stub). `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
 | 2026-11-02 | **Green + Refactor**: the scale line is written after `createWindow` (query errors → stderr) and on each own `ScaleChanged`, with resize and scale lines in event order. `tools/check.sh` exit 0 (131/131); `ctest --preset asan` 131/131; macOS `leaks`: 0 leaks for S5. `git diff 83a17d0 -- ':(glob)**/tests/**'` empty. **Manual check (first run):** printed `800x600 pixels at scale 1` on a Retina display. Cause: SDL windows lack `SDL_WINDOW_HIGH_PIXEL_DENSITY`, so macOS gives them a 1× back buffer (SPEC-0013 amendment B). Manual check pending that fix. | Emilio Pomares |
 | 2026-11-02 | **Manual check** (after SPEC-0013 amendments B and C): on a Retina Mac, `hello_window` prints exactly one line, `hello_window: 1600x1200 pixels at scale 2`, and exits 0 on close. Moving the window to a display of another density was not tried (no second display). Awaiting acknowledgement to set Status → Done. | Emilio Pomares |
+| 2026-11-02 | Acknowledged; Status → Done | Emilio Pomares |

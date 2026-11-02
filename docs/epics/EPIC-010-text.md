@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Proposed |
+| Status | Approved |
 | Date | 2026-11-01 |
 | Origin | Roadmap to a button (2026-11-01): "text first" (before the button) |
 
@@ -53,3 +53,4 @@ measurable sizes for layout, and a `Label` widget displays it sharply at any dis
 |------|--------|-------------|
 | 2026-11-01 | Epic proposed (roadmap) | |
 | 2026-11-02 | `Label` refined: built-in primitive on the public API only; clip on overflow; start/centre/end alignment; plain style parameters | Emilio Pomares |
+| 2026-11-02 | Epic approved | Emilio Pomares |

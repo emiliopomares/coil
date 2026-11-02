@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Proposed |
+| Status | Approved |
 | Date | 2026-11-01 |
 | Origin | "Can we plan forward into placing some interesting content? (say a button …)" (2026-11-01) |
 
@@ -41,3 +41,4 @@ intent), and is fully automatable.
 |------|--------|-------------|
 | 2026-11-01 | Epic proposed (roadmap) | |
 | 2026-11-02 | `Button` is a composite holding a `Label` child (ADR-0005 Amendment 1) | Emilio Pomares |
+| 2026-11-02 | Epic approved | Emilio Pomares |
