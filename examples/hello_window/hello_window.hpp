@@ -18,9 +18,11 @@ inline constexpr coil::platform::WindowSize kMinSize{.width = 320, .height = 240
 inline constexpr coil::platform::Clock::Duration kIdleTimeout = std::chrono::milliseconds{250};
 
 /// Opens one resizable window (kTitle, kSize, minimum kMinSize) and blocks in
-/// waitEvents(kIdleTimeout) until the user asks to close it. Writes one line to `log` for each size
-/// change of that window: "hello_window: resized to <w>x<h>". Returns 0 after the window was
-/// closed, or 1 if it could not be created (error on stderr).
+/// waitEvents(kIdleTimeout) until the user asks to close it. Writes to `log`:
+/// "hello_window: <pw>x<ph> pixels at scale <s>" once the window exists and on each display-scale
+/// change of that window, and "hello_window: resized to <w>x<h>" on each size change of that
+/// window. Returns 0 after the window was closed, or 1 if it could not be created (error on
+/// stderr).
 [[nodiscard]] int runHelloWindow(coil::platform::WindowSystem& windows, std::ostream& log);
 
 } // namespace hello_window

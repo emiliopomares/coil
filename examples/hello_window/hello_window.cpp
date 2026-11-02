@@ -11,6 +11,22 @@
 
 namespace hello_window {
 
+namespace {
+
+/// Writes the pixel-size/scale line (SPEC-0014 rules 1, 2). A failed query goes to stderr.
+void logScale(const coil::platform::WindowSystem& windows, coil::platform::WindowId window,
+              float scale, std::ostream& log) {
+    const auto pixels = windows.pixelSize(window);
+    if (!pixels) {
+        std::println(stderr, "hello_window: cannot query pixel size: {}", pixels.error());
+        return;
+    }
+    std::println(log, "hello_window: {}x{} pixels at scale {}", pixels->width, pixels->height,
+                 scale);
+}
+
+} // namespace
+
 int runHelloWindow(coil::platform::WindowSystem& windows, std::ostream& log) {
     const auto window = windows.createWindow({.title = std::string{kTitle},
                                               .size = kSize,
@@ -20,15 +36,23 @@ int runHelloWindow(coil::platform::WindowSystem& windows, std::ostream& log) {
         std::println(stderr, "hello_window: cannot create window: {}", window.error());
         return 1;
     }
+    if (const auto scale = windows.displayScale(*window); scale) {
+        logScale(windows, *window, *scale, log);
+    } else {
+        std::println(stderr, "hello_window: cannot query display scale: {}", scale.error());
+    }
     const coil::platform::WindowEvent closeRequested =
         coil::platform::CloseRequested{.window = *window};
     while (true) {
         const auto events = windows.waitEvents(kIdleTimeout);
         for (const coil::platform::WindowEvent& event : events) {
-            const auto* resized = std::get_if<coil::platform::Resized>(&event);
-            if (resized != nullptr && resized->window == *window) {
+            if (const auto* resized = std::get_if<coil::platform::Resized>(&event);
+                resized != nullptr && resized->window == *window) {
                 std::println(log, "hello_window: resized to {}x{}", resized->size.width,
                              resized->size.height);
+            } else if (const auto* rescaled = std::get_if<coil::platform::ScaleChanged>(&event);
+                       rescaled != nullptr && rescaled->window == *window) {
+                logScale(windows, *window, rescaled->scale, log);
             }
         }
         if (std::ranges::contains(events, closeRequested)) {
