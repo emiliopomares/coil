@@ -16,6 +16,7 @@ implemented one at a time. An epic has no code of its own; it is done when all i
 | [EPIC-009](EPIC-009-commands-and-state.md) | Commands and state | Proposed |
 | [EPIC-010](EPIC-010-text.md) | Text | Approved |
 | [EPIC-011](EPIC-011-button.md) | Button | Approved |
+| [EPIC-012](EPIC-012-vector-drawing.md) | Vector drawing: paths, curves, transforms, images | Proposed |
 
 Epic numbers are identifiers in order of creation, not a work order. **Current work order** (roadmap
 to a button, 2026-11-01; EPIC-005 done 2026-11-02):
@@ -27,6 +28,16 @@ to a button, 2026-11-01; EPIC-005 done 2026-11-02):
 5. EPIC-009 (commands and state). Specs 1–2 can run earlier, in parallel.
 6. EPIC-010 (text). Specs 1–4 can run after EPIC-006, before or alongside EPIC-008.
 7. EPIC-011 (button): **Milestone 2**, the "Click me" counter.
+8. EPIC-012 (vector drawing). Not needed for Milestone 2; can run any time after EPIC-006.
 
 EPIC-001's remaining specs (CI matrix, compiler feature check) and EPIC-003 (app main loop) are
 scheduled as needed.
+
+## Reference use cases
+Every epic is checked against these before its specs are drafted: could someone build them as
+**custom components** (ADR-0005 Amendment 1), with no access that built-ins don't have?
+
+| Use case | What it needs | Where |
+|----------|---------------|-------|
+| Hue/saturation colour wheel | Custom widget; pointer position → value; keyboard/gamepad adjust; sweep and radial gradients (or a computed image); automation value | EPIC-006 (gradients), EPIC-007/008, EPIC-009, EPIC-012 (`drawImage`) |
+| Node-based editor | Free-position custom container; Bézier links; pan and zoom; pointer capture for drags; custom hit shapes for links; virtual automation sub-elements for links | EPIC-004 spec 2, EPIC-012, EPIC-008 specs 5 and 7 |

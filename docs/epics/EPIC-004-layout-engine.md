@@ -42,7 +42,7 @@ so every rule is proven by unit tests without a window or a GPU.
 | # | Spec | Status | Depends on |
 |---|------|--------|------------|
 | 1 | Geometry types (`foundation`) and `BoxConstraints` (new `layout` module) | Planned | ADR-0019 |
-| 2 | Layout element protocol, tree pass, modifier chain, and the first modifier (`padding`) | Planned | 1 |
+| 2 | Layout element protocol (public: custom containers work like built-ins), tree pass, modifier chain, and the first modifier (`padding`) | Planned | 1 |
 | 3 | Size and position modifiers: `size`, `minSize` / `maxSize`, `align`, `center` | Planned | 2 |
 | 4 | `Row` / `Column` with alignment, spacing, and the `weight` modifier | Planned | 3 |
 | 5 | `Grid` with fixed, flexible and content-sized tracks, and the `gridCell` modifier | Planned | 3 |
@@ -53,6 +53,10 @@ so every rule is proven by unit tests without a window or a GPU.
   [ADR-0019](../adr/0019-layout-engine-and-modifiers.md), which amends ADR-0006. Modifier model chosen
   2026-11-01: **Compose-style modifier chains** (option C), over Slate per-slot parameters (A) and
   Flutter wrapper nodes (B).
+- **Custom containers (reference use case: node editor).** The element protocol of spec 2 is public.
+  A container defined outside `layout` (for example a canvas that places nodes at free coordinates
+  read from its children's parent data) measures and arranges its children exactly as `Row`,
+  `Column` and `Grid` do (ADR-0005 Amendment 1). Spec 2 proves it with a test-defined container.
 - **Candidate follow-up epic, "Window resizing":**
   - a `resizable` flag and minimum/maximum size on `WindowDesc`;
   - `setSize`;
@@ -70,3 +74,4 @@ so every rule is proven by unit tests without a window or a GPU.
 | 2026-11-01 | Epic proposed | Emilio Pomares |
 | 2026-11-01 | Modifier model changed to Compose-style chains (ADR-0019); geometry types moved to `foundation` | Emilio Pomares |
 | 2026-11-01 | Epic approved; ADR-0019 accepted. Work order: after EPIC-005 (window resizing) | Emilio Pomares |
+| 2026-11-02 | Spec 2: the element protocol is public, so custom containers work like built-ins (node-editor use case) | Emilio Pomares |

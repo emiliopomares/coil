@@ -61,7 +61,8 @@ frame capture and golden tests, and leave remote frontends unable to draw them.
 - **The vocabulary grows for everyone.** A missing primitive is added to the `DrawList` through a
   spec, implemented by every backend, and available to every widget. Letting plugins define their own
   commands (for example, custom shaders) needs a new ADR.
-- **Gradients join the vocabulary:** linear and radial gradient fills, with at least two colour stops.
+- **Gradients join the vocabulary:** linear, radial and sweep (conic) gradient fills, with at least
+  two colour stops. Sweep gradients were added on 2026-11-02, for colour wheels.
   They first ship in the software renderer (EPIC-006).
 
 ### Consequences

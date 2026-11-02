@@ -12,8 +12,8 @@ Coil draws inside its windows. Layout results are painted as rectangles through 
 frames can be captured as images for tests and agents.
 
 ## Done when
-- The `render` module has a `DrawList` with filled rects, rounded rects, borders, linear and radial
-  gradient fills (ADR-0009 Amendment 2) and clip push/pop, a `Painter` that records into it, and a
+- The `render` module has a `DrawList` with filled rects, rounded rects, borders, linear, radial and
+  sweep gradient fills (ADR-0009 Amendment 2) and clip push/pop, a `Painter` that records into it, and a
   `Color` type.
 - A `RenderBackend` port, a `render_recording` backend for tests, and a contract suite exist.
 - `render_software` rasterizes the `DrawList` into an RGBA image, deterministically, proven by golden
@@ -55,3 +55,4 @@ frames can be captured as images for tests and agents.
 |------|--------|-------------|
 | 2026-11-01 | Epic proposed (roadmap) | |
 | 2026-11-02 | Linear and radial gradient fills added to specs 1 and 3 (ADR-0009 Amendment 2) | Emilio Pomares |
+| 2026-11-02 | Sweep (conic) gradients added, for colour wheels (reference use case) | Emilio Pomares |
