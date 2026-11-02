@@ -34,8 +34,9 @@ frames can be captured as images for tests and agents.
 |---|------|--------|------------|
 | 1 | [SPEC-0019 `render` module: `Color`, `DrawList`, `Painter` (rects, rounded rects, borders, gradients, clips)](../specs/0019-render-drawlist-and-painter.md) | Done | EPIC-004 spec 1 (geometry) |
 | 2 | [SPEC-0020 `RenderBackend` port, recording backend, contract suite](../specs/0020-render-backend-port.md) | Done | 1 |
-| 3 | `render_software`: rasterize rects, rounded rects, borders, gradients and clips into an image; golden tests | Planned | 2 |
-| 4 | Presenting software frames in SDL windows at the display's pixel scale | Planned | 3; EPIC-005 spec 3 |
+| 3a | [SPEC-0021 `render_software`: rects, rounded rects, borders and clips into an image](../specs/0021-software-rasterizer-shapes.md) | Approved | 2 |
+| 3b | `render_software`: linear, radial and sweep gradients | Planned | 3a |
+| 4 | Presenting software frames in SDL windows at the display's pixel scale | Planned | 3a; EPIC-005 spec 3 |
 | 5 | Frame capture to an image (`capture`) | Planned | 3 |
 | 6 | Example: coloured boxes laid out by rows and columns, redrawn on resize | Planned | 4; EPIC-004 |
 
@@ -57,3 +58,4 @@ frames can be captured as images for tests and agents.
 | 2026-11-02 | Linear and radial gradient fills added to specs 1 and 3 (ADR-0009 Amendment 2) | Emilio Pomares |
 | 2026-11-02 | Sweep (conic) gradients added, for colour wheels (reference use case) | Emilio Pomares |
 | 2026-11-02 | Epic approved; started after EPIC-004 spec 4 (rows and columns are enough for Milestone 1) | Emilio Pomares |
+| 2026-11-02 | Spec 3 split into 3a (shapes, borders, clips) and 3b (gradients) (SPEC-0021 Q1); spec 4 needs only 3a | Emilio Pomares |
