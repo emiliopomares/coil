@@ -103,6 +103,7 @@ private:
         platform::WindowId id;
         SdlWindowPtr handle;
         platform::WindowSizeLimits limits; ///< As last set through the port.
+        float reportedScale = 0.0F;        ///< Last scale reported: at creation or by ScaleChanged.
     };
 
     /// The live window with `id`, or nullptr.
@@ -112,21 +113,21 @@ private:
     }
 
     /// The live window owning `handle`, or nullptr.
-    [[nodiscard]] const Window* findByHandle(const SDL_Window* handle) const {
-        const auto it = std::ranges::find(m_windows, handle,
+    [[nodiscard]] auto* findByHandle(this auto& self, const SDL_Window* handle) {
+        const auto it = std::ranges::find(self.m_windows, handle,
                                           [](const Window& window) { return window.handle.get(); });
-        return it == m_windows.end() ? nullptr : &*it;
+        return it == self.m_windows.end() ? nullptr : &*it;
     }
 
     /// Appends the Coil event for `event`, if it maps to one for a live window (SPEC-0006 rules 4,
     /// 5).
-    void translate(const SDL_Event& event, std::vector<platform::WindowEvent>& events) const {
+    void translate(const SDL_Event& event, std::vector<platform::WindowEvent>& events) {
         if (event.type != SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
             event.type != SDL_EVENT_WINDOW_RESIZED &&
             event.type != SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED) {
             return;
         }
-        const Window* window = findByHandle(SDL_GetWindowFromEvent(&event));
+        Window* window = findByHandle(SDL_GetWindowFromEvent(&event));
         if (window == nullptr) {
             return;
         }
@@ -134,8 +135,11 @@ private:
             events.emplace_back(platform::CloseRequested{.window = window->id});
         } else if (event.type == SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED) {
             // The SDL event carries no value; a failed query (0.0) drops it (SPEC-0013 rule 8).
+            // An unchanged scale is not a change (rule 4, amendment C): SDL also queues the scale
+            // change that happens while a high-density window is being created.
             const float scale = SDL_GetWindowDisplayScale(window->handle.get());
-            if (scale > 0.0F) {
+            if (scale > 0.0F && scale != window->reportedScale) {
+                window->reportedScale = scale;
                 // SDL does not coalesce these: keep one per window, the newest last (rule 4).
                 std::erase_if(events, [id = window->id](const platform::WindowEvent& pending) {
                     const auto* same = std::get_if<platform::ScaleChanged>(&pending);
@@ -196,7 +200,9 @@ public:
             }
         }
         const platform::WindowId id{.value = m_nextId++};
-        m_windows.push_back(Window{.id = id, .handle = std::move(handle), .limits = desc.limits});
+        const float scale = SDL_GetWindowDisplayScale(handle.get());
+        m_windows.push_back(Window{
+            .id = id, .handle = std::move(handle), .limits = desc.limits, .reportedScale = scale});
         return id;
     }
 
