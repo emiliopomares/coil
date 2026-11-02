@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Draft |
+| Status | Approved |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-02 |
 | Module(s) | `coil::foundation` (geometry); `coil::layout` (new module, `BoxConstraints`) |
@@ -16,7 +16,7 @@
 > - [x] ≤ 8 acceptance criteria
 > - [x] Touches 2 modules (`foundation`, new `layout`); the `layout` module and its edges are approved by ADR-0019
 > - [x] Out-of-scope section is filled in
-> - [ ] Open Questions section is resolved (§9)
+> - [x] Open Questions section is resolved (§9)
 
 ---
 
@@ -262,7 +262,7 @@ types through their formatters, so failures print readable values.
 - No existing API changes.
 
 ## 9. Open Questions
-Each has a recommendation. Say "as recommended" or name the ones you want changed.
+All resolved as recommended (2026-11-02, Emilio Pomares).
 - **Q1 — `Rect` representation.** *Recommended: origin + size* (`Rect{Point origin; Size size;}`), as
   layout produces "where" and "how big" separately. Alternative: left, top, right, bottom.
 - **Q2 — Invalid input.** ADR-0013's `COIL_EXPECTS` macros don't exist yet. *Recommended:* the
@@ -343,3 +343,4 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 | Date | Change | Approved by |
 |------|--------|-------------|
 | 2026-11-02 | Spec and implementation plan created (Draft) | |
+| 2026-11-02 | Q1–Q5 confirmed as recommended; spec and plan approved | Emilio Pomares |

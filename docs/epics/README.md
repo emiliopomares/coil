@@ -8,7 +8,7 @@ implemented one at a time. An epic has no code of its own; it is done when all i
 | [EPIC-001](EPIC-001-engineering-foundation.md) | Engineering foundation | In Progress |
 | [EPIC-002](EPIC-002-hello-window.md) | Hello window | Done |
 | [EPIC-003](EPIC-003-app-main-loop.md) | App main loop | Approved |
-| [EPIC-004](EPIC-004-layout-engine.md) | Layout engine: rows, columns, grids and modifiers | Approved |
+| [EPIC-004](EPIC-004-layout-engine.md) | Layout engine: rows, columns, grids and modifiers | In Progress |
 | [EPIC-005](EPIC-005-window-resizing.md) | Window resizing | Done |
 | [EPIC-006](EPIC-006-first-pixels.md) | First pixels: DrawList, software renderer, on screen | Proposed |
 | [EPIC-007](EPIC-007-input-and-intents.md) | Input and intents | Proposed |

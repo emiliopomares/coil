@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | In Progress |
 | Date | 2026-11-01 |
 | Origin | "Layouts: horizontal, vertical, grid, with their respective modifiers … along the lines of Flutter: wrap a component into a behavior modifier" |
 
@@ -41,7 +41,7 @@ so every rule is proven by unit tests without a window or a GPU.
 ## Specs (in dependency order)
 | # | Spec | Status | Depends on |
 |---|------|--------|------------|
-| 1 | Geometry types (`foundation`) and `BoxConstraints` (new `layout` module) | Planned | ADR-0019 |
+| 1 | [SPEC-0015 Geometry types (`foundation`) and `BoxConstraints` (new `layout` module)](../specs/0015-geometry-and-box-constraints.md) | Approved | ADR-0019 |
 | 2 | Layout element protocol (public: custom containers work like built-ins), tree pass, modifier chain, and the first modifier (`padding`) | Planned | 1 |
 | 3 | Size and position modifiers: `size`, `minSize` / `maxSize`, `align`, `center` | Planned | 2 |
 | 4 | `Row` / `Column` with alignment, spacing, and the `weight` modifier | Planned | 3 |
