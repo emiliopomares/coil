@@ -174,7 +174,7 @@ public:
    that is their rule, not this one.)
 6. **`deflate(i)`**, per axis (`i.horizontal()` for width, `i.vertical()` for height): subtract the
    insets from `min` and from `max`, and floor each result at 0. `kUnbounded` stays `kUnbounded`.
-   A NaN inset component counts as 0. Negative insets enlarge the constraints (plain arithmetic; the
+   A NaN or infinite inset component counts as 0 (amendment A), so deflating never breaks rule 3. Negative insets enlarge the constraints (plain arithmetic; the
    `padding` modifier will reject negative values when it is created, in EPIC-004 spec 2).
 7. **`loosen()`** sets both minimums to 0 and keeps the maximums.
 8. `isTight` is true when `min == max` on both axes. `hasBoundedWidth`/`hasBoundedHeight` are true
@@ -192,7 +192,7 @@ public:
 | `loose({kUnbounded, kUnbounded})` | Succeeds, equals `unbounded()` |
 | `constrain` with a NaN component | That component becomes `min` |
 | `deflate` by more than the available space | Min and max floor at 0 (tight 0 on that axis) |
-| `deflate` with a NaN inset component | Treated as 0 |
+| `deflate` with a NaN or infinite inset component | Treated as 0 (amendment A) |
 
 ### 4.4 Threading and lifetime
 Values only; no shared state. Safe to use from any thread.
@@ -225,7 +225,8 @@ Not applicable (no widget or user-facing feature).
   `{50, 19}`.
 - **AC-6** — Given constraints 30..100 × 0..kUnbounded, then `deflate(Insets{5, 10, 15, 20})` is
   10..80 × 0..kUnbounded; `deflate(Insets{60, 0, 60, 0})` is 0..0 width; a NaN inset component is
-  treated as 0; and `deflate(Insets{-5, 0, -5, 0})` is 40..110 width.
+  treated as 0; and `deflate(Insets{-5, 0, -5, 0})` is 40..110 width. *(Amendment A)* Infinite inset
+  components count as 0: `deflate(Insets{-kUnbounded, kUnbounded, 10, 0})` is 20..90 × 0..kUnbounded.
 - **AC-7** — Given constraints 30..100 × 40..kUnbounded, then `loosen()` is 0..100 × 0..kUnbounded.
 - **AC-8** — `BoxConstraints` formats as `"w 0..100, h 20..inf"` for 0..100 × 20..kUnbounded, and a
   tight 100×50 formats as `"w 100..100, h 50..50"`.
@@ -239,6 +240,7 @@ Not applicable (no widget or user-facing feature).
 | AC-4 | `BoxConstraints.AC4_Factories` | unit | — | includes the factory error cases |
 | AC-5 | `BoxConstraints.AC5_ConstrainClampsIntoRange` | unit | — | includes NaN |
 | AC-6 | `BoxConstraints.AC6_DeflateSubtractsInsets` | unit | — | includes over-deflation, NaN, negative |
+| AC-6 | `BoxConstraints.AC6_InfiniteInsetsCountAsZero` | unit | — | amendment A |
 | AC-7 | `BoxConstraints.AC7_LoosenDropsMinimums` | unit | — | |
 | AC-8 | `BoxConstraints.AC8_FormatsReadably` | unit | — | |
 
@@ -335,7 +337,7 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 - [x] AC-3 → `BoxConstraints.AC3_CreateValidates`
 - [x] AC-4 → `BoxConstraints.AC4_Factories`
 - [x] AC-5 → `BoxConstraints.AC5_ConstrainClampsIntoRange`
-- [x] AC-6 → `BoxConstraints.AC6_DeflateSubtractsInsets`
+- [x] AC-6 → `BoxConstraints.AC6_DeflateSubtractsInsets`, `BoxConstraints.AC6_InfiniteInsetsCountAsZero` (amendment A)
 - [x] AC-7 → `BoxConstraints.AC7_LoosenDropsMinimums`
 - [x] AC-8 → `BoxConstraints.AC8_FormatsReadably`
 
@@ -346,3 +348,5 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 | 2026-11-02 | Q1–Q5 confirmed as recommended; spec and plan approved | Emilio Pomares |
 | 2026-11-02 | **Red**: all 8 new tests fail on assertions (stubs: hand-written equality returning `false`, derived values reading the wrong member, empty formatters, factories returning the default value, operations returning their input or a default, queries returning `false`); the other 132 tests pass. AC-6 and AC-7 were first written as comparisons with `make(...)`, which passed against the stubs (both sides came from the stubbed factory); before this commit they were rewritten to check each range. Test printers are `operator<<` in an unnamed inline namespace (internal linkage, still found by GoogleTest). `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
 | 2026-11-02 | **Green + Refactor**: geometry equality defaulted, derived values and formatters implemented; `BoxConstraints` validates in `create` (`tight` and `loose` delegate to it), clamps in `constrain` (NaN → min), and deflates with NaN insets as 0 and unbounded maximums kept. OVERVIEW §3 gains the `layout` row (`Color` moves to `render`). `tools/check.sh` exit 0 (140/140); `ctest --preset asan` 140/140. `git diff ee0dfc6 -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
+| 2026-11-02 | Acknowledged. **Amendment A** (found after Green: rule 6 left infinite insets unspecified, and −∞ would make the minimum infinite, breaking rule 3): infinite inset components count as 0, like NaN. New test `AC6_InfiniteInsetsCountAsZero`; existing tests unchanged. Goes through Red and Green. | Emilio Pomares |
+| 2026-11-02 | **Red (amendment A)**: `AC6_InfiniteInsetsCountAsZero` fails on its assertions (min and max width come out `inf`); the other 140 tests pass; format and tidy clean. | Emilio Pomares |

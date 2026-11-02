@@ -184,6 +184,14 @@ TEST(BoxConstraints, AC6_DeflateSubtractsInsets) {
         40.0F, 110.0F, 0.0F, kUnbounded);
 }
 
+TEST(BoxConstraints, AC6_InfiniteInsetsCountAsZero) {
+    const BoxConstraints constraints = make(30.0F, 100.0F, 0.0F, kUnbounded);
+
+    expectRanges(constraints.deflate(Insets{
+                     .left = -kUnbounded, .top = kUnbounded, .right = 10.0F, .bottom = 0.0F}),
+                 20.0F, 90.0F, 0.0F, kUnbounded);
+}
+
 TEST(BoxConstraints, AC7_LoosenDropsMinimums) {
     expectRanges(make(30.0F, 100.0F, 40.0F, kUnbounded).loosen(), 0.0F, 100.0F, 0.0F, kUnbounded);
 }
