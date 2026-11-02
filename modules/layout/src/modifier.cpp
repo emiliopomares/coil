@@ -197,6 +197,9 @@ ModifierResult center() {
 }
 
 ModifierResult weight(float value) {
+    if (!std::isfinite(value) || value <= 0.0F) {
+        return makeUnexpected(ErrorCode::InvalidArgument, "weight must be finite and > 0");
+    }
     return std::make_unique<Weight>(value);
 }
 

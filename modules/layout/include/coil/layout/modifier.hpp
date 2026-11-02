@@ -77,7 +77,11 @@ public:
     /// The outermost modifier of type T, or nullptr.
     template <std::derived_from<ParentDataModifier> T>
     [[nodiscard]] const T* find() const noexcept {
-        static_cast<void>(m_modifiers);
+        for (const auto& modifier : m_modifiers) {
+            if (const auto* match = dynamic_cast<const T*>(modifier.get())) {
+                return match;
+            }
+        }
         return nullptr;
     }
 

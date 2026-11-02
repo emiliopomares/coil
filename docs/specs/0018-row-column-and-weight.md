@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | Approved (complete; awaiting acknowledgement) |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-02 |
 | Module(s) | `coil::layout` only |
@@ -290,24 +290,24 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
   are integers.
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally)
-- [ ] Sanitizer preset passes
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented (Doxygen comments on new public declarations)
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally)
+- [x] Sanitizer preset passes
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented (Doxygen comments on new public declarations)
 
 ### AC verification
-- [ ] AC-1 → `LinearLayout.AC1_RowWrapsChildren`
-- [ ] AC-2 → `LinearLayout.AC2_ColumnWrapsChildren`
-- [ ] AC-3 → `LinearLayout.AC3_MainAxisAlignment`
-- [ ] AC-4 → `LinearLayout.AC4_CrossAxisAlignment`
-- [ ] AC-5 → `LinearLayout.AC5_WeightsShareLeftoverSpace`
-- [ ] AC-6 → `LinearLayout.AC6_WeightsAreParentData`
-- [ ] AC-7 → `LinearLayout.AC7_InvalidInputsAreRejected`
-- [ ] AC-8 → `LinearLayout.AC8_OverflowingChildren`
+- [x] AC-1 → `LinearLayout.AC1_RowWrapsChildren`
+- [x] AC-2 → `LinearLayout.AC2_ColumnWrapsChildren`
+- [x] AC-3 → `LinearLayout.AC3_MainAxisAlignment`
+- [x] AC-4 → `LinearLayout.AC4_CrossAxisAlignment`
+- [x] AC-5 → `LinearLayout.AC5_WeightsShareLeftoverSpace`
+- [x] AC-6 → `LinearLayout.AC6_WeightsAreParentData`
+- [x] AC-7 → `LinearLayout.AC7_InvalidInputsAreRejected`
+- [x] AC-8 → `LinearLayout.AC8_OverflowingChildren`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -315,3 +315,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 | 2026-11-02 | Spec and implementation plan created (Draft) | |
 | 2026-11-02 | Q1–Q7 confirmed as recommended; spec and plan approved | Emilio Pomares |
 | 2026-11-02 | **Red**: refactor first (`Modifier` base, `ParentDataModifier`, `ModifierResult` of `Modifier`, `layoutStages()` used by the engine, `friend` removed): the 158 earlier tests pass unchanged. Then stubs (`find` returns null, `weight` never fails, `Row`/`Column` measure 0×0, arrange nothing, store options and children unchecked) and `linear_layout_test.cpp`: all 8 new tests fail on assertions; the other 158 pass. API detail: the three enums use `std::uint8_t` as their base type (`performance-enum-size`). `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
+| 2026-11-02 | **Green + Refactor**: `find<T>()` returns the outermost match (`dynamic_cast`); `weight` validates; `Row` and `Column` share `detail::LinearLayout`, which maps main/cross axes to x/y and implements rules 2–7 (unweighted children first, then weighted shares; lead and gap per alignment; stretch). `tools/check.sh` exit 0 (166/166); `ctest --preset asan` 166/166. `git diff fd58659 -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
