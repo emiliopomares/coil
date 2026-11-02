@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved (complete; awaiting acknowledgement) |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-02 |
 | Module(s) | `coil::render` (new module, already planned in `tools/layering.json` and OVERVIEW §3) |
@@ -341,3 +341,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 | 2026-11-02 | Q1–Q7 confirmed as recommended; spec and plan approved | Emilio Pomares |
 | 2026-11-02 | **Red**: new `render` module; all 8 new tests fail on assertions (stubs: colour and radii factories return defaults; gradient factories never fail and drop their geometry; `DrawList::append` drops the command; the painter records nothing; `clipDepth()` stays 0); the other 166 pass. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
 | 2026-11-02 | **Green + Refactor**: `Color` factories, `CornerRadii::all`, gradient validation, `DrawList::append`, and the painter's normalization (skip non-drawable rects, normalize radii and widths, empty clip for degenerate rects, ignore unmatched pops, close open clips on destruction). `tools/check.sh` exit 0 (174/174); `ctest --preset asan` 174/174. `git diff 894fcd5 -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
+| 2026-11-02 | Acknowledged; Status → Done | Emilio Pomares |
