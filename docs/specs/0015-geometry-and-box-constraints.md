@@ -344,3 +344,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 |------|--------|-------------|
 | 2026-11-02 | Spec and implementation plan created (Draft) | |
 | 2026-11-02 | Q1–Q5 confirmed as recommended; spec and plan approved | Emilio Pomares |
+| 2026-11-02 | **Red**: all 8 new tests fail on assertions (stubs: hand-written equality returning `false`, derived values reading the wrong member, empty formatters, factories returning the default value, operations returning their input or a default, queries returning `false`); the other 132 tests pass. AC-6 and AC-7 were first written as comparisons with `make(...)`, which passed against the stubs (both sides came from the stubbed factory); before this commit they were rewritten to check each range. Test printers are `operator<<` in an unnamed inline namespace (internal linkage, still found by GoogleTest). `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |

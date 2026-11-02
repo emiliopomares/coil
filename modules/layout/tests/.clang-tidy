@@ -1,0 +1,12 @@
+---
+# Test-code override (ADR-0002). Only checks triggered by GoogleTest macro expansion are disabled.
+InheritParentConfig: true
+Checks: >
+  -cert-err58-cpp,
+  -cppcoreguidelines-avoid-non-const-global-variables,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-special-member-functions,
+  -hicpp-special-member-functions,
+  -modernize-use-trailing-return-type,
+  -readability-function-cognitive-complexity
+...

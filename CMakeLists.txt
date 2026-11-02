@@ -25,6 +25,7 @@ include(GoogleTest)
 
 add_subdirectory(modules/foundation)
 add_subdirectory(modules/platform)
+add_subdirectory(modules/layout)
 add_subdirectory(backends/platform_sdl3)
 if(COIL_BUILD_EXAMPLES)
     add_subdirectory(examples/hello_window)
