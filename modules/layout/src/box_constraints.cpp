@@ -105,4 +105,8 @@ BoxConstraints BoxConstraints::loosen() const noexcept {
     return BoxConstraints{0.0F, m_maxWidth, 0.0F, m_maxHeight};
 }
 
+BoxConstraints BoxConstraints::enforce(const BoxConstraints& /*other*/) const noexcept {
+    return *this;
+}
+
 } // namespace coil::layout

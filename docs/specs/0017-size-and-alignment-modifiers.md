@@ -264,3 +264,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 |------|--------|-------------|
 | 2026-11-02 | Spec and implementation plan created (Draft) | |
 | 2026-11-02 | Q1–Q5 confirmed as recommended; spec and plan approved | Emilio Pomares |
+| 2026-11-02 | **Red**: all 8 new tests fail on assertions (stubs: `enforce` returns its own constraints; the factories return a modifier that changes nothing, has type id `""` and never fails; named alignments return the centre); the other 150 pass. `box_constraints_test.cpp` only gains the new test (10 added lines, 0 removed). `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |

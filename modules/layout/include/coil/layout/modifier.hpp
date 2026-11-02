@@ -2,6 +2,7 @@
 
 #include <coil/foundation/error.hpp>
 #include <coil/foundation/geometry.hpp>
+#include <coil/layout/alignment.hpp>
 #include <coil/layout/box_constraints.hpp>
 
 #include <memory>
@@ -73,5 +74,21 @@ private:
 [[nodiscard]] ModifierResult padding(Insets insets);
 /// The same space on all four sides.
 [[nodiscard]] ModifierResult padding(float all);
+
+/// Asks for exactly `exact`; incoming constraints win where they disagree. Type id "coil.size".
+/// Fails with InvalidArgument unless both sides are finite and >= 0.
+[[nodiscard]] ModifierResult size(Size exact);
+/// Asks for at least `minimum`; incoming constraints win. Type id "coil.minSize".
+/// Fails with InvalidArgument unless both sides are finite and >= 0.
+[[nodiscard]] ModifierResult minSize(Size minimum);
+/// Asks for at most `maximum` (kUnbounded = no limit on that axis); incoming constraints win.
+/// Type id "coil.maxSize". Fails with InvalidArgument if a side is NaN or negative.
+[[nodiscard]] ModifierResult maxSize(Size maximum);
+/// Lets the content take any size up to the available space, grows it to the incoming minimums, and
+/// positions it by `alignment`. Type id "coil.align". Fails with InvalidArgument unless both
+/// fractions are in [-1, 1].
+[[nodiscard]] ModifierResult align(Alignment alignment);
+/// align(Alignment::center()).
+[[nodiscard]] ModifierResult center();
 
 } // namespace coil::layout

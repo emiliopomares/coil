@@ -201,4 +201,14 @@ TEST(BoxConstraints, AC8_FormatsReadably) {
     EXPECT_EQ(std::format("{}", make(100.0F, 100.0F, 50.0F, 50.0F)), "w 100..100, h 50..50");
 }
 
+TEST(BoxConstraints, AC1_EnforceClampsIntoConstraints) {
+    const BoxConstraints constraints = make(10.0F, 100.0F, 20.0F, 200.0F);
+
+    expectRanges(constraints.enforce(make(50.0F, 50.0F, 300.0F, 300.0F)), 50.0F, 50.0F, 200.0F,
+                 200.0F);
+    expectRanges(constraints.enforce(make(0.0F, 50.0F, 250.0F, kUnbounded)), 10.0F, 50.0F, 200.0F,
+                 200.0F);
+    expectRanges(constraints.enforce(BoxConstraints::unbounded()), 10.0F, 100.0F, 20.0F, 200.0F);
+}
+
 } // namespace

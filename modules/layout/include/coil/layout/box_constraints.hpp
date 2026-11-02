@@ -57,6 +57,9 @@ public:
     [[nodiscard]] BoxConstraints deflate(Insets insets) const noexcept;
     /// Same maximums, minimums set to 0.
     [[nodiscard]] BoxConstraints loosen() const noexcept;
+    /// `other`, clamped into these constraints: each of other's minimum and maximum is clamped into
+    /// [min, max] of this one, per axis. The result always satisfies these constraints.
+    [[nodiscard]] BoxConstraints enforce(const BoxConstraints& other) const noexcept;
 
     friend bool operator==(const BoxConstraints&, const BoxConstraints&) = default;
 

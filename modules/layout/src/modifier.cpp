@@ -1,5 +1,6 @@
 #include <coil/foundation/error.hpp>
 #include <coil/foundation/geometry.hpp>
+#include <coil/layout/alignment.hpp>
 #include <coil/layout/box_constraints.hpp>
 #include <coil/layout/modifier.hpp>
 
@@ -42,6 +43,25 @@ public:
 
 private:
     Insets m_insets;
+};
+
+class NeutralModifier final : public LayoutModifier {
+public:
+    [[nodiscard]] std::string_view typeId() const noexcept override { return ""; }
+
+    [[nodiscard]] BoxConstraints
+    innerConstraints(const BoxConstraints& outer) const noexcept override {
+        return outer;
+    }
+
+    [[nodiscard]] Size outerSize(const BoxConstraints& /*outer*/,
+                                 Size inner) const noexcept override {
+        return inner;
+    }
+
+    [[nodiscard]] Rect innerBounds(Rect outer, Size /*inner*/) const noexcept override {
+        return outer;
+    }
 };
 
 bool isValidInset(float value) {
@@ -87,6 +107,26 @@ ModifierResult padding(Insets insets) {
 
 ModifierResult padding(float all) {
     return padding(Insets{.left = all, .top = all, .right = all, .bottom = all});
+}
+
+ModifierResult size(Size /*exact*/) {
+    return std::make_unique<NeutralModifier>();
+}
+
+ModifierResult minSize(Size /*minimum*/) {
+    return std::make_unique<NeutralModifier>();
+}
+
+ModifierResult maxSize(Size /*maximum*/) {
+    return std::make_unique<NeutralModifier>();
+}
+
+ModifierResult align(Alignment /*alignment*/) {
+    return std::make_unique<NeutralModifier>();
+}
+
+ModifierResult center() {
+    return std::make_unique<NeutralModifier>();
 }
 
 } // namespace coil::layout
