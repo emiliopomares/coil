@@ -17,7 +17,9 @@ struct CornerRadii {
     float bottomLeft = 0.0F;
 
     /// The same radius on every corner.
-    [[nodiscard]] static constexpr CornerRadii all(float /*radius*/) noexcept { return {}; }
+    [[nodiscard]] static constexpr CornerRadii all(float radius) noexcept {
+        return {.topLeft = radius, .topRight = radius, .bottomRight = radius, .bottomLeft = radius};
+    }
 
     friend constexpr bool operator==(CornerRadii, CornerRadii) = default;
 };

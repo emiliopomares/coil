@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | Approved (complete; awaiting acknowledgement) |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-02 |
 | Module(s) | `coil::render` (new module, already planned in `tools/layering.json` and OVERVIEW §3) |
@@ -315,24 +315,24 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
   expressions the implementation uses, so they are exact.
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally)
-- [ ] Sanitizer preset passes
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented (Doxygen comments on new public declarations)
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally)
+- [x] Sanitizer preset passes
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented (Doxygen comments on new public declarations)
 
 ### AC verification
-- [ ] AC-1 → `Color.AC1_ConstructsAndCompares`
-- [ ] AC-2 → `Painter.AC2_RecordsShapesInOrder`
-- [ ] AC-3 → `Painter.AC3_GradientsAreValidated`
-- [ ] AC-4 → `Painter.AC4_DegenerateRectsAreSkipped`
-- [ ] AC-5 → `Painter.AC5_CornerRadiiAreNormalized`
-- [ ] AC-6 → `Painter.AC6_BorderWidthIsNormalized`
-- [ ] AC-7 → `Painter.AC7_ClipsStayBalanced`
-- [ ] AC-8 → `DrawList.AC8_IsPlainComparableData`
+- [x] AC-1 → `Color.AC1_ConstructsAndCompares`
+- [x] AC-2 → `Painter.AC2_RecordsShapesInOrder`
+- [x] AC-3 → `Painter.AC3_GradientsAreValidated`
+- [x] AC-4 → `Painter.AC4_DegenerateRectsAreSkipped`
+- [x] AC-5 → `Painter.AC5_CornerRadiiAreNormalized`
+- [x] AC-6 → `Painter.AC6_BorderWidthIsNormalized`
+- [x] AC-7 → `Painter.AC7_ClipsStayBalanced`
+- [x] AC-8 → `DrawList.AC8_IsPlainComparableData`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -340,3 +340,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 | 2026-11-02 | Spec and implementation plan created (Draft) | |
 | 2026-11-02 | Q1–Q7 confirmed as recommended; spec and plan approved | Emilio Pomares |
 | 2026-11-02 | **Red**: new `render` module; all 8 new tests fail on assertions (stubs: colour and radii factories return defaults; gradient factories never fail and drop their geometry; `DrawList::append` drops the command; the painter records nothing; `clipDepth()` stays 0); the other 166 pass. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
+| 2026-11-02 | **Green + Refactor**: `Color` factories, `CornerRadii::all`, gradient validation, `DrawList::append`, and the painter's normalization (skip non-drawable rects, normalize radii and widths, empty clip for degenerate rects, ignore unmatched pops, close open clips on destruction). `tools/check.sh` exit 0 (174/174); `ctest --preset asan` 174/174. `git diff 894fcd5 -- ':(glob)**/tests/**'` empty. | Emilio Pomares |

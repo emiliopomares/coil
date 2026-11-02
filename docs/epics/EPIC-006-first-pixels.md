@@ -32,7 +32,7 @@ frames can be captured as images for tests and agents.
 ## Specs (in dependency order)
 | # | Spec | Status | Depends on |
 |---|------|--------|------------|
-| 1 | [SPEC-0019 `render` module: `Color`, `DrawList`, `Painter` (rects, rounded rects, borders, gradients, clips)](../specs/0019-render-drawlist-and-painter.md) | Approved | EPIC-004 spec 1 (geometry) |
+| 1 | [SPEC-0019 `render` module: `Color`, `DrawList`, `Painter` (rects, rounded rects, borders, gradients, clips)](../specs/0019-render-drawlist-and-painter.md) | Complete, awaiting acknowledgement | EPIC-004 spec 1 (geometry) |
 | 2 | `RenderBackend` port, `render_recording` backend, contract suite | Planned | 1 |
 | 3 | `render_software`: rasterize rects, rounded rects, borders, gradients and clips into an image; golden tests | Planned | 2 |
 | 4 | Presenting software frames in SDL windows at the display's pixel scale | Planned | 3; EPIC-005 spec 3 |
