@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved (complete; awaiting acknowledgement) |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-02 |
 | Module(s) | `coil::layout` only |
@@ -316,3 +316,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 | 2026-11-02 | Q1–Q7 confirmed as recommended; spec and plan approved | Emilio Pomares |
 | 2026-11-02 | **Red**: refactor first (`Modifier` base, `ParentDataModifier`, `ModifierResult` of `Modifier`, `layoutStages()` used by the engine, `friend` removed): the 158 earlier tests pass unchanged. Then stubs (`find` returns null, `weight` never fails, `Row`/`Column` measure 0×0, arrange nothing, store options and children unchecked) and `linear_layout_test.cpp`: all 8 new tests fail on assertions; the other 158 pass. API detail: the three enums use `std::uint8_t` as their base type (`performance-enum-size`). `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
 | 2026-11-02 | **Green + Refactor**: `find<T>()` returns the outermost match (`dynamic_cast`); `weight` validates; `Row` and `Column` share `detail::LinearLayout`, which maps main/cross axes to x/y and implements rules 2–7 (unweighted children first, then weighted shares; lead and gap per alignment; stretch). `tools/check.sh` exit 0 (166/166); `ctest --preset asan` 166/166. `git diff fd58659 -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
+| 2026-11-02 | Acknowledged; Status → Done | Emilio Pomares |

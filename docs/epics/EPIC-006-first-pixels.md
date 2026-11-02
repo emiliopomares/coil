@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Proposed |
+| Status | In Progress |
 | Date | 2026-11-01 |
 | Origin | Roadmap to a button (2026-11-01): "software rendering first" (ADR-0009 Amendment 1) |
 
@@ -56,3 +56,4 @@ frames can be captured as images for tests and agents.
 | 2026-11-01 | Epic proposed (roadmap) | |
 | 2026-11-02 | Linear and radial gradient fills added to specs 1 and 3 (ADR-0009 Amendment 2) | Emilio Pomares |
 | 2026-11-02 | Sweep (conic) gradients added, for colour wheels (reference use case) | Emilio Pomares |
+| 2026-11-02 | Epic approved; started after EPIC-004 spec 4 (rows and columns are enough for Milestone 1) | Emilio Pomares |

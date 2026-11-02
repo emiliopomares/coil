@@ -44,7 +44,7 @@ so every rule is proven by unit tests without a window or a GPU.
 | 1 | [SPEC-0015 Geometry types (`foundation`) and `BoxConstraints` (new `layout` module)](../specs/0015-geometry-and-box-constraints.md) | Done | ADR-0019 |
 | 2 | [SPEC-0016 Layout element protocol (public: custom containers work like built-ins), tree pass, modifier chain, and the first modifier (`padding`)](../specs/0016-layout-elements-and-modifier-chains.md) | Done | 1 |
 | 3 | [SPEC-0017 Size and position modifiers: `size`, `minSize` / `maxSize`, `align`, `center`](../specs/0017-size-and-alignment-modifiers.md) | Done | 2 |
-| 4 | [SPEC-0018 `Row` / `Column` with alignment, spacing, and the `weight` modifier](../specs/0018-row-column-and-weight.md) | Complete, awaiting acknowledgement | 3 |
+| 4 | [SPEC-0018 `Row` / `Column` with alignment, spacing, and the `weight` modifier](../specs/0018-row-column-and-weight.md) | Done | 3 |
 | 5 | `Grid` with fixed, flexible and content-sized tracks, and the `gridCell` modifier | Planned | 3 |
 | 6 | Layout tree dump (text, for test failure messages and later for automation) | Planned | 2 |
 
@@ -75,3 +75,4 @@ so every rule is proven by unit tests without a window or a GPU.
 | 2026-11-01 | Modifier model changed to Compose-style chains (ADR-0019); geometry types moved to `foundation` | Emilio Pomares |
 | 2026-11-01 | Epic approved; ADR-0019 accepted. Work order: after EPIC-005 (window resizing) | Emilio Pomares |
 | 2026-11-02 | Spec 2: the element protocol is public, so custom containers work like built-ins (node-editor use case) | Emilio Pomares |
+| 2026-11-02 | Paused after spec 4: specs 5 (`Grid`) and 6 (dump) are not needed for Milestone 1 or the button; EPIC-006 goes next, and this epic resumes later | Emilio Pomares |
