@@ -21,8 +21,9 @@ float clampAxis(float value, float min, float max) {
     return std::clamp(value, min, max);
 }
 
-float zeroIfNaN(float value) {
-    return std::isnan(value) ? 0.0F : value;
+/// NaN and infinite insets count as 0, so deflate() keeps the invariants (rule 6).
+float finiteOrZero(float value) {
+    return std::isfinite(value) ? value : 0.0F;
 }
 
 float deflateBound(float bound, float amount) {
@@ -93,8 +94,8 @@ bool BoxConstraints::isSatisfiedBy(Size size) const noexcept {
 }
 
 BoxConstraints BoxConstraints::deflate(Insets insets) const noexcept {
-    const float horizontal = zeroIfNaN(insets.left) + zeroIfNaN(insets.right);
-    const float vertical = zeroIfNaN(insets.top) + zeroIfNaN(insets.bottom);
+    const float horizontal = finiteOrZero(insets.left) + finiteOrZero(insets.right);
+    const float vertical = finiteOrZero(insets.top) + finiteOrZero(insets.bottom);
     return BoxConstraints{deflateBound(m_minWidth, horizontal),
                           deflateBound(m_maxWidth, horizontal), deflateBound(m_minHeight, vertical),
                           deflateBound(m_maxHeight, vertical)};

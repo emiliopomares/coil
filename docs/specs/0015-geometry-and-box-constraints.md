@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved (complete; awaiting acknowledgement) |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-02 |
 | Module(s) | `coil::foundation` (geometry); `coil::layout` (new module, `BoxConstraints`) |
@@ -350,3 +350,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 | 2026-11-02 | **Green + Refactor**: geometry equality defaulted, derived values and formatters implemented; `BoxConstraints` validates in `create` (`tight` and `loose` delegate to it), clamps in `constrain` (NaN → min), and deflates with NaN insets as 0 and unbounded maximums kept. OVERVIEW §3 gains the `layout` row (`Color` moves to `render`). `tools/check.sh` exit 0 (140/140); `ctest --preset asan` 140/140. `git diff ee0dfc6 -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
 | 2026-11-02 | Acknowledged. **Amendment A** (found after Green: rule 6 left infinite insets unspecified, and −∞ would make the minimum infinite, breaking rule 3): infinite inset components count as 0, like NaN. New test `AC6_InfiniteInsetsCountAsZero`; existing tests unchanged. Goes through Red and Green. | Emilio Pomares |
 | 2026-11-02 | **Red (amendment A)**: `AC6_InfiniteInsetsCountAsZero` fails on its assertions (min and max width come out `inf`); the other 140 tests pass; format and tidy clean. | Emilio Pomares |
+| 2026-11-02 | **Green (amendment A)**: `deflate` counts NaN and infinite inset components as 0. Build, format, layering and tidy clean; `ctest --preset dev` 141/141; `ctest --preset asan` 141/141. `git diff ccb39d0 -- ':(glob)**/tests/**'` empty. Status → Done (acknowledged with amendment A). | Emilio Pomares |
