@@ -348,3 +348,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 |------|--------|-------------|
 | 2026-11-02 | Spec and implementation plan created (Draft) | |
 | 2026-11-02 | Q1–Q6 confirmed as recommended; spec and plan approved | Emilio Pomares |
+| 2026-11-02 | **Red**: all 8 new tests fail on assertions (stubs: `then` drops modifiers, `padding` accepts anything and changes nothing, `setModifiers` stores without checking, `measure` returns 0×0, `arrange` records nothing, `layoutRoot` does nothing); the other 141 pass. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
