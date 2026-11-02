@@ -45,13 +45,18 @@ private:
     Insets m_insets;
 };
 
-class NeutralModifier final : public LayoutModifier {
+/// size, minSize and maxSize: ask for `requested`, clamped into the incoming constraints.
+class ConstraintsModifier final : public LayoutModifier {
 public:
-    [[nodiscard]] std::string_view typeId() const noexcept override { return ""; }
+    ConstraintsModifier(std::string_view typeId, BoxConstraints requested)
+        : m_typeId(typeId)
+        , m_requested(requested) {}
+
+    [[nodiscard]] std::string_view typeId() const noexcept override { return m_typeId; }
 
     [[nodiscard]] BoxConstraints
     innerConstraints(const BoxConstraints& outer) const noexcept override {
-        return outer;
+        return outer.enforce(m_requested);
     }
 
     [[nodiscard]] Size outerSize(const BoxConstraints& /*outer*/,
@@ -62,7 +67,56 @@ public:
     [[nodiscard]] Rect innerBounds(Rect outer, Size /*inner*/) const noexcept override {
         return outer;
     }
+
+private:
+    std::string_view m_typeId; ///< Always a string literal.
+    BoxConstraints m_requested;
 };
+
+/// Offset of content of length `inner` inside length `outer`, for an alignment fraction in [-1, 1].
+float alignedOffset(float outer, float inner, float fraction) {
+    return (outer - inner) * (fraction + 1.0F) / 2.0F;
+}
+
+class AlignModifier final : public LayoutModifier {
+public:
+    explicit AlignModifier(Alignment alignment)
+        : m_alignment(alignment) {}
+
+    [[nodiscard]] std::string_view typeId() const noexcept override { return "coil.align"; }
+
+    [[nodiscard]] BoxConstraints
+    innerConstraints(const BoxConstraints& outer) const noexcept override {
+        return outer.loosen();
+    }
+
+    [[nodiscard]] Size outerSize(const BoxConstraints& outer, Size inner) const noexcept override {
+        return outer.constrain(inner);
+    }
+
+    [[nodiscard]] Rect innerBounds(Rect outer, Size inner) const noexcept override {
+        return Rect{.origin = {.x = outer.origin.x + alignedOffset(outer.size.width, inner.width,
+                                                                   m_alignment.horizontal),
+                               .y = outer.origin.y + alignedOffset(outer.size.height, inner.height,
+                                                                   m_alignment.vertical)},
+                    .size = inner};
+    }
+
+private:
+    Alignment m_alignment;
+};
+
+bool isValidFraction(float value) {
+    return value >= -1.0F && value <= 1.0F; // false for NaN
+}
+
+ModifierResult constraintsModifier(std::string_view typeId,
+                                   const Expected<BoxConstraints>& requested) {
+    if (!requested.has_value()) {
+        return makeUnexpected(requested.error().code(), requested.error().message());
+    }
+    return std::make_unique<ConstraintsModifier>(typeId, *requested);
+}
 
 bool isValidInset(float value) {
     return std::isfinite(value) && value >= 0.0F;
@@ -109,24 +163,29 @@ ModifierResult padding(float all) {
     return padding(Insets{.left = all, .top = all, .right = all, .bottom = all});
 }
 
-ModifierResult size(Size /*exact*/) {
-    return std::make_unique<NeutralModifier>();
+ModifierResult size(Size exact) {
+    return constraintsModifier("coil.size", BoxConstraints::tight(exact));
 }
 
-ModifierResult minSize(Size /*minimum*/) {
-    return std::make_unique<NeutralModifier>();
+ModifierResult minSize(Size minimum) {
+    return constraintsModifier("coil.minSize", BoxConstraints::create(minimum.width, kUnbounded,
+                                                                      minimum.height, kUnbounded));
 }
 
-ModifierResult maxSize(Size /*maximum*/) {
-    return std::make_unique<NeutralModifier>();
+ModifierResult maxSize(Size maximum) {
+    return constraintsModifier("coil.maxSize",
+                               BoxConstraints::create(0.0F, maximum.width, 0.0F, maximum.height));
 }
 
-ModifierResult align(Alignment /*alignment*/) {
-    return std::make_unique<NeutralModifier>();
+ModifierResult align(Alignment alignment) {
+    if (!isValidFraction(alignment.horizontal) || !isValidFraction(alignment.vertical)) {
+        return makeUnexpected(ErrorCode::InvalidArgument, "alignment fractions must be in [-1, 1]");
+    }
+    return std::make_unique<AlignModifier>(alignment);
 }
 
 ModifierResult center() {
-    return std::make_unique<NeutralModifier>();
+    return align(Alignment::center());
 }
 
 } // namespace coil::layout

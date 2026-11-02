@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | Approved (complete; awaiting acknowledgement) |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-02 |
 | Module(s) | `coil::layout` only |
@@ -240,24 +240,24 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 - **`size(s)` with `s` = 0×0** is valid (an invisible element).
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally)
-- [ ] Sanitizer preset passes
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented (Doxygen comments on new public declarations)
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally)
+- [x] Sanitizer preset passes
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented (Doxygen comments on new public declarations)
 
 ### AC verification
-- [ ] AC-1 → `BoxConstraints.AC1_EnforceClampsIntoConstraints`
-- [ ] AC-2 → `SizeModifiers.AC2_SizeAsksForExactSize`
-- [ ] AC-3 → `SizeModifiers.AC3_MinSizeRaisesMinimums`
-- [ ] AC-4 → `SizeModifiers.AC4_MaxSizeLowersMaximums`
-- [ ] AC-5 → `Align.AC5_PositionsContentInTightSpace`
-- [ ] AC-6 → `Align.AC6_WrapsContentInLooseSpace`
-- [ ] AC-7 → `SizeModifiers.AC7_InvalidParametersAreRejected`
-- [ ] AC-8 → `SizeModifiers.AC8_TypeIds`
+- [x] AC-1 → `BoxConstraints.AC1_EnforceClampsIntoConstraints`
+- [x] AC-2 → `SizeModifiers.AC2_SizeAsksForExactSize`
+- [x] AC-3 → `SizeModifiers.AC3_MinSizeRaisesMinimums`
+- [x] AC-4 → `SizeModifiers.AC4_MaxSizeLowersMaximums`
+- [x] AC-5 → `Align.AC5_PositionsContentInTightSpace`
+- [x] AC-6 → `Align.AC6_WrapsContentInLooseSpace`
+- [x] AC-7 → `SizeModifiers.AC7_InvalidParametersAreRejected`
+- [x] AC-8 → `SizeModifiers.AC8_TypeIds`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -265,3 +265,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 | 2026-11-02 | Spec and implementation plan created (Draft) | |
 | 2026-11-02 | Q1–Q5 confirmed as recommended; spec and plan approved | Emilio Pomares |
 | 2026-11-02 | **Red**: all 8 new tests fail on assertions (stubs: `enforce` returns its own constraints; the factories return a modifier that changes nothing, has type id `""` and never fails; named alignments return the centre); the other 150 pass. `box_constraints_test.cpp` only gains the new test (10 added lines, 0 removed). `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
+| 2026-11-02 | **Green + Refactor**: `enforce` clamps each bound; named alignments; `size`/`minSize`/`maxSize` share one modifier class that enforces requested constraints built (and validated) by `BoxConstraints::tight`/`create`; `align` loosens, grows to the minimums and places the content by the alignment fractions. `tools/check.sh` exit 0 (158/158); `ctest --preset asan` 158/158. `git diff a30a6bf -- ':(glob)**/tests/**'` empty. | Emilio Pomares |

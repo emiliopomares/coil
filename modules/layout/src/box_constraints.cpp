@@ -105,8 +105,11 @@ BoxConstraints BoxConstraints::loosen() const noexcept {
     return BoxConstraints{0.0F, m_maxWidth, 0.0F, m_maxHeight};
 }
 
-BoxConstraints BoxConstraints::enforce(const BoxConstraints& /*other*/) const noexcept {
-    return *this;
+BoxConstraints BoxConstraints::enforce(const BoxConstraints& other) const noexcept {
+    return BoxConstraints{std::clamp(other.m_minWidth, m_minWidth, m_maxWidth),
+                          std::clamp(other.m_maxWidth, m_minWidth, m_maxWidth),
+                          std::clamp(other.m_minHeight, m_minHeight, m_maxHeight),
+                          std::clamp(other.m_maxHeight, m_minHeight, m_maxHeight)};
 }
 
 } // namespace coil::layout
