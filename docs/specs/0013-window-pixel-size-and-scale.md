@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Done (pending acknowledgement) |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::platform` (port, fake, contract suite); `backends/platform_sdl3` |
@@ -271,4 +271,5 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
 | 2026-11-02 | Q1–Q5 confirmed as recommended (Q5 adds EPIC-005 spec 5); spec and plan approved | Emilio Pomares |
 | 2026-11-02 | **Red**: 10 tests fail on assertions: PX1–PX3 for Fake and Sdl3, FS1, FS2, SD1, SD2 (stubs report 0×0 pixels and scale 0, succeed where `NotFound` is required, ignore scale changes and scale events). The other 116 pass. API sketch: `ScaleChanged::scale` gets a default initializer (`= 0.0F`, required by `cppcoreguidelines-pro-type-member-init`). The fake's `changeDisplayScale` stub already returns `NotFound` for unknown ids (it must use the object to satisfy lint); FS1 still fails on the scale change itself. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
-| 2026-11-02 | **Green + Refactor**: fake keeps a per-window scale (initially 1.0), computes pixel size with `ceil`, validates `changeDisplayScale`, and queues `Resized` / `ScaleChanged` through one shared replace-pending helper. SDL maps `pixelSize` / `displayScale` to `SDL_GetWindowSizeInPixels` / `SDL_GetWindowDisplayScale` (failures → `Internal`) and translates `DISPLAY_SCALE_CHANGED` with the queried scale, one per window per batch, dropped if the query returns 0. `tools/check.sh` exit 0 (126/126); `ctest --preset asan` 126/126; macOS `leaks`: 0 leaks for the SDL PX/SD tests. `git diff 6a7e758 -- ':(glob)**/tests/**'` empty. | Emilio Pomares (acknowledgement pending) |
+| 2026-11-02 | **Green + Refactor**: fake keeps a per-window scale (initially 1.0), computes pixel size with `ceil`, validates `changeDisplayScale`, and queues `Resized` / `ScaleChanged` through one shared replace-pending helper. SDL maps `pixelSize` / `displayScale` to `SDL_GetWindowSizeInPixels` / `SDL_GetWindowDisplayScale` (failures → `Internal`) and translates `DISPLAY_SCALE_CHANGED` with the queried scale, one per window per batch, dropped if the query returns 0. `tools/check.sh` exit 0 (126/126); `ctest --preset asan` 126/126; macOS `leaks`: 0 leaks for the SDL PX/SD tests. `git diff 6a7e758 -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
+| 2026-11-02 | Acknowledged; Status → Done | Emilio Pomares |
