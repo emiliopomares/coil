@@ -175,7 +175,8 @@ protected:
    `i.vertical()`; inner bounds: the rectangle moved in by `left`/`top` and shrunk by the insets, with
    width and height floored at 0. Type id `"coil.padding"`. `padding(a)` is `padding(Insets{a, a, a, a})`.
 6. **Chains.** `then` appends; an error (from the argument or already recorded) makes the chain keep its
-   first error. `typeIds()` lists only the stages added before the first error.
+   first error. `typeIds()` lists only the stages added before the first error. *(Amendment A)* A
+   successful result holding a null modifier is recorded as an `InvalidArgument` error.
 7. **`setModifiers`** with a chain that has an error fails with that error's code and leaves the
    element's chain unchanged. On success the new chain is used from the next `measure`.
 8. **`layoutRoot(e, s)`** = `e.measure(BoxConstraints::tight(s))` then `e.arrange({{0, 0}, s})`.
@@ -185,6 +186,7 @@ protected:
 |-----------|--------|
 | `padding` with a negative, NaN or infinite side | `InvalidArgument` |
 | `then` with an error, or on a chain with an error | Chain keeps its first error |
+| `then` with a result holding a null modifier | `InvalidArgument` recorded (amendment A) |
 | `setModifiers` with a chain that has an error | Fails with that code; chain unchanged |
 | `measureContent` returns NaN, infinity or an out-of-range size | Clamped (rule 3); never escapes |
 | A modifier's `outerSize` returns an invalid size | Same clamping |
@@ -229,7 +231,8 @@ forces a size; type id `"test.fixedSize"`).
 - **AC-6** — `padding` fails with `InvalidArgument` for a negative, NaN or infinite side (both
   overloads). A chain given such a result has that error, keeps it when valid modifiers follow, and
   lists only earlier type ids. `setModifiers` with it fails with `InvalidArgument`, and the element keeps
-  its previous chain (same type ids, same measured size).
+  its previous chain (same type ids, same measured size). *(Amendment A)* A chain given a result
+  holding a null modifier has an `InvalidArgument` error and keeps only earlier type ids.
 - **AC-7** — Given a `Stack` (custom container) holding a 50×30 leaf with `padding(10)` and a 40×20
   leaf, when `layoutRoot(stack, 200×100)`, then the stack's bounds are `(0, 0) 200×100`, the first
   child's bounds are `(0, 0) 70×50` with content `(10, 10) 50×30`, and the second child's bounds are
@@ -246,6 +249,7 @@ forces a size; type id `"test.fixedSize"`).
 | AC-4 | `Padding.AC4_InsetsTheContent` | unit | test `Leaf` | |
 | AC-5 | `ModifierChain.AC5_OrderMattersAndCustomModifiersWork` | unit | test `Leaf`, `FixedSize` | |
 | AC-6 | `ModifierChain.AC6_InvalidModifiersAreRejected` | unit | test `Leaf` | |
+| AC-6 | `ModifierChain.AC6_NullModifierIsAnError` | unit | — | amendment A |
 | AC-7 | `LayoutElement.AC7_CustomContainerLaysOutChildren` | unit | test `Stack`, `Leaf` | |
 | AC-8 | `LayoutElement.AC8_LayoutRootRejectsInvalidSizes` | unit | test `Leaf` | |
 
@@ -339,7 +343,7 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 - [x] AC-3 → `Padding.AC3_ShrinksConstraintsAndGrowsSize`
 - [x] AC-4 → `Padding.AC4_InsetsTheContent`
 - [x] AC-5 → `ModifierChain.AC5_OrderMattersAndCustomModifiersWork`
-- [x] AC-6 → `ModifierChain.AC6_InvalidModifiersAreRejected`
+- [x] AC-6 → `ModifierChain.AC6_InvalidModifiersAreRejected`, `ModifierChain.AC6_NullModifierIsAnError` (amendment A)
 - [x] AC-7 → `LayoutElement.AC7_CustomContainerLaysOutChildren`
 - [x] AC-8 → `LayoutElement.AC8_LayoutRootRejectsInvalidSizes`
 
@@ -350,3 +354,5 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 | 2026-11-02 | Q1–Q6 confirmed as recommended; spec and plan approved | Emilio Pomares |
 | 2026-11-02 | **Red**: all 8 new tests fail on assertions (stubs: `then` drops modifiers, `padding` accepts anything and changes nothing, `setModifiers` stores without checking, `measure` returns 0×0, `arrange` records nothing, `layoutRoot` does nothing); the other 141 pass. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
 | 2026-11-02 | **Green + Refactor**: chains store modifiers and keep their first error; `padding` validates and implements rule 5; `LayoutElement` runs rules 3–4 with per-stage constraints and sizes (iterators, no unchecked indexing), sanitizing every size; `layoutRoot` validates through `BoxConstraints::tight`. Implementation notes: `ModifierChain` declares `LayoutElement` a friend so the stages stay private (no public API added); a factory result holding a null modifier is recorded as an `InvalidArgument` error (not covered by the spec; see amendment proposal). `tools/check.sh` exit 0 (149/149); `ctest --preset asan` 149/149. `git diff 98e99ee -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
+| 2026-11-02 | Acknowledged. **Amendment A**: a result holding a null modifier is recorded as `InvalidArgument` (rule 6, AC-6). That check was added during Green without approval; the Red commit removes it and adds `AC6_NullModifierIsAnError`, so the test is seen failing first; Green restores it. | Emilio Pomares |
+| 2026-11-02 | **Red (amendment A)**: `AC6_NullModifierIsAnError` fails on its assertion (no error recorded) with the null check removed; the other 149 tests pass; format and tidy clean. | Emilio Pomares |

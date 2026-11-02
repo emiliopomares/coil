@@ -284,6 +284,18 @@ TEST(ModifierChain, AC6_InvalidModifiersAreRejected) {
     EXPECT_EQ(leaf.measure(loose(100.0F, 100.0F)), size(70.0F, 50.0F));
 }
 
+TEST(ModifierChain, AC6_NullModifierIsAnError) {
+    const ModifierChain chain = ModifierChain{}
+                                    .then(padding(4.0F))
+                                    .then(ModifierResult{std::unique_ptr<LayoutModifier>{}})
+                                    .then(padding(2.0F));
+    const std::optional<coil::foundation::Error>& error = chain.error();
+    ASSERT_TRUE(error.has_value());
+    EXPECT_EQ(error.value_or(coil::foundation::Error{ErrorCode::Internal}).code(),
+              ErrorCode::InvalidArgument);
+    EXPECT_EQ(chain.typeIds(), (std::vector<std::string_view>{"coil.padding"}));
+}
+
 TEST(LayoutElement, AC7_CustomContainerLaysOutChildren) {
     Stack stack;
     auto padded = std::make_unique<Leaf>(size(50.0F, 30.0F));

@@ -56,8 +56,6 @@ ModifierChain ModifierChain::then(ModifierResult modifier) && {
     }
     if (!modifier.has_value()) {
         m_error = std::move(modifier.error());
-    } else if (*modifier == nullptr) {
-        m_error = Error{ErrorCode::InvalidArgument, "a modifier factory returned no modifier"};
     } else {
         m_modifiers.push_back(std::move(*modifier));
     }
