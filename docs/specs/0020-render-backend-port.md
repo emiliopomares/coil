@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved (complete; awaiting acknowledgement) |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-02 |
 | Module(s) | `coil::render` (port, `render_testing`, contract suite) |
@@ -246,3 +246,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 | 2026-11-02 | Q1–Q5 confirmed as recommended; spec and plan approved | Emilio Pomares |
 | 2026-11-02 | **Red**: all 8 new tests fail on assertions (stub recording backend: every call succeeds, ids are all 0, nothing is stored); the other 174 pass. `modules/render/tests/.clang-tidy` now matches `modules/platform/tests/.clang-tidy`, including the typed-test naming exception approved in SPEC-0003 (the copy from `foundation` made in SPEC-0019 lacked it); no new relaxation. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
 | 2026-11-02 | **Green + Refactor**: `RecordingRenderBackend` keeps a map from id to target (description, copied frames, present count), validates descriptions, never reuses ids. `tools/check.sh` exit 0 (182/182); `ctest --preset asan` 182/182. `git diff fcc449c -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
+| 2026-11-02 | Acknowledged; Status → Done | Emilio Pomares |
