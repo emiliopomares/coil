@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved (amendment B in progress) |
+| Status | Approved (amendment C in progress) |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::platform` (port, fake, contract suite); `backends/platform_sdl3` |
@@ -117,6 +117,10 @@ public:
    - `SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED` for a live window maps to `ScaleChanged`, with the
      scale queried when the event is translated;
    - several such events for one window in a batch become one (rule 4);
+   - **(amendment C)** the adapter remembers the last scale it reported for each window, starting with
+     the scale right after creation, and drops an event whose queried scale equals it (rule 4: no
+     event for an unchanged scale). Without this, a Retina window reports a spurious
+     `ScaleChanged{2}` at startup, because SDL queues the 1 → 2 change that happens during creation;
    - if the query fails (it returns 0.0), the event is dropped instead of reporting an invalid scale.
 9. **SDL high pixel density** (amendment B, 2026-11-02): every SDL window MUST be created with
    `SDL_WINDOW_HIGH_PIXEL_DENSITY`, so it gets a full-density back buffer where the display has one
@@ -162,9 +166,10 @@ Not applicable now. Captures (ADR-0017) will report their pixel scale from this.
   its size.
 - **AC-8 (SD3, SDL; amendment B)** — Every window created by the SDL window system, resizable or
   not, has `SDL_WINDOW_HIGH_PIXEL_DENSITY` in `SDL_GetWindowFlags`.
-- **AC-7 (SD2, SDL)** — Two `SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED` events pushed for one window
-  yield exactly one `ScaleChanged{id, 1.0}`. One pushed for an SDL window that Coil doesn't own
-  yields nothing.
+- **AC-7 (SD2, SDL; amended by C)** — Two `SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED` events pushed for
+  one window whose scale has not changed (the `dummy` driver's 1.0) yield **no** event. One pushed for
+  an SDL window that Coil doesn't own yields nothing either. (A real scale change through SDL can't be
+  produced on `dummy`; it is covered by the manual check.)
 
 ## 6. Test Plan
 | AC | Test name | Type | Notes |
@@ -176,7 +181,7 @@ Not applicable now. Captures (ADR-0017) will report their pixel scale from this.
 | AC-5 | `FakeWindowSystem.FS2_ScaleChangesAreCoalescedAndDropped` | unit | |
 | AC-6 | `SdlWindowSystem.SD1_DummyDriverHasScaleOne` | integration | |
 | AC-8 | `SdlWindowSystem.SD3_WindowsUseHighPixelDensity` | integration | amendment B |
-| AC-7 | `SdlWindowSystem.SD2_ScaleEventsAreTranslatedOnce` | integration | `SDL_PushEvent`; a second SDL window created directly with `SDL_CreateWindow` |
+| AC-7 | `SdlWindowSystem.SD2_UnchangedScaleEventsAreDropped` | integration | `SDL_PushEvent`; a second SDL window created directly with `SDL_CreateWindow` |
 
 ## 7. Non-Functional Requirements
 - No new dependency.
@@ -271,7 +276,7 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 - [x] AC-4 → `FakeWindowSystem.FS1_DisplayScaleChangesPixelSize`
 - [x] AC-5 → `FakeWindowSystem.FS2_ScaleChangesAreCoalescedAndDropped`
 - [x] AC-6 → `SdlWindowSystem.SD1_DummyDriverHasScaleOne`
-- [x] AC-7 → `SdlWindowSystem.SD2_ScaleEventsAreTranslatedOnce`
+- [x] AC-7 → `SdlWindowSystem.SD2_UnchangedScaleEventsAreDropped`
 - [x] AC-8 → `SdlWindowSystem.SD3_WindowsUseHighPixelDensity` (amendment B)
 
 ## 12. Change Log
@@ -285,3 +290,5 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 | 2026-11-02 | **Amendment B** (found by SPEC-0014's manual check: `800x600 pixels at scale 1` on a Retina display): rule 9 and AC-8 (SD3) added. SDL windows must be created with `SDL_WINDOW_HIGH_PIXEL_DENSITY` (SDL's Cocoa backend allocates a full-density buffer only with that flag). Goes through Red and Green. | Emilio Pomares |
 | 2026-11-02 | **Red (amendment B)**: SD3 fails on its assertion (flag missing on both windows); the other 131 tests pass; tidy clean. | Emilio Pomares |
 | 2026-11-02 | **Green (amendment B)**: SDL windows are always created with `SDL_WINDOW_HIGH_PIXEL_DENSITY` (plus `SDL_WINDOW_RESIZABLE` when requested). `tools/check.sh` exit 0 (132/132); `ctest --preset asan` 132/132; `leaks`: 0 for SD1–SD3. `git diff 99d7f0e -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
+| 2026-11-02 | **Amendment C** (found by SPEC-0014's second manual check: the scale line printed twice, start plus a spurious `ScaleChanged{2}`): rule 8 now requires the SDL adapter to drop scale events that don't change the last reported scale; SD2 renamed `SD2_UnchangedScaleEventsAreDropped` and now expects no event. Approved by the user. | Emilio Pomares |
+| 2026-11-02 | **Red (amendment C)**: the rewritten SD2 fails (the adapter still reports `ScaleChanged{1}` for an unchanged scale); the other 131 tests pass; tidy clean. | Emilio Pomares |

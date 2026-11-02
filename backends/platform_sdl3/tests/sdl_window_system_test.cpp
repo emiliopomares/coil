@@ -180,7 +180,7 @@ TEST(SdlWindowSystem, SD3_WindowsUseHighPixelDensity) {
     }
 }
 
-TEST(SdlWindowSystem, SD2_ScaleEventsAreTranslatedOnce) {
+TEST(SdlWindowSystem, SD2_UnchangedScaleEventsAreDropped) {
     auto system = createSdlWindowSystem(headless());
     ASSERT_TRUE(system.has_value()) << std::format("{}", system.error());
     const auto id = (*system)->createWindow({.title = "A", .size = {.width = 100, .height = 80}});
@@ -194,8 +194,8 @@ TEST(SdlWindowSystem, SD2_ScaleEventsAreTranslatedOnce) {
     pushScaleChanged(*sdlId);
     pushScaleChanged(SDL_GetWindowID(foreign));
 
-    EXPECT_EQ((*system)->pollEvents(),
-              (std::vector<WindowEvent>{ScaleChanged{.window = *id, .scale = 1.0F}}));
+    // The dummy driver's scale stays 1.0: an "unchanged" scale is not a change (rule 4).
+    EXPECT_EQ((*system)->pollEvents(), std::vector<WindowEvent>{});
     SDL_DestroyWindow(foreign);
 }
 
