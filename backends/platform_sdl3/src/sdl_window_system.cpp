@@ -180,7 +180,11 @@ public:
                                   std::format("window size {}x{} is outside its limits",
                                               desc.size.width, desc.size.height));
         }
-        const SDL_WindowFlags flags = desc.resizable ? SDL_WINDOW_RESIZABLE : 0;
+        // Full-density back buffer where the display has one, e.g. Retina (SPEC-0013 rule 9).
+        SDL_WindowFlags flags = SDL_WINDOW_HIGH_PIXEL_DENSITY;
+        if (desc.resizable) {
+            flags |= SDL_WINDOW_RESIZABLE;
+        }
         SdlWindowPtr handle{
             SDL_CreateWindow(desc.title.c_str(), desc.size.width, desc.size.height, flags)};
         if (!handle) {

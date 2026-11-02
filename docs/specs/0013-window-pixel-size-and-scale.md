@@ -272,7 +272,7 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 - [x] AC-5 → `FakeWindowSystem.FS2_ScaleChangesAreCoalescedAndDropped`
 - [x] AC-6 → `SdlWindowSystem.SD1_DummyDriverHasScaleOne`
 - [x] AC-7 → `SdlWindowSystem.SD2_ScaleEventsAreTranslatedOnce`
-- [ ] AC-8 → `SdlWindowSystem.SD3_WindowsUseHighPixelDensity` (amendment B)
+- [x] AC-8 → `SdlWindowSystem.SD3_WindowsUseHighPixelDensity` (amendment B)
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -284,3 +284,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 | 2026-11-02 | Acknowledged; Status → Done | Emilio Pomares |
 | 2026-11-02 | **Amendment B** (found by SPEC-0014's manual check: `800x600 pixels at scale 1` on a Retina display): rule 9 and AC-8 (SD3) added. SDL windows must be created with `SDL_WINDOW_HIGH_PIXEL_DENSITY` (SDL's Cocoa backend allocates a full-density buffer only with that flag). Goes through Red and Green. | Emilio Pomares |
 | 2026-11-02 | **Red (amendment B)**: SD3 fails on its assertion (flag missing on both windows); the other 131 tests pass; tidy clean. | Emilio Pomares |
+| 2026-11-02 | **Green (amendment B)**: SDL windows are always created with `SDL_WINDOW_HIGH_PIXEL_DENSITY` (plus `SDL_WINDOW_RESIZABLE` when requested). `tools/check.sh` exit 0 (132/132); `ctest --preset asan` 132/132; `leaks`: 0 for SD1–SD3. `git diff 99d7f0e -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
