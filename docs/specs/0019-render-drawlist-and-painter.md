@@ -339,3 +339,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 |------|--------|-------------|
 | 2026-11-02 | Spec and implementation plan created (Draft) | |
 | 2026-11-02 | Q1–Q7 confirmed as recommended; spec and plan approved | Emilio Pomares |
+| 2026-11-02 | **Red**: new `render` module; all 8 new tests fail on assertions (stubs: colour and radii factories return defaults; gradient factories never fail and drop their geometry; `DrawList::append` drops the command; the painter records nothing; `clipDepth()` stays 0); the other 166 pass. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
