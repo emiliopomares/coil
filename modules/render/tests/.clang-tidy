@@ -9,4 +9,8 @@ Checks: >
   -hicpp-special-member-functions,
   -modernize-use-trailing-return-type,
   -readability-function-cognitive-complexity
+CheckOptions:
+  # TYPED_TEST_P uses the test name as a class name; allow only the <PREFIX><n>_ test-name
+  # convention (CLAUDE.md section 3). Approved for SPEC-0003, generalized for SPEC-0008.
+  - { key: readability-identifier-naming.ClassIgnoredRegexp, value: '^[A-Z]+[0-9]+_[A-Za-z0-9]+$' }
 ...

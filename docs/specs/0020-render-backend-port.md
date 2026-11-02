@@ -244,3 +244,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 |------|--------|-------------|
 | 2026-11-02 | Spec and implementation plan created (Draft) | |
 | 2026-11-02 | Q1–Q5 confirmed as recommended; spec and plan approved | Emilio Pomares |
+| 2026-11-02 | **Red**: all 8 new tests fail on assertions (stub recording backend: every call succeeds, ids are all 0, nothing is stored); the other 174 pass. `modules/render/tests/.clang-tidy` now matches `modules/platform/tests/.clang-tidy`, including the typed-test naming exception approved in SPEC-0003 (the copy from `foundation` made in SPEC-0019 lacked it); no new relaxation. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
