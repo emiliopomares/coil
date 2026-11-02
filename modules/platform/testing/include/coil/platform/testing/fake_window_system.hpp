@@ -37,6 +37,8 @@ public:
     [[nodiscard]] Expected<bool> resizable(WindowId id) const override;
     [[nodiscard]] Expected<WindowSizeLimits> sizeLimits(WindowId id) const override;
     [[nodiscard]] Expected<void> setSizeLimits(WindowId id, WindowSizeLimits limits) override;
+    [[nodiscard]] Expected<WindowSize> pixelSize(WindowId id) const override;
+    [[nodiscard]] Expected<float> displayScale(WindowId id) const override;
     [[nodiscard]] std::vector<WindowEvent> pollEvents() override;
     [[nodiscard]] std::vector<WindowEvent> waitEvents(Clock::Duration timeout) override;
 
@@ -47,6 +49,10 @@ public:
     /// Test control: resizes `id` as if the user dragged its edge. Same rules and errors as
     /// setSize.
     [[nodiscard]] Expected<void> userResize(WindowId id, WindowSize size);
+
+    /// Test control: changes `id`'s display scale as if it moved to another display. Fails with
+    /// NotFound for an unknown window and InvalidArgument unless `scale` is finite and > 0.
+    [[nodiscard]] Expected<void> changeDisplayScale(WindowId id, float scale);
 
     /// Test control: runs each time waitEvents would block (no pending events, timeout > 0), before
     /// time advances. If it queues events, waitEvents returns them without advancing time.

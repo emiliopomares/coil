@@ -61,8 +61,17 @@ struct Resized {
     friend constexpr bool operator==(Resized, Resized) = default;
 };
 
+/// A window's display scale (physical pixels per DIP) changed, e.g. it moved to a display with a
+/// different density. Its pixel size may have changed with it; query pixelSize() (SPEC-0013).
+struct ScaleChanged {
+    WindowId window;
+    float scale = 0.0F; ///< The new display scale, > 0.
+
+    friend constexpr bool operator==(ScaleChanged, ScaleChanged) = default;
+};
+
 /// An event about a window. New alternatives are added by later specs.
-using WindowEvent = std::variant<CloseRequested, Resized>;
+using WindowEvent = std::variant<CloseRequested, Resized, ScaleChanged>;
 
 /// Port: creates and manages OS windows. Implemented by adapters in backends/.
 /// The WindowSystem owns every window it creates; callers refer to windows by WindowId.
@@ -109,6 +118,14 @@ public:
     /// resized to the nearest size inside (reported by Resized). Fails with InvalidArgument for
     /// invalid limits and NotFound for an unknown window.
     [[nodiscard]] virtual Expected<void> setSizeLimits(WindowId id, WindowSizeLimits limits) = 0;
+
+    /// Size of the window's drawable area in physical pixels. Fails with NotFound for an unknown
+    /// window.
+    [[nodiscard]] virtual Expected<WindowSize> pixelSize(WindowId id) const = 0;
+
+    /// Physical pixels per DIP for the window (e.g. 2.0 on a Retina display). Always > 0. Fails
+    /// with NotFound for an unknown window.
+    [[nodiscard]] virtual Expected<float> displayScale(WindowId id) const = 0;
 
     /// Returns all events that occurred since the previous call, in order; each event is returned
     /// once. Events for windows destroyed before this call are dropped. Non-blocking.

@@ -189,6 +189,21 @@ Expected<void> FakeWindowSystem::setSizeLimits(WindowId id, WindowSizeLimits lim
     return {};
 }
 
+Expected<WindowSize> FakeWindowSystem::pixelSize(WindowId /*id*/) const {
+    return WindowSize{}; // Red stub (SPEC-0013).
+}
+
+Expected<float> FakeWindowSystem::displayScale(WindowId /*id*/) const {
+    return 0.0F; // Red stub (SPEC-0013).
+}
+
+Expected<void> FakeWindowSystem::changeDisplayScale(WindowId id, float /*scale*/) {
+    if (find(id) == nullptr) {
+        return notFound(id);
+    }
+    return {}; // Red stub (SPEC-0013): the scale is not changed.
+}
+
 std::vector<WindowEvent> FakeWindowSystem::pollEvents() {
     std::vector<WindowEvent> events = std::exchange(m_events, {});
     // Events for windows destroyed since they were queued are dropped (SPEC-0006 rule 4).

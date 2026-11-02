@@ -31,6 +31,9 @@ on every supported platform, locally and in CI.
 ## Notes
 - ADR-0001 Amendment 1 (accepted) defines the required C++23 feature set and pins LLVM 23; the compiler
   feature check spec verifies the provisional toolchain minimums in CI.
+- **Known gap for the CI matrix (SPEC-0013 Q3):** on Windows and X11, SDL's window coordinates are
+  physical pixels, so `WindowSystem` sizes are pixels there instead of DIPs (ADR-0006). This needs a
+  dedicated spec: the SDL adapter converts with `displayScale`, verified on those platforms.
 
 ## Change Log
 | Date | Change | Approved by |

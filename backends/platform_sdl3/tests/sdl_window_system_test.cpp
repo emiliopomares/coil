@@ -15,6 +15,7 @@
 #include <format>
 #include <memory>
 #include <utility>
+#include <vector>
 
 namespace {
 
@@ -141,5 +142,46 @@ struct WindowSystemContractTraits<Sdl3> {
 
 using Sdl3Implementations = ::testing::Types<Sdl3>;
 INSTANTIATE_TYPED_TEST_SUITE_P(Sdl3, WindowSystemContract, Sdl3Implementations);
+
+namespace {
+
+/// Pushes a display-scale-changed event for an SDL window, as SDL would on a display change.
+void pushScaleChanged(SDL_WindowID sdlId) {
+    SDL_Event event{};
+    event.type = SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED;
+    event.window.windowID = sdlId;
+    ASSERT_TRUE(SDL_PushEvent(&event)) << SDL_GetError();
+}
+
+TEST(SdlWindowSystem, SD1_DummyDriverHasScaleOne) {
+    auto system = createSdlWindowSystem(headless());
+    ASSERT_TRUE(system.has_value()) << std::format("{}", system.error());
+    const WindowSize size{.width = 100, .height = 80};
+    const auto id = (*system)->createWindow({.title = "A", .size = size});
+    ASSERT_TRUE(succeeds(id));
+    EXPECT_EQ((*system)->displayScale(*id), 1.0F);
+    EXPECT_EQ((*system)->pixelSize(*id), size);
+}
+
+TEST(SdlWindowSystem, SD2_ScaleEventsAreTranslatedOnce) {
+    auto system = createSdlWindowSystem(headless());
+    ASSERT_TRUE(system.has_value()) << std::format("{}", system.error());
+    const auto id = (*system)->createWindow({.title = "A", .size = {.width = 100, .height = 80}});
+    ASSERT_TRUE(succeeds(id));
+    const auto sdlId = sdlWindowId(**system, *id);
+    ASSERT_TRUE(succeeds(sdlId));
+
+    SDL_Window* foreign = SDL_CreateWindow("Foreign", 64, 64, 0);
+    ASSERT_NE(foreign, nullptr) << SDL_GetError();
+    pushScaleChanged(*sdlId);
+    pushScaleChanged(*sdlId);
+    pushScaleChanged(SDL_GetWindowID(foreign));
+
+    EXPECT_EQ((*system)->pollEvents(),
+              (std::vector<WindowEvent>{ScaleChanged{.window = *id, .scale = 1.0F}}));
+    SDL_DestroyWindow(foreign);
+}
+
+} // namespace
 
 } // namespace coil::platform

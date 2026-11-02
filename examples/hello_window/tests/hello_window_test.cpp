@@ -105,6 +105,14 @@ public:
         return m_inner.setSizeLimits(id, limits);
     }
 
+    [[nodiscard]] Expected<WindowSize> pixelSize(WindowId id) const override {
+        return m_inner.pixelSize(id);
+    }
+
+    [[nodiscard]] Expected<float> displayScale(WindowId id) const override {
+        return m_inner.displayScale(id);
+    }
+
     [[nodiscard]] std::vector<WindowEvent> pollEvents() override {
         ++m_pollCalls;
         beforeEventCall();
@@ -175,6 +183,12 @@ public:
     [[nodiscard]] Expected<void> setSizeLimits(WindowId id, WindowSizeLimits /*limits*/) override {
         return notFound(id);
     }
+
+    [[nodiscard]] Expected<WindowSize> pixelSize(WindowId id) const override {
+        return notFound(id);
+    }
+
+    [[nodiscard]] Expected<float> displayScale(WindowId id) const override { return notFound(id); }
 
     [[nodiscard]] std::vector<WindowEvent> pollEvents() override { return {}; }
 

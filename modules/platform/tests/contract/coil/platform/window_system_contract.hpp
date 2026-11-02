@@ -62,6 +62,9 @@ inline std::ostream& operator<<(std::ostream& os, const WindowEvent& event) {
     if (const auto* resized = std::get_if<Resized>(&event)) {
         return os << "Resized{" << resized->window << ", " << resized->size << "}";
     }
+    if (const auto* scaleChanged = std::get_if<ScaleChanged>(&event)) {
+        return os << "ScaleChanged{" << scaleChanged->window << ", " << scaleChanged->scale << "}";
+    }
     return os << "WindowEvent{unknown}";
 }
 
@@ -536,6 +539,50 @@ TYPED_TEST_P(WindowSystemContract, SL7_UserResizeIsClampedToLimits) {
               (std::vector<WindowEvent>{Resized{.window = a, .size = requested}}));
 }
 
+// SPEC-0013: pixel size and display scale (PX<n> = SPEC-0013 AC-<n>).
+
+TYPED_TEST_P(WindowSystemContract, PX1_PixelSizeAndScaleArePositive) {
+    const WindowSystem& system = this->system();
+    const WindowId a = this->create("A", {.width = 100, .height = 80});
+
+    const Expected<float> scale = system.displayScale(a);
+    ASSERT_TRUE(succeeds(scale));
+    EXPECT_GT(*scale, 0.0F);
+    const Expected<WindowSize> pixels = system.pixelSize(a);
+    ASSERT_TRUE(succeeds(pixels));
+    EXPECT_GE(pixels->width, 100);
+    EXPECT_GE(pixels->height, 80);
+}
+
+TYPED_TEST_P(WindowSystemContract, PX2_PixelSizeFollowsResize) {
+    WindowSystem& system = this->system();
+    const WindowSize before{.width = 100, .height = 80};
+    const WindowSize after{.width = 200, .height = 160};
+    const WindowId a = this->create("A", before);
+    const Expected<WindowSize> oldPixels = system.pixelSize(a);
+    ASSERT_TRUE(succeeds(oldPixels));
+
+    ASSERT_TRUE(succeeds(system.setSize(a, after)));
+    ASSERT_EQ(system.waitEvents(std::chrono::seconds{1}),
+              (std::vector<WindowEvent>{Resized{.window = a, .size = after}}));
+
+    const Expected<WindowSize> newPixels = system.pixelSize(a);
+    ASSERT_TRUE(succeeds(newPixels));
+    EXPECT_GT(newPixels->width, 0);
+    EXPECT_EQ(oldPixels->width * after.width, newPixels->width * before.width);
+    EXPECT_EQ(oldPixels->height * after.height, newPixels->height * before.height);
+}
+
+TYPED_TEST_P(WindowSystemContract, PX3_UnknownIdsAreNotFound) {
+    WindowSystem& system = this->system();
+    const WindowId destroyed = this->create("A", {.width = 100, .height = 80});
+    ASSERT_TRUE(succeeds(system.destroyWindow(destroyed)));
+    for (const WindowId gone : {destroyed, WindowId{.value = 999}}) {
+        EXPECT_TRUE(failsWith(system.pixelSize(gone), ErrorCode::NotFound));
+        EXPECT_TRUE(failsWith(system.displayScale(gone), ErrorCode::NotFound));
+    }
+}
+
 REGISTER_TYPED_TEST_SUITE_P(WindowSystemContract, AC1_CreateReturnsValidIdAndListsWindow,
                             AC2_ReportsTitleAndSizeFromDesc, AC3_SetTitleChangesOnlyThatWindow,
                             AC4_RejectsNonPositiveSize, AC5_DestroyedWindowIsNotFound,
@@ -551,6 +598,7 @@ REGISTER_TYPED_TEST_SUITE_P(WindowSystemContract, AC1_CreateReturnsValidIdAndLis
                             SL2_LimitsAreSetAtCreation, SL3_CreateRejectsInvalidLimitsAndSizes,
                             SL4_SetSizeIsClampedToLimits, SL5_NewLimitsResizeTheWindow,
                             SL6_SetLimitsRejectsBadInputWithoutEvents,
-                            SL7_UserResizeIsClampedToLimits);
+                            SL7_UserResizeIsClampedToLimits, PX1_PixelSizeAndScaleArePositive,
+                            PX2_PixelSizeFollowsResize, PX3_UnknownIdsAreNotFound);
 
 } // namespace coil::platform

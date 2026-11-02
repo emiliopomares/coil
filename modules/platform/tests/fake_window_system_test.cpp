@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include <chrono>
+#include <limits>
 #include <memory>
 #include <vector>
 
@@ -63,6 +64,58 @@ using std::chrono::seconds;
 
 WindowDesc windowDesc() {
     return {.title = "A", .size = {.width = 100, .height = 100}};
+}
+
+TEST(FakeWindowSystem, FS1_DisplayScaleChangesPixelSize) {
+    testing::FakeWindowSystem fake;
+    const WindowSize size{.width = 100, .height = 80};
+    const auto id = fake.createWindow({.title = "A", .size = size});
+    ASSERT_TRUE(succeeds(id));
+    EXPECT_EQ(fake.displayScale(*id), 1.0F);
+    EXPECT_EQ(fake.pixelSize(*id), size);
+
+    ASSERT_TRUE(succeeds(fake.changeDisplayScale(*id, 2.0F)));
+    EXPECT_EQ(fake.pollEvents(),
+              (std::vector<WindowEvent>{ScaleChanged{.window = *id, .scale = 2.0F}}));
+    EXPECT_EQ(fake.displayScale(*id), 2.0F);
+    EXPECT_EQ(fake.pixelSize(*id), (WindowSize{.width = 200, .height = 160}));
+
+    ASSERT_TRUE(succeeds(fake.changeDisplayScale(*id, 2.0F)));
+    EXPECT_EQ(fake.pollEvents(), std::vector<WindowEvent>{});
+
+    const auto odd = fake.createWindow({.title = "B", .size = {.width = 101, .height = 80}});
+    ASSERT_TRUE(succeeds(odd));
+    ASSERT_TRUE(succeeds(fake.changeDisplayScale(*odd, 1.5F)));
+    EXPECT_EQ(fake.pixelSize(*odd), (WindowSize{.width = 152, .height = 120}));
+    EXPECT_EQ(fake.pollEvents(),
+              (std::vector<WindowEvent>{ScaleChanged{.window = *odd, .scale = 1.5F}}));
+
+    for (const float invalid : {0.0F, -1.0F, std::numeric_limits<float>::quiet_NaN(),
+                                std::numeric_limits<float>::infinity()}) {
+        EXPECT_TRUE(failsWith(fake.changeDisplayScale(*id, invalid), ErrorCode::InvalidArgument))
+            << invalid;
+    }
+    EXPECT_TRUE(
+        failsWith(fake.changeDisplayScale(WindowId{.value = 999}, 2.0F), ErrorCode::NotFound));
+    EXPECT_EQ(fake.pollEvents(), std::vector<WindowEvent>{});
+    EXPECT_EQ(fake.displayScale(*id), 2.0F);
+}
+
+TEST(FakeWindowSystem, FS2_ScaleChangesAreCoalescedAndDropped) {
+    testing::FakeWindowSystem fake;
+    const auto a = fake.createWindow({.title = "A", .size = {.width = 100, .height = 80}});
+    const auto b = fake.createWindow({.title = "B", .size = {.width = 100, .height = 80}});
+    ASSERT_TRUE(succeeds(a));
+    ASSERT_TRUE(succeeds(b));
+
+    ASSERT_TRUE(succeeds(fake.changeDisplayScale(*a, 2.0F)));
+    ASSERT_TRUE(succeeds(fake.changeDisplayScale(*a, 3.0F)));
+    EXPECT_EQ(fake.pollEvents(),
+              (std::vector<WindowEvent>{ScaleChanged{.window = *a, .scale = 3.0F}}));
+
+    ASSERT_TRUE(succeeds(fake.changeDisplayScale(*b, 2.0F)));
+    ASSERT_TRUE(succeeds(fake.destroyWindow(*b)));
+    EXPECT_EQ(fake.pollEvents(), std::vector<WindowEvent>{});
 }
 
 TEST(FakeWindowSystem, AC5_WaitAdvancesClockByTimeout) {

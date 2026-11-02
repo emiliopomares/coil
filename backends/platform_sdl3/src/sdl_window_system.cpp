@@ -282,6 +282,15 @@ public:
         return {};
     }
 
+    [[nodiscard]] Expected<platform::WindowSize>
+    pixelSize(platform::WindowId /*id*/) const override {
+        return platform::WindowSize{}; // Red stub (SPEC-0013).
+    }
+
+    [[nodiscard]] Expected<float> displayScale(platform::WindowId /*id*/) const override {
+        return 0.0F; // Red stub (SPEC-0013).
+    }
+
     [[nodiscard]] std::vector<platform::WindowEvent> pollEvents() override {
         std::vector<platform::WindowEvent> events;
         SDL_Event event;

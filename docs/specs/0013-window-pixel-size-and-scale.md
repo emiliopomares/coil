@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Draft |
+| Status | Approved |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::platform` (port, fake, contract suite); `backends/platform_sdl3` |
@@ -18,7 +18,7 @@
 > - [x] Touches ≤ 2 modules (`platform`, `backends/platform_sdl3`); `hello_window` test doubles get
 >       mechanical overrides
 > - [x] Out-of-scope section is filled in
-> - [ ] Open Questions section is empty (recommended answers; approving the spec confirms them, §9)
+> - [x] Open Questions section is resolved (§9)
 
 ---
 
@@ -61,7 +61,7 @@ namespace coil::platform {
 /// different density. Its pixel size may have changed with it; query pixelSize() (SPEC-0013).
 struct ScaleChanged {
     WindowId window;
-    float scale; ///< The new display scale, > 0.
+    float scale = 0.0F; ///< The new display scale, > 0.
 
     friend constexpr bool operator==(ScaleChanged, ScaleChanged) = default;
 };
@@ -178,7 +178,7 @@ Not applicable now. Captures (ADR-0017) will report their pixel scale from this.
 - Two new pure virtuals: the fake, SDL and the two `hello_window` test doubles implement them.
 
 ## 9. Open Questions
-Recommended answers are written into the spec. **Approving the spec confirms them.**
+All resolved as recommended (2026-11-02, Emilio Pomares).
 - **Q1 — One event, or also `PixelSizeChanged`?** *Recommended: only `ScaleChanged`.* The pixel size
   changes only together with the size (`Resized`) or the scale (`ScaleChanged`), and after either
   event the application re-queries `pixelSize`. One fewer event kind to handle.
@@ -269,3 +269,5 @@ Recommended answers are written into the spec. **Approving the spec confirms the
 | Date | Change | Approved by |
 |------|--------|-------------|
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
+| 2026-11-02 | Q1–Q5 confirmed as recommended (Q5 adds EPIC-005 spec 5); spec and plan approved | Emilio Pomares |
+| 2026-11-02 | **Red**: 10 tests fail on assertions: PX1–PX3 for Fake and Sdl3, FS1, FS2, SD1, SD2 (stubs report 0×0 pixels and scale 0, succeed where `NotFound` is required, ignore scale changes and scale events). The other 116 pass. API sketch: `ScaleChanged::scale` gets a default initializer (`= 0.0F`, required by `cppcoreguidelines-pro-type-member-init`). The fake's `changeDisplayScale` stub already returns `NotFound` for unknown ids (it must use the object to satisfy lint); FS1 still fails on the scale change itself. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
