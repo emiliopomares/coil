@@ -33,9 +33,9 @@ window's display.
 |---|------|--------|------------|
 | 1 | [SPEC-0010 `setSize` and the `Resized` event](../specs/0010-window-set-size-and-resized.md) | Done | EPIC-002 |
 | 2 | [SPEC-0011 Resizable flag and minimum/maximum size](../specs/0011-window-resizable-and-size-limits.md) | Done | 1 |
-| 3 | [SPEC-0013 Pixel size, display scale and `ScaleChanged`](../specs/0013-window-pixel-size-and-scale.md) | In Progress (amendment B) | 1 |
+| 3 | [SPEC-0013 Pixel size, display scale and `ScaleChanged`](../specs/0013-window-pixel-size-and-scale.md) | Complete, awaiting acknowledgement (amendments B, C) | 1 |
 | 4 | [SPEC-0012 `hello_window` resizable, logs size changes](../specs/0012-hello-window-resizable.md) | Done | 2 |
-| 5 | [SPEC-0014 `hello_window` prints pixel size and scale](../specs/0014-hello-window-prints-scale.md) | In Progress | 3 |
+| 5 | [SPEC-0014 `hello_window` prints pixel size and scale](../specs/0014-hello-window-prints-scale.md) | Complete, awaiting acknowledgement | 3 |
 
 ## Notes
 - Builds on the `WindowSystem` port (SPEC-0003), its events (SPEC-0006) and `waitEvents` (SPEC-0009).
@@ -57,3 +57,4 @@ window's display.
 | 2026-11-01 | Epic approved | Emilio Pomares |
 | 2026-11-01 | Work order changed: spec 4 (`hello_window`) before spec 3, to see resizing on screen first (spec 4 does not depend on 3) | Emilio Pomares |
 | 2026-11-02 | Spec 5 added (SPEC-0013 Q5): `hello_window` prints pixel size and scale | Emilio Pomares |
+| 2026-11-02 | All specs implemented; Retina manual check recorded. Awaiting acknowledgement to close SPEC-0013, SPEC-0014 and the epic. | Emilio Pomares |

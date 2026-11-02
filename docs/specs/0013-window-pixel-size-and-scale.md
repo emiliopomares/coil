@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved (amendment C in progress) |
+| Status | Approved (amendments B and C complete; awaiting acknowledgement) |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::platform` (port, fake, contract suite); `backends/platform_sdl3` |
@@ -293,3 +293,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 | 2026-11-02 | **Amendment C** (found by SPEC-0014's second manual check: the scale line printed twice, start plus a spurious `ScaleChanged{2}`): rule 8 now requires the SDL adapter to drop scale events that don't change the last reported scale; SD2 renamed `SD2_UnchangedScaleEventsAreDropped` and now expects no event. Approved by the user. | Emilio Pomares |
 | 2026-11-02 | **Red (amendment C)**: the rewritten SD2 fails (the adapter still reports `ScaleChanged{1}` for an unchanged scale); the other 131 tests pass; tidy clean. | Emilio Pomares |
 | 2026-11-02 | **Green (amendment C)**: each SDL window records the scale at creation; a scale event is reported only if the queried scale differs from the last reported one. `tools/check.sh` exit 0 (132/132); `ctest --preset asan` 132/132; `leaks`: 0 for SD1–SD3. `git diff bc68997 -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
+| 2026-11-02 | **Manual check (amendments B and C)**: `hello_window` on a Retina Mac prints exactly one start line, `hello_window: 1600x1200 pixels at scale 2`, and exits 0 on close. Awaiting acknowledgement to set Status → Done. | Emilio Pomares |

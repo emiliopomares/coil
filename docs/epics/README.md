@@ -20,7 +20,7 @@ implemented one at a time. An epic has no code of its own; it is done when all i
 Epic numbers are identifiers in order of creation, not a work order. **Current work order** (roadmap
 to a button, 2026-11-01):
 
-1. EPIC-005 (window resizing): spec 3, pixel size and display scale.
+1. EPIC-005 (window resizing): all specs implemented, awaiting acknowledgement.
 2. EPIC-004 (layout engine).
 3. EPIC-006 (first pixels): **Milestone 1**, coloured boxes laid out and redrawn on resize.
 4. EPIC-007 (input and intents).
