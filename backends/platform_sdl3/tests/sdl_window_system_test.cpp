@@ -163,6 +163,23 @@ TEST(SdlWindowSystem, SD1_DummyDriverHasScaleOne) {
     EXPECT_EQ((*system)->pixelSize(*id), size);
 }
 
+TEST(SdlWindowSystem, SD3_WindowsUseHighPixelDensity) {
+    auto system = createSdlWindowSystem(headless());
+    ASSERT_TRUE(system.has_value()) << std::format("{}", system.error());
+    const auto fixed =
+        (*system)->createWindow({.title = "A", .size = {.width = 100, .height = 80}});
+    const auto resizable = (*system)->createWindow(
+        {.title = "B", .size = {.width = 100, .height = 80}, .resizable = true});
+    for (const auto& id : {fixed, resizable}) {
+        ASSERT_TRUE(succeeds(id));
+        const auto sdlId = sdlWindowId(**system, *id);
+        ASSERT_TRUE(succeeds(sdlId));
+        SDL_Window* window = SDL_GetWindowFromID(*sdlId);
+        ASSERT_NE(window, nullptr) << SDL_GetError();
+        EXPECT_NE(SDL_GetWindowFlags(window) & SDL_WINDOW_HIGH_PIXEL_DENSITY, 0U);
+    }
+}
+
 TEST(SdlWindowSystem, SD2_ScaleEventsAreTranslatedOnce) {
     auto system = createSdlWindowSystem(headless());
     ASSERT_TRUE(system.has_value()) << std::format("{}", system.error());

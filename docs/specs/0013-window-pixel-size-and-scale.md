@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Done |
+| Status | Approved (amendment B in progress) |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::platform` (port, fake, contract suite); `backends/platform_sdl3` |
@@ -118,6 +118,11 @@ public:
      scale queried when the event is translated;
    - several such events for one window in a batch become one (rule 4);
    - if the query fails (it returns 0.0), the event is dropped instead of reporting an invalid scale.
+9. **SDL high pixel density** (amendment B, 2026-11-02): every SDL window MUST be created with
+   `SDL_WINDOW_HIGH_PIXEL_DENSITY`, so it gets a full-density back buffer where the display has one
+   (for example, Retina). Without the flag, macOS gives the window a 1× buffer and reports scale 1.
+   That's truthful, but anything drawn would be upscaled and blurry. Coil works in DIPs and converts
+   only in backends (ADR-0006), so it always wants full density.
 
 ### 4.3 Error handling and edge cases
 | Condition | Result |
@@ -155,6 +160,8 @@ Not applicable now. Captures (ADR-0017) will report their pixel scale from this.
   `ScaleChanged{id, 3.0}`. A `ScaleChanged` for a window destroyed before polling is dropped.
 - **AC-6 (SD1, SDL)** — On the `dummy` driver a new window's scale is 1.0, and its pixel size equals
   its size.
+- **AC-8 (SD3, SDL; amendment B)** — Every window created by the SDL window system, resizable or
+  not, has `SDL_WINDOW_HIGH_PIXEL_DENSITY` in `SDL_GetWindowFlags`.
 - **AC-7 (SD2, SDL)** — Two `SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED` events pushed for one window
   yield exactly one `ScaleChanged{id, 1.0}`. One pushed for an SDL window that Coil doesn't own
   yields nothing.
@@ -168,6 +175,7 @@ Not applicable now. Captures (ADR-0017) will report their pixel scale from this.
 | AC-4 | `FakeWindowSystem.FS1_DisplayScaleChangesPixelSize` | unit | |
 | AC-5 | `FakeWindowSystem.FS2_ScaleChangesAreCoalescedAndDropped` | unit | |
 | AC-6 | `SdlWindowSystem.SD1_DummyDriverHasScaleOne` | integration | |
+| AC-8 | `SdlWindowSystem.SD3_WindowsUseHighPixelDensity` | integration | amendment B |
 | AC-7 | `SdlWindowSystem.SD2_ScaleEventsAreTranslatedOnce` | integration | `SDL_PushEvent`; a second SDL window created directly with `SDL_CreateWindow` |
 
 ## 7. Non-Functional Requirements
@@ -264,6 +272,7 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 - [x] AC-5 → `FakeWindowSystem.FS2_ScaleChangesAreCoalescedAndDropped`
 - [x] AC-6 → `SdlWindowSystem.SD1_DummyDriverHasScaleOne`
 - [x] AC-7 → `SdlWindowSystem.SD2_ScaleEventsAreTranslatedOnce`
+- [ ] AC-8 → `SdlWindowSystem.SD3_WindowsUseHighPixelDensity` (amendment B)
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -273,3 +282,5 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 | 2026-11-02 | **Red**: 10 tests fail on assertions: PX1–PX3 for Fake and Sdl3, FS1, FS2, SD1, SD2 (stubs report 0×0 pixels and scale 0, succeed where `NotFound` is required, ignore scale changes and scale events). The other 116 pass. API sketch: `ScaleChanged::scale` gets a default initializer (`= 0.0F`, required by `cppcoreguidelines-pro-type-member-init`). The fake's `changeDisplayScale` stub already returns `NotFound` for unknown ids (it must use the object to satisfy lint); FS1 still fails on the scale change itself. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
 | 2026-11-02 | **Green + Refactor**: fake keeps a per-window scale (initially 1.0), computes pixel size with `ceil`, validates `changeDisplayScale`, and queues `Resized` / `ScaleChanged` through one shared replace-pending helper. SDL maps `pixelSize` / `displayScale` to `SDL_GetWindowSizeInPixels` / `SDL_GetWindowDisplayScale` (failures → `Internal`) and translates `DISPLAY_SCALE_CHANGED` with the queried scale, one per window per batch, dropped if the query returns 0. `tools/check.sh` exit 0 (126/126); `ctest --preset asan` 126/126; macOS `leaks`: 0 leaks for the SDL PX/SD tests. `git diff 6a7e758 -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
 | 2026-11-02 | Acknowledged; Status → Done | Emilio Pomares |
+| 2026-11-02 | **Amendment B** (found by SPEC-0014's manual check: `800x600 pixels at scale 1` on a Retina display): rule 9 and AC-8 (SD3) added. SDL windows must be created with `SDL_WINDOW_HIGH_PIXEL_DENSITY` (SDL's Cocoa backend allocates a full-density buffer only with that flag). Goes through Red and Green. | Emilio Pomares |
+| 2026-11-02 | **Red (amendment B)**: SD3 fails on its assertion (flag missing on both windows); the other 131 tests pass; tidy clean. | Emilio Pomares |
