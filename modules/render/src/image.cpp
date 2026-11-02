@@ -7,7 +7,10 @@
 
 namespace coil::render {
 
-Image::Image(std::uint32_t /*width*/, std::uint32_t /*height*/) {}
+Image::Image(std::uint32_t width, std::uint32_t height)
+    : m_width(width)
+    , m_height(height)
+    , m_pixels(static_cast<std::size_t>(width) * height, Pixel{}) {}
 
 std::optional<Pixel> Image::pixel(std::uint32_t x, std::uint32_t y) const noexcept {
     if (x >= m_width || y >= m_height) {

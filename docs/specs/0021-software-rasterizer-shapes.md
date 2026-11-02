@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | Approved (complete; awaiting acknowledgement) |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-02 |
 | Module(s) | `coil::render` (`Image`); `backends/render_software` (new adapter) |
@@ -243,24 +243,24 @@ All resolved as recommended (2026-11-02, Emilio Pomares), including Q1 (EPIC-006
   path is Vulkan (ADR-0009 Amendment 1).
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally)
-- [ ] Sanitizer preset passes
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented (Doxygen comments on new public declarations)
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally)
+- [x] Sanitizer preset passes
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented (Doxygen comments on new public declarations)
 
 ### AC verification
-- [ ] AC-1 → `RenderBackendContract/Software.*`
-- [ ] AC-2 → `SoftwareRenderBackend.AC2_ImagesFollowTargetSize`
-- [ ] AC-3 → `SoftwareRenderBackend.AC3_FillsPixelAlignedRects`
-- [ ] AC-4 → `SoftwareRenderBackend.AC4_AntiAliasesFractionalEdges`
-- [ ] AC-5 → `SoftwareRenderBackend.AC5_BlendsSourceOver`
-- [ ] AC-6 → `SoftwareRenderBackend.AC6_RoundsCorners`
-- [ ] AC-7 → `SoftwareRenderBackend.AC7_StrokesBordersInside`
-- [ ] AC-8 → `SoftwareRenderBackend.AC8_ClipsNestAndRestore`
+- [x] AC-1 → `RenderBackendContract/Software.*`
+- [x] AC-2 → `SoftwareRenderBackend.AC2_ImagesFollowTargetSize`
+- [x] AC-3 → `SoftwareRenderBackend.AC3_FillsPixelAlignedRects`
+- [x] AC-4 → `SoftwareRenderBackend.AC4_AntiAliasesFractionalEdges`
+- [x] AC-5 → `SoftwareRenderBackend.AC5_BlendsSourceOver`
+- [x] AC-6 → `SoftwareRenderBackend.AC6_RoundsCorners`
+- [x] AC-7 → `SoftwareRenderBackend.AC7_StrokesBordersInside`
+- [x] AC-8 → `SoftwareRenderBackend.AC8_ClipsNestAndRestore`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -268,3 +268,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares), including Q1 (EPIC-006
 | 2026-11-02 | Spec and implementation plan created (Draft) | |
 | 2026-11-02 | Q1–Q7 confirmed as recommended; spec and plan approved | Emilio Pomares |
 | 2026-11-02 | **Red**: new adapter `backends/render_software` and layering entry; all 12 new tests (5 contract + 7) fail on assertions (stubs: `Image`'s constructor leaves it 0×0; the backend succeeds everywhere with id 0 and empty buffers); the other 182 pass. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
+| 2026-11-02 | **Green + Refactor**: `Image` storage; target bookkeeping with back and front buffers of `ceil(size × scale)` pixels; a per-frame canvas of premultiplied floats with a clip stack, exact area coverage for rects and clips, signed-distance coverage for rounded rects and borders (outer minus inner), source-over blending, and conversion to straight 8-bit sRGB on output. `tools/check.sh` exit 0 (194/194); `ctest --preset asan` 194/194. `git diff 470785b -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
