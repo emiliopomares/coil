@@ -5,6 +5,7 @@
 
 #include <format>
 #include <limits>
+#include <string>
 #include <string_view>
 
 namespace coil::layout {
@@ -60,6 +61,13 @@ public:
     friend bool operator==(const BoxConstraints&, const BoxConstraints&) = default;
 
 private:
+    constexpr BoxConstraints(float minWidth, float maxWidth, float minHeight,
+                             float maxHeight) noexcept
+        : m_minWidth(minWidth)
+        , m_maxWidth(maxWidth)
+        , m_minHeight(minHeight)
+        , m_maxHeight(maxHeight) {}
+
     float m_minWidth = 0.0F;
     float m_maxWidth = kUnbounded;
     float m_minHeight = 0.0F;
@@ -72,7 +80,10 @@ private:
 template <>
 struct std::formatter<coil::layout::BoxConstraints> : std::formatter<std::string_view> {
     template <typename FormatContext>
-    auto format(const coil::layout::BoxConstraints& /*constraints*/, FormatContext& ctx) const {
-        return std::formatter<std::string_view>::format("", ctx);
+    auto format(const coil::layout::BoxConstraints& constraints, FormatContext& ctx) const {
+        const std::string text =
+            std::format("w {}..{}, h {}..{}", constraints.minWidth(), constraints.maxWidth(),
+                        constraints.minHeight(), constraints.maxHeight());
+        return std::formatter<std::string_view>::format(text, ctx);
     }
 };

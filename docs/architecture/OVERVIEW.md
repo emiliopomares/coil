@@ -60,11 +60,12 @@ strict TDD practical for a UI library.
 
 | Module | Responsibility | May depend on |
 |--------|----------------|---------------|
-| `foundation` | `Error`, `std::expected` helpers, math (`Vec2`, `Rect`, `Color`), `Handle<T>`, `Value`, logging port, assertions | — |
+| `foundation` | `Error`, `std::expected` helpers, geometry in DIPs (`Size`, `Point`, `Rect`, `Insets`), `Handle<T>`, `Value`, logging port, assertions | — |
+| `layout` | `BoxConstraints`, layout elements (measure/arrange), modifier chains, `Row`/`Column`/`Grid` (ADR-0019) | foundation |
 | `platform` | Ports: `WindowSystem`, `Window`, `InputSource`, `Clipboard`, `Clock`, `CursorService` | foundation |
-| `render` | `DrawList`, `Painter` primitives, `RenderBackend` port, `GpuSurface` port, font/image resource ids | foundation |
+| `render` | `Color`, `DrawList`, `Painter` primitives, `RenderBackend` port, `GpuSurface` port, font/image resource ids | foundation |
 | `tasks` | `TaskScheduler` port, `UiDispatcher`, `AsyncResult<T>`/`AsyncPromise<T>`, `Task<T>` coroutine type | foundation |
-| `core` | Widget base, tree, `WidgetHandle`, layout (measure/arrange), input mapping → intents, focus, hit testing, `CommandRouter`, `PropertyStore`, styling, type registry | foundation, platform, render, tasks |
+| `core` | Widget base, tree, `WidgetHandle`, widget layout (through `layout`), input mapping → intents, focus, hit testing, `CommandRouter`, `PropertyStore`, styling, type registry | foundation, layout, platform, render, tasks |
 | `widgets` | Standard widgets: Button, Label, Panel, Box/Grid/Stack layouts, Slider, ScrollView, Viewport (GPU surface), … | core |
 | `docking` | Dock model (pure data), dock view, panel factory registry, workspace serialization | core, widgets, automation, json |
 | `automation` | `AutomationService`: semantic tree snapshots, change events, `perform` (via virtual input device), `waitFor` | core |

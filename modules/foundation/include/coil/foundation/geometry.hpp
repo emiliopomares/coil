@@ -10,7 +10,7 @@ struct Size {
     float width = 0.0F;
     float height = 0.0F;
 
-    friend constexpr bool operator==(Size /*lhs*/, Size /*rhs*/) { return false; }
+    friend constexpr bool operator==(Size, Size) = default;
 };
 
 /// A position in DIPs. x grows rightwards, y grows downwards.
@@ -18,7 +18,7 @@ struct Point {
     float x = 0.0F;
     float y = 0.0F;
 
-    friend constexpr bool operator==(Point /*lhs*/, Point /*rhs*/) { return false; }
+    friend constexpr bool operator==(Point, Point) = default;
 };
 
 /// An axis-aligned rectangle: its top-left corner and its size, in DIPs.
@@ -27,18 +27,18 @@ struct Rect {
     Size size;
 
     /// origin.x
-    [[nodiscard]] constexpr float left() const noexcept { return size.width; }
+    [[nodiscard]] constexpr float left() const noexcept { return origin.x; }
 
     /// origin.y
-    [[nodiscard]] constexpr float top() const noexcept { return size.height; }
+    [[nodiscard]] constexpr float top() const noexcept { return origin.y; }
 
     /// origin.x + size.width
-    [[nodiscard]] constexpr float right() const noexcept { return origin.x; }
+    [[nodiscard]] constexpr float right() const noexcept { return origin.x + size.width; }
 
     /// origin.y + size.height
-    [[nodiscard]] constexpr float bottom() const noexcept { return origin.y; }
+    [[nodiscard]] constexpr float bottom() const noexcept { return origin.y + size.height; }
 
-    friend constexpr bool operator==(Rect /*lhs*/, Rect /*rhs*/) { return false; }
+    friend constexpr bool operator==(Rect, Rect) = default;
 };
 
 /// Space around the four edges of a box, in DIPs.
@@ -49,12 +49,12 @@ struct Insets {
     float bottom = 0.0F;
 
     /// left + right
-    [[nodiscard]] constexpr float horizontal() const noexcept { return left; }
+    [[nodiscard]] constexpr float horizontal() const noexcept { return left + right; }
 
     /// top + bottom
-    [[nodiscard]] constexpr float vertical() const noexcept { return top; }
+    [[nodiscard]] constexpr float vertical() const noexcept { return top + bottom; }
 
-    friend constexpr bool operator==(Insets /*lhs*/, Insets /*rhs*/) { return false; }
+    friend constexpr bool operator==(Insets, Insets) = default;
 };
 
 } // namespace coil::foundation
@@ -70,8 +70,9 @@ using foundation::Size;
 template <>
 struct std::formatter<coil::foundation::Size> : std::formatter<std::string_view> {
     template <typename FormatContext>
-    auto format(coil::foundation::Size /*size*/, FormatContext& ctx) const {
-        return std::formatter<std::string_view>::format("", ctx);
+    auto format(coil::foundation::Size size, FormatContext& ctx) const {
+        return std::formatter<std::string_view>::format(
+            std::format("{}x{}", size.width, size.height), ctx);
     }
 };
 
@@ -79,8 +80,9 @@ struct std::formatter<coil::foundation::Size> : std::formatter<std::string_view>
 template <>
 struct std::formatter<coil::foundation::Point> : std::formatter<std::string_view> {
     template <typename FormatContext>
-    auto format(coil::foundation::Point /*point*/, FormatContext& ctx) const {
-        return std::formatter<std::string_view>::format("", ctx);
+    auto format(coil::foundation::Point point, FormatContext& ctx) const {
+        return std::formatter<std::string_view>::format(std::format("({}, {})", point.x, point.y),
+                                                        ctx);
     }
 };
 
@@ -88,8 +90,9 @@ struct std::formatter<coil::foundation::Point> : std::formatter<std::string_view
 template <>
 struct std::formatter<coil::foundation::Rect> : std::formatter<std::string_view> {
     template <typename FormatContext>
-    auto format(coil::foundation::Rect /*rect*/, FormatContext& ctx) const {
-        return std::formatter<std::string_view>::format("", ctx);
+    auto format(coil::foundation::Rect rect, FormatContext& ctx) const {
+        return std::formatter<std::string_view>::format(
+            std::format("{} {}", rect.origin, rect.size), ctx);
     }
 };
 
@@ -97,7 +100,9 @@ struct std::formatter<coil::foundation::Rect> : std::formatter<std::string_view>
 template <>
 struct std::formatter<coil::foundation::Insets> : std::formatter<std::string_view> {
     template <typename FormatContext>
-    auto format(coil::foundation::Insets /*insets*/, FormatContext& ctx) const {
-        return std::formatter<std::string_view>::format("", ctx);
+    auto format(coil::foundation::Insets insets, FormatContext& ctx) const {
+        return std::formatter<std::string_view>::format(
+            std::format("{{{}, {}, {}, {}}}", insets.left, insets.top, insets.right, insets.bottom),
+            ctx);
     }
 };

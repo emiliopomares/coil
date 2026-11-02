@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | Approved (complete; awaiting acknowledgement) |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-02 |
 | Module(s) | `coil::foundation` (geometry); `coil::layout` (new module, `BoxConstraints`) |
@@ -320,24 +320,24 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
   invariants impossible to break. The cost is accessors instead of members.
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally)
-- [ ] Sanitizer preset passes
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented (Doxygen comments on new public declarations)
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally)
+- [x] Sanitizer preset passes
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented (Doxygen comments on new public declarations)
 
 ### AC verification
-- [ ] AC-1 → `Geometry.AC1_ValuesDefaultToZeroAndCompareByValue`
-- [ ] AC-2 → `Geometry.AC2_FormatsReadably`
-- [ ] AC-3 → `BoxConstraints.AC3_CreateValidates`
-- [ ] AC-4 → `BoxConstraints.AC4_Factories`
-- [ ] AC-5 → `BoxConstraints.AC5_ConstrainClampsIntoRange`
-- [ ] AC-6 → `BoxConstraints.AC6_DeflateSubtractsInsets`
-- [ ] AC-7 → `BoxConstraints.AC7_LoosenDropsMinimums`
-- [ ] AC-8 → `BoxConstraints.AC8_FormatsReadably`
+- [x] AC-1 → `Geometry.AC1_ValuesDefaultToZeroAndCompareByValue`
+- [x] AC-2 → `Geometry.AC2_FormatsReadably`
+- [x] AC-3 → `BoxConstraints.AC3_CreateValidates`
+- [x] AC-4 → `BoxConstraints.AC4_Factories`
+- [x] AC-5 → `BoxConstraints.AC5_ConstrainClampsIntoRange`
+- [x] AC-6 → `BoxConstraints.AC6_DeflateSubtractsInsets`
+- [x] AC-7 → `BoxConstraints.AC7_LoosenDropsMinimums`
+- [x] AC-8 → `BoxConstraints.AC8_FormatsReadably`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -345,3 +345,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 | 2026-11-02 | Spec and implementation plan created (Draft) | |
 | 2026-11-02 | Q1–Q5 confirmed as recommended; spec and plan approved | Emilio Pomares |
 | 2026-11-02 | **Red**: all 8 new tests fail on assertions (stubs: hand-written equality returning `false`, derived values reading the wrong member, empty formatters, factories returning the default value, operations returning their input or a default, queries returning `false`); the other 132 tests pass. AC-6 and AC-7 were first written as comparisons with `make(...)`, which passed against the stubs (both sides came from the stubbed factory); before this commit they were rewritten to check each range. Test printers are `operator<<` in an unnamed inline namespace (internal linkage, still found by GoogleTest). `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
+| 2026-11-02 | **Green + Refactor**: geometry equality defaulted, derived values and formatters implemented; `BoxConstraints` validates in `create` (`tight` and `loose` delegate to it), clamps in `constrain` (NaN → min), and deflates with NaN insets as 0 and unbounded maximums kept. OVERVIEW §3 gains the `layout` row (`Color` moves to `render`). `tools/check.sh` exit 0 (140/140); `ctest --preset asan` 140/140. `git diff ee0dfc6 -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
