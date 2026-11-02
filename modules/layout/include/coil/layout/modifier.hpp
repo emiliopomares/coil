@@ -11,6 +11,8 @@
 
 namespace coil::layout {
 
+class LayoutElement;
+
 /// One stage of an element's modifier chain (ADR-0019). Built-in and custom modifiers implement
 /// this same interface. A stage receives constraints from outside, passes (possibly changed)
 /// constraints inward, reports its own size from the inner size, and places the inner content in
@@ -60,6 +62,9 @@ public:
     [[nodiscard]] std::vector<std::string_view> typeIds() const;
 
 private:
+    friend class LayoutElement; // Runs the stages; the chain's storage stays an implementation
+                                // detail.
+
     std::vector<std::unique_ptr<LayoutModifier>> m_modifiers;
     std::optional<Error> m_error;
 };

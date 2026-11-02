@@ -49,7 +49,10 @@ protected:
 
 private:
     ModifierChain m_modifiers;
-    std::vector<Size> m_stageSizes; ///< Measured size inside each stage, from the last measure().
+    /// Constraints received by each stage, then by the content (one more than the stages).
+    std::vector<BoxConstraints> m_stageConstraints;
+    /// Size of each stage, then of the content, from the last measure() (one more than the stages).
+    std::vector<Size> m_stageSizes;
     Size m_measuredSize;
     Rect m_bounds;
     Rect m_contentBounds;

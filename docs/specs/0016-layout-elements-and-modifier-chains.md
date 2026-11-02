@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | Approved (complete; awaiting acknowledgement) |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-02 |
 | Module(s) | `coil::layout` only |
@@ -324,24 +324,24 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
   chain; each element keeps its own per-stage sizes, so nesting is safe.
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally)
-- [ ] Sanitizer preset passes
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented (Doxygen comments on new public declarations)
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally)
+- [x] Sanitizer preset passes
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented (Doxygen comments on new public declarations)
 
 ### AC verification
-- [ ] AC-1 → `LayoutElement.AC1_MeasuresAndArrangesContent`
-- [ ] AC-2 → `LayoutElement.AC2_ContentSizesAreClamped`
-- [ ] AC-3 → `Padding.AC3_ShrinksConstraintsAndGrowsSize`
-- [ ] AC-4 → `Padding.AC4_InsetsTheContent`
-- [ ] AC-5 → `ModifierChain.AC5_OrderMattersAndCustomModifiersWork`
-- [ ] AC-6 → `ModifierChain.AC6_InvalidModifiersAreRejected`
-- [ ] AC-7 → `LayoutElement.AC7_CustomContainerLaysOutChildren`
-- [ ] AC-8 → `LayoutElement.AC8_LayoutRootRejectsInvalidSizes`
+- [x] AC-1 → `LayoutElement.AC1_MeasuresAndArrangesContent`
+- [x] AC-2 → `LayoutElement.AC2_ContentSizesAreClamped`
+- [x] AC-3 → `Padding.AC3_ShrinksConstraintsAndGrowsSize`
+- [x] AC-4 → `Padding.AC4_InsetsTheContent`
+- [x] AC-5 → `ModifierChain.AC5_OrderMattersAndCustomModifiersWork`
+- [x] AC-6 → `ModifierChain.AC6_InvalidModifiersAreRejected`
+- [x] AC-7 → `LayoutElement.AC7_CustomContainerLaysOutChildren`
+- [x] AC-8 → `LayoutElement.AC8_LayoutRootRejectsInvalidSizes`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -349,3 +349,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 | 2026-11-02 | Spec and implementation plan created (Draft) | |
 | 2026-11-02 | Q1–Q6 confirmed as recommended; spec and plan approved | Emilio Pomares |
 | 2026-11-02 | **Red**: all 8 new tests fail on assertions (stubs: `then` drops modifiers, `padding` accepts anything and changes nothing, `setModifiers` stores without checking, `measure` returns 0×0, `arrange` records nothing, `layoutRoot` does nothing); the other 141 pass. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
+| 2026-11-02 | **Green + Refactor**: chains store modifiers and keep their first error; `padding` validates and implements rule 5; `LayoutElement` runs rules 3–4 with per-stage constraints and sizes (iterators, no unchecked indexing), sanitizing every size; `layoutRoot` validates through `BoxConstraints::tight`. Implementation notes: `ModifierChain` declares `LayoutElement` a friend so the stages stay private (no public API added); a factory result holding a null modifier is recorded as an `InvalidArgument` error (not covered by the spec; see amendment proposal). `tools/check.sh` exit 0 (149/149); `ctest --preset asan` 149/149. `git diff 98e99ee -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
