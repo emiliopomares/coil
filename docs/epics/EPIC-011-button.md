@@ -12,7 +12,9 @@ and disabled state, emits a command when activated by any device (pointer click 
 intent), and is fully automatable.
 
 ## Done when
-- `Button` (`widgets` module) paints its states: normal, hover, pressed, focused and disabled.
+- `Button` (`widgets` module) is a composite: it paints its own background for each state (normal,
+  hover, pressed, focused and disabled) and holds a `Label` child for its text, built through the
+  public tree API (ADR-0005 Amendment 1).
 - Activation emits its `Command` through the `CommandRouter` for a pointer click (down and up inside)
   or an `Activate` intent while focused, and never while disabled.
 - Its `AutomationNode` has role button, name from its label, a `press` action and its enabled state.
@@ -26,7 +28,7 @@ intent), and is fully automatable.
 ## Specs (in dependency order)
 | # | Spec | Status | Depends on |
 |---|------|--------|------------|
-| 1 | `Button` widget: visual states and painting | Planned | EPIC-008, EPIC-010 |
+| 1 | `Button` widget: composite with a `Label` child; visual states and painting | Planned | EPIC-008, EPIC-010 |
 | 2 | Activation by pointer click or `Activate` intent emits a command | Planned | 1; EPIC-009 |
 | 3 | Button automation node (role, name, `press` action, enabled state) | Planned | 1 |
 | 4 | Example: "Click me" counter (manual check, golden test) | Planned | 2, 3 |
@@ -38,3 +40,4 @@ intent), and is fully automatable.
 | Date | Change | Approved by |
 |------|--------|-------------|
 | 2026-11-01 | Epic proposed (roadmap) | |
+| 2026-11-02 | `Button` is a composite holding a `Label` child (ADR-0005 Amendment 1) | Emilio Pomares |

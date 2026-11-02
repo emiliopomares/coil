@@ -45,3 +45,25 @@ the `DrawList` vocabulary, layout, widgets and text.
   production path remains Vulkan.
 − The `DrawList` must not drift towards what is easy on a CPU. Batching-friendly design (see above)
   still applies.
+
+## Amendment 2 (2026-11-02): closed drawing vocabulary; gradients
+Status: Accepted (2026-11-02)
+
+### Context
+Custom widgets (ADR-0005 Amendment 1) need to draw. Letting them add their own `DrawList` command
+types would require code for each renderer (software, Vulkan, OpenGL), break the recording backend,
+frame capture and golden tests, and leave remote frontends unable to draw them.
+
+### Decision
+- **The `DrawList` vocabulary is closed to plugins.** Widgets, built-in or custom, draw with `Painter`
+  primitives only. Pixels a widget computes itself are drawn as an image (`TextureId`). Rendering that
+  needs the GPU directly uses a `GpuSurface`.
+- **The vocabulary grows for everyone.** A missing primitive is added to the `DrawList` through a
+  spec, implemented by every backend, and available to every widget. Letting plugins define their own
+  commands (for example, custom shaders) needs a new ADR.
+- **Gradients join the vocabulary:** linear and radial gradient fills, with at least two colour stops.
+  They first ship in the software renderer (EPIC-006).
+
+### Consequences
++ Every widget works on every backend, in tests, in captures and in remote frontends.
+− Effects outside the vocabulary must wait until it is extended, or use an image or a `GpuSurface`.

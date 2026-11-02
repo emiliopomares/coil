@@ -19,13 +19,17 @@ measurable sizes for layout, and a `Label` widget displays it sharply at any dis
 - The `DrawList` carries glyph runs, and the software renderer draws them through a glyph atlas
   (golden tests).
 - Text measurement gives the layout engine intrinsic sizes.
-- A `Label` widget (`widgets` module) displays text and publishes its automation node (role text,
-  name = its text).
+- A `Label` widget (`widgets` module), a built-in primitive that uses only the public API
+  (ADR-0005 Amendment 1), displays a single line of text and publishes its automation node (role
+  text, name = its text). Its text can be set directly; binding it to a `Property` follows EPIC-009.
+  Text that doesn't fit is clipped. Horizontal alignment is start, centre or end. Font, size and
+  colour are plain parameters.
 - An example shows labels on screen, crisp on Retina (manual check plus a golden test).
 
 ## Out of scope
 - Text editing, selection, carets, IME, rich text, bidirectional and right-to-left layout, line
-  breaking beyond a single line, font fallback chains, emoji colour fonts.
+  breaking beyond a single line, font fallback chains, emoji colour fonts, ellipsis on overflow,
+  styling and theming.
 
 ## Specs (in dependency order)
 | # | Spec | Status | Depends on |
@@ -34,7 +38,7 @@ measurable sizes for layout, and a `Label` widget displays it sharply at any dis
 | 2 | `text_freetype` backend: HarfBuzz shaping, FreeType rasterization, bundled default font | Planned | 1 |
 | 3 | Glyph runs in the `DrawList`; glyph atlas in the software renderer | Planned | 1; EPIC-006 spec 3 |
 | 4 | Text measurement for layout (intrinsic sizes) | Planned | 1; EPIC-004 |
-| 5 | `Label` widget (`widgets` module) with its automation node | Planned | 3, 4; EPIC-008 |
+| 5 | `Label` widget (`widgets` module): single line, clipped, aligned; its automation node | Planned | 3, 4; EPIC-008 |
 | 6 | Example: labels on screen (manual check, golden test) | Planned | 5 |
 
 ## Notes
@@ -48,3 +52,4 @@ measurable sizes for layout, and a `Label` widget displays it sharply at any dis
 | Date | Change | Approved by |
 |------|--------|-------------|
 | 2026-11-01 | Epic proposed (roadmap) | |
+| 2026-11-02 | `Label` refined: built-in primitive on the public API only; clip on overflow; start/centre/end alignment; plain style parameters | Emilio Pomares |
