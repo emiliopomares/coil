@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Draft |
+| Status | Approved |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-02 |
 | Module(s) | `examples/hello_window` only |
@@ -16,7 +16,7 @@
 > - [x] ≤ 8 acceptance criteria
 > - [x] Touches 1 area (`examples/hello_window`); no new dependency
 > - [x] Out-of-scope section is filled in
-> - [ ] Open Questions section is empty (recommended answers; approving the spec confirms them, §9)
+> - [x] Open Questions section is resolved (§9)
 
 ---
 
@@ -110,7 +110,7 @@ they go through this spec's Red.
 None.
 
 ## 9. Open Questions
-Recommended answers are written into the spec. **Approving the spec confirms them.**
+All resolved as recommended (2026-11-02, Emilio Pomares), including Q2 (SPEC-0012 test expectations amended).
 - **Q1 — Line format?** *Recommended: `hello_window: 1600x1200 pixels at scale 2`* (scale through
   `std::format("{}")`, so no trailing zeros).
 - **Q2 — Changing SPEC-0012's test expectations.** The start line changes what R2–R5 see in `log`.
@@ -174,3 +174,5 @@ Recommended answers are written into the spec. **Approving the spec confirms the
 | Date | Change | Approved by |
 |------|--------|-------------|
 | 2026-11-02 | Spec and implementation plan created (Draft) | |
+| 2026-11-02 | Q1–Q2 confirmed as recommended; spec and plan approved | Emilio Pomares |
+| 2026-11-02 | **Red**: S1–S5 fail on assertions (no scale line), and R2–R5 fail with their amended expectations (start line missing); the other 122 tests pass. No stub needed (the current code is the stub). `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |

@@ -39,6 +39,9 @@ using hello_window::kIdleTimeout;
 using hello_window::kMinSize;
 using hello_window::runHelloWindow;
 
+/// The scale line written once the window exists, for an 800x600 window at scale 1 (SPEC-0014).
+constexpr std::string_view kStartLine = "hello_window: 800x600 pixels at scale 1\n";
+
 /// After this many event calls the program is considered stuck (SPEC-0007 §6 loop guard).
 constexpr int kMaxEventCalls = 100;
 
@@ -375,7 +378,9 @@ TEST(HelloWindow, R2_LogsEachResizeOfItsWindow) {
 
     std::ostringstream log;
     EXPECT_EQ(runHelloWindow(observed, log), 0);
-    EXPECT_EQ(log.str(), "hello_window: resized to 1024x768\nhello_window: resized to 640x480\n");
+    EXPECT_EQ(log.str(),
+              std::string{kStartLine} +
+                  "hello_window: resized to 1024x768\nhello_window: resized to 640x480\n");
 }
 
 TEST(HelloWindow, R3_IgnoresResizesOfOtherWindows) {
@@ -396,7 +401,7 @@ TEST(HelloWindow, R3_IgnoresResizesOfOtherWindows) {
 
     std::ostringstream log;
     EXPECT_EQ(runHelloWindow(observed, log), 0);
-    EXPECT_EQ(log.str(), "");
+    EXPECT_EQ(log.str(), kStartLine);
 }
 
 TEST(HelloWindow, R4_LogsTheClampedSize) {
@@ -413,7 +418,7 @@ TEST(HelloWindow, R4_LogsTheClampedSize) {
 
     std::ostringstream log;
     EXPECT_EQ(runHelloWindow(observed, log), 0);
-    EXPECT_EQ(log.str(), "hello_window: resized to 320x240\n");
+    EXPECT_EQ(log.str(), std::string{kStartLine} + "hello_window: resized to 320x240\n");
 }
 
 TEST(HelloWindow, R5_LogsResizesOnSdl) {
@@ -432,7 +437,99 @@ TEST(HelloWindow, R5_LogsResizesOnSdl) {
 
     std::ostringstream log;
     EXPECT_EQ(runHelloWindow(observed, log), 0);
-    EXPECT_EQ(log.str(), "hello_window: resized to 1024x768\n");
+    EXPECT_EQ(log.str(), std::string{kStartLine} + "hello_window: resized to 1024x768\n");
+}
+
+// SPEC-0014: pixel size and scale lines (S<n> = SPEC-0014 AC-<n>).
+
+TEST(HelloWindow, S1_PrintsPixelSizeAndScaleAtStart) {
+    FakeWindowSystem fake;
+    ObservedWindowSystem observed{fake, closeOnFake(fake)};
+    std::ostringstream log;
+    bool checked = false;
+    observed.setBeforeEvents([&](int call) {
+        if (call == 1) {
+            EXPECT_EQ(log.str(), kStartLine);
+            checked = true;
+            EXPECT_TRUE(fake.requestClose(onlyWindow(fake)).has_value());
+        }
+    });
+
+    EXPECT_EQ(runHelloWindow(observed, log), 0);
+    EXPECT_TRUE(checked) << "runHelloWindow never asked for events";
+}
+
+TEST(HelloWindow, S2_PrintsScaleChanges) {
+    FakeWindowSystem fake;
+    ObservedWindowSystem observed{fake, closeOnFake(fake)};
+    observed.setBeforeEvents([&](int call) {
+        const WindowId program = onlyWindow(fake);
+        if (call == 1) {
+            EXPECT_TRUE(fake.changeDisplayScale(program, 2.0F).has_value());
+        } else if (call == 2) {
+            EXPECT_TRUE(fake.requestClose(program).has_value());
+        }
+    });
+
+    std::ostringstream log;
+    EXPECT_EQ(runHelloWindow(observed, log), 0);
+    EXPECT_EQ(log.str(), std::string{kStartLine} + "hello_window: 1600x1200 pixels at scale 2\n");
+}
+
+TEST(HelloWindow, S3_IgnoresScaleChangesOfOtherWindows) {
+    FakeWindowSystem fake;
+    ObservedWindowSystem observed{fake, closeOnFake(fake)};
+    std::optional<WindowId> programWindow;
+    observed.setBeforeEvents([&](int call) {
+        if (call == 1) {
+            programWindow = onlyWindow(fake);
+            const auto other =
+                fake.createWindow({.title = "Other", .size = {.width = 64, .height = 64}});
+            ASSERT_TRUE(other.has_value());
+            EXPECT_TRUE(fake.changeDisplayScale(*other, 2.0F).has_value());
+        } else if (call == 2 && programWindow) {
+            EXPECT_TRUE(fake.requestClose(*programWindow).has_value());
+        }
+    });
+
+    std::ostringstream log;
+    EXPECT_EQ(runHelloWindow(observed, log), 0);
+    EXPECT_EQ(log.str(), kStartLine);
+}
+
+TEST(HelloWindow, S4_LinesFollowEventOrder) {
+    FakeWindowSystem fake;
+    ObservedWindowSystem observed{fake, closeOnFake(fake)};
+    observed.setBeforeEvents([&](int call) {
+        const WindowId program = onlyWindow(fake);
+        if (call == 1) {
+            EXPECT_TRUE(fake.userResize(program, {.width = 1024, .height = 768}).has_value());
+            EXPECT_TRUE(fake.changeDisplayScale(program, 1.5F).has_value());
+        } else if (call == 2) {
+            EXPECT_TRUE(fake.requestClose(program).has_value());
+        }
+    });
+
+    std::ostringstream log;
+    EXPECT_EQ(runHelloWindow(observed, log), 0);
+    EXPECT_EQ(log.str(), std::string{kStartLine} + "hello_window: resized to 1024x768\n"
+                                                   "hello_window: 1536x1152 pixels at scale 1.5\n");
+}
+
+TEST(HelloWindow, S5_PrintsScaleOnSdl) {
+    auto sdl = coil::platform_sdl3::createSdlWindowSystem({.videoDriver = "dummy"});
+    ASSERT_TRUE(sdl.has_value()) << std::format("{}", sdl.error());
+    WindowSystem& system = **sdl;
+    ObservedWindowSystem observed{system, closeOnSdl(system)};
+    observed.setBeforeEvents([&](int call) {
+        if (call == 1) {
+            closeOnSdl(system)(onlyWindow(system));
+        }
+    });
+
+    std::ostringstream log;
+    EXPECT_EQ(runHelloWindow(observed, log), 0);
+    EXPECT_TRUE(log.str().starts_with(kStartLine)) << log.str();
 }
 
 } // namespace
