@@ -68,6 +68,7 @@ private:
         WindowSize size;
         bool resizable = false;
         WindowSizeLimits limits;
+        float scale = 1.0F; ///< Display scale; pixels per DIP.
     };
 
     /// The live window with `id`, or nullptr.

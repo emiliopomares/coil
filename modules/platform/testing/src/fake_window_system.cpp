@@ -5,6 +5,7 @@
 #include <coil/platform/window_system.hpp>
 
 #include <algorithm>
+#include <cmath>
 #include <expected>
 #include <format>
 #include <functional>
@@ -56,6 +57,17 @@ WindowSize clamp(WindowSize size, const WindowSizeLimits& limits) {
         size.height = std::min(size.height, limits.max->height);
     }
     return size;
+}
+
+/// Queues `event`, replacing a pending event of the same type for the same window: at most one is
+/// pending per window, and the newest goes to the end (SPEC-0010 rule 9, SPEC-0013 rule 4).
+template <typename Event>
+void queueReplacing(std::vector<WindowEvent>& events, Event event) {
+    std::erase_if(events, [&event](const WindowEvent& pending) {
+        const auto* same = std::get_if<Event>(&pending);
+        return same != nullptr && same->window == event.window;
+    });
+    events.emplace_back(event);
 }
 
 } // namespace
@@ -152,12 +164,7 @@ void FakeWindowSystem::resize(Window& window, WindowSize size) {
         return;
     }
     window.size = size;
-    // A pending Resized for this window is superseded by the new one (SPEC-0010 rule 9).
-    std::erase_if(m_events, [id = window.id](const WindowEvent& event) {
-        const auto* resized = std::get_if<Resized>(&event);
-        return resized != nullptr && resized->window == id;
-    });
-    m_events.emplace_back(Resized{.window = window.id, .size = size});
+    queueReplacing(m_events, Resized{.window = window.id, .size = size});
 }
 
 Expected<bool> FakeWindowSystem::resizable(WindowId id) const {
@@ -189,19 +196,41 @@ Expected<void> FakeWindowSystem::setSizeLimits(WindowId id, WindowSizeLimits lim
     return {};
 }
 
-Expected<WindowSize> FakeWindowSystem::pixelSize(WindowId /*id*/) const {
-    return WindowSize{}; // Red stub (SPEC-0013).
-}
-
-Expected<float> FakeWindowSystem::displayScale(WindowId /*id*/) const {
-    return 0.0F; // Red stub (SPEC-0013).
-}
-
-Expected<void> FakeWindowSystem::changeDisplayScale(WindowId id, float /*scale*/) {
-    if (find(id) == nullptr) {
+Expected<WindowSize> FakeWindowSystem::pixelSize(WindowId id) const {
+    const Window* window = find(id);
+    if (window == nullptr) {
         return notFound(id);
     }
-    return {}; // Red stub (SPEC-0013): the scale is not changed.
+    // Rounded up, as SDL does when it derives pixels from a density (SPEC-0013 rule 7).
+    const auto toPixels = [scale = window->scale](int units) {
+        return static_cast<int>(std::ceil(static_cast<float>(units) * scale));
+    };
+    return WindowSize{.width = toPixels(window->size.width),
+                      .height = toPixels(window->size.height)};
+}
+
+Expected<float> FakeWindowSystem::displayScale(WindowId id) const {
+    const Window* window = find(id);
+    if (window == nullptr) {
+        return notFound(id);
+    }
+    return window->scale;
+}
+
+Expected<void> FakeWindowSystem::changeDisplayScale(WindowId id, float scale) {
+    Window* window = find(id);
+    if (window == nullptr) {
+        return notFound(id);
+    }
+    if (!std::isfinite(scale) || scale <= 0.0F) {
+        return makeUnexpected(ErrorCode::InvalidArgument,
+                              std::format("display scale must be finite and > 0, got {}", scale));
+    }
+    if (window->scale != scale) {
+        window->scale = scale;
+        queueReplacing(m_events, ScaleChanged{.window = id, .scale = scale});
+    }
+    return {};
 }
 
 std::vector<WindowEvent> FakeWindowSystem::pollEvents() {

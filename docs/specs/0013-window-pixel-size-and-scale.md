@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | Done (pending acknowledgement) |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-01 |
 | Module(s) | `coil::platform` (port, fake, contract suite); `backends/platform_sdl3` |
@@ -247,23 +247,23 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
   would then duplicate a query that can go stale; one source of truth is enough.
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally)
-- [ ] Sanitizer preset passes; macOS `leaks` reports 0 leaks for the SDL tests
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented (Doxygen comments on new public declarations)
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally)
+- [x] Sanitizer preset passes; macOS `leaks` reports 0 leaks for the SDL tests
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented (Doxygen comments on new public declarations)
 
 ### AC verification
-- [ ] AC-1 → `…PX1_PixelSizeAndScaleArePositive` (Fake, Sdl3)
-- [ ] AC-2 → `…PX2_PixelSizeFollowsResize` (Fake, Sdl3)
-- [ ] AC-3 → `…PX3_UnknownIdsAreNotFound` (Fake, Sdl3)
-- [ ] AC-4 → `FakeWindowSystem.FS1_DisplayScaleChangesPixelSize`
-- [ ] AC-5 → `FakeWindowSystem.FS2_ScaleChangesAreCoalescedAndDropped`
-- [ ] AC-6 → `SdlWindowSystem.SD1_DummyDriverHasScaleOne`
-- [ ] AC-7 → `SdlWindowSystem.SD2_ScaleEventsAreTranslatedOnce`
+- [x] AC-1 → `…PX1_PixelSizeAndScaleArePositive` (Fake, Sdl3)
+- [x] AC-2 → `…PX2_PixelSizeFollowsResize` (Fake, Sdl3)
+- [x] AC-3 → `…PX3_UnknownIdsAreNotFound` (Fake, Sdl3)
+- [x] AC-4 → `FakeWindowSystem.FS1_DisplayScaleChangesPixelSize`
+- [x] AC-5 → `FakeWindowSystem.FS2_ScaleChangesAreCoalescedAndDropped`
+- [x] AC-6 → `SdlWindowSystem.SD1_DummyDriverHasScaleOne`
+- [x] AC-7 → `SdlWindowSystem.SD2_ScaleEventsAreTranslatedOnce`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -271,3 +271,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 | 2026-11-01 | Spec and implementation plan created (Draft) | |
 | 2026-11-02 | Q1–Q5 confirmed as recommended (Q5 adds EPIC-005 spec 5); spec and plan approved | Emilio Pomares |
 | 2026-11-02 | **Red**: 10 tests fail on assertions: PX1–PX3 for Fake and Sdl3, FS1, FS2, SD1, SD2 (stubs report 0×0 pixels and scale 0, succeed where `NotFound` is required, ignore scale changes and scale events). The other 116 pass. API sketch: `ScaleChanged::scale` gets a default initializer (`= 0.0F`, required by `cppcoreguidelines-pro-type-member-init`). The fake's `changeDisplayScale` stub already returns `NotFound` for unknown ids (it must use the object to satisfy lint); FS1 still fails on the scale change itself. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
+| 2026-11-02 | **Green + Refactor**: fake keeps a per-window scale (initially 1.0), computes pixel size with `ceil`, validates `changeDisplayScale`, and queues `Resized` / `ScaleChanged` through one shared replace-pending helper. SDL maps `pixelSize` / `displayScale` to `SDL_GetWindowSizeInPixels` / `SDL_GetWindowDisplayScale` (failures → `Internal`) and translates `DISPLAY_SCALE_CHANGED` with the queried scale, one per window per batch, dropped if the query returns 0. `tools/check.sh` exit 0 (126/126); `ctest --preset asan` 126/126; macOS `leaks`: 0 leaks for the SDL PX/SD tests. `git diff 6a7e758 -- ':(glob)**/tests/**'` empty. | Emilio Pomares (acknowledgement pending) |

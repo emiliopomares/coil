@@ -20,6 +20,7 @@
 #include <string>
 #include <string_view>
 #include <utility>
+#include <variant>
 #include <vector>
 
 namespace coil::platform_sdl3 {
@@ -121,7 +122,8 @@ private:
     /// 5).
     void translate(const SDL_Event& event, std::vector<platform::WindowEvent>& events) const {
         if (event.type != SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
-            event.type != SDL_EVENT_WINDOW_RESIZED) {
+            event.type != SDL_EVENT_WINDOW_RESIZED &&
+            event.type != SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED) {
             return;
         }
         const Window* window = findByHandle(SDL_GetWindowFromEvent(&event));
@@ -130,6 +132,17 @@ private:
         }
         if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
             events.emplace_back(platform::CloseRequested{.window = window->id});
+        } else if (event.type == SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED) {
+            // The SDL event carries no value; a failed query (0.0) drops it (SPEC-0013 rule 8).
+            const float scale = SDL_GetWindowDisplayScale(window->handle.get());
+            if (scale > 0.0F) {
+                // SDL does not coalesce these: keep one per window, the newest last (rule 4).
+                std::erase_if(events, [id = window->id](const platform::WindowEvent& pending) {
+                    const auto* same = std::get_if<platform::ScaleChanged>(&pending);
+                    return same != nullptr && same->window == id;
+                });
+                events.emplace_back(platform::ScaleChanged{.window = window->id, .scale = scale});
+            }
         } else {
             // SDL reports the new logical size in data1/data2 (SPEC-0010 rule 7).
             events.emplace_back(platform::Resized{
@@ -282,13 +295,28 @@ public:
         return {};
     }
 
-    [[nodiscard]] Expected<platform::WindowSize>
-    pixelSize(platform::WindowId /*id*/) const override {
-        return platform::WindowSize{}; // Red stub (SPEC-0013).
+    [[nodiscard]] Expected<platform::WindowSize> pixelSize(platform::WindowId id) const override {
+        const Window* window = find(id);
+        if (window == nullptr) {
+            return notFound(id);
+        }
+        platform::WindowSize result;
+        if (!SDL_GetWindowSizeInPixels(window->handle.get(), &result.width, &result.height)) {
+            return sdlFailure(ErrorCode::Internal, "SDL_GetWindowSizeInPixels failed");
+        }
+        return result;
     }
 
-    [[nodiscard]] Expected<float> displayScale(platform::WindowId /*id*/) const override {
-        return 0.0F; // Red stub (SPEC-0013).
+    [[nodiscard]] Expected<float> displayScale(platform::WindowId id) const override {
+        const Window* window = find(id);
+        if (window == nullptr) {
+            return notFound(id);
+        }
+        const float scale = SDL_GetWindowDisplayScale(window->handle.get());
+        if (scale <= 0.0F) {
+            return sdlFailure(ErrorCode::Internal, "SDL_GetWindowDisplayScale failed");
+        }
+        return scale;
     }
 
     [[nodiscard]] std::vector<platform::WindowEvent> pollEvents() override {
