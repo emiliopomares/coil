@@ -267,3 +267,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares), including Q1 (EPIC-006
 |------|--------|-------------|
 | 2026-11-02 | Spec and implementation plan created (Draft) | |
 | 2026-11-02 | Q1–Q7 confirmed as recommended; spec and plan approved | Emilio Pomares |
+| 2026-11-02 | **Red**: new adapter `backends/render_software` and layering entry; all 12 new tests (5 contract + 7) fail on assertions (stubs: `Image`'s constructor leaves it 0×0; the backend succeeds everywhere with id 0 and empty buffers); the other 182 pass. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |

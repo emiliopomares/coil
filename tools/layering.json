@@ -16,6 +16,7 @@
         "app": ["docking", "mcp", "remote", "plugin"]
     },
     "backends": {
-        "platform_sdl3": ["platform"]
+        "platform_sdl3": ["platform"],
+        "render_software": ["render"]
     }
 }
