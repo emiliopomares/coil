@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | Approved (complete; awaiting acknowledgement) |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-02 |
 | Module(s) | `coil::render` (port, `render_testing`, contract suite) |
@@ -220,24 +220,24 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
   test double; tests that submit many frames can destroy and recreate targets.
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally)
-- [ ] Sanitizer preset passes
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented (Doxygen comments on new public declarations)
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally)
+- [x] Sanitizer preset passes
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented (Doxygen comments on new public declarations)
 
 ### AC verification
-- [ ] AC-1 → `RenderBackendContract/Recording.AC1_CreatesDistinctTargets`
-- [ ] AC-2 → `RenderBackendContract/Recording.AC2_RejectsInvalidDescriptions`
-- [ ] AC-3 → `RenderBackendContract/Recording.AC3_UnknownTargetsAreNotFound`
-- [ ] AC-4 → `RenderBackendContract/Recording.AC4_TargetLifecycle`
-- [ ] AC-5 → `RenderBackendContract/Recording.AC5_TargetsAreIndependent`
-- [ ] AC-6 → `RecordingRenderBackend.AC6_KeepsCopiesOfFrames`
-- [ ] AC-7 → `RecordingRenderBackend.AC7_CountsPresentsAndTracksDescriptions`
-- [ ] AC-8 → `RecordingRenderBackend.AC8_InspectionOfUnknownTargetsFails`
+- [x] AC-1 → `RenderBackendContract/Recording.AC1_CreatesDistinctTargets`
+- [x] AC-2 → `RenderBackendContract/Recording.AC2_RejectsInvalidDescriptions`
+- [x] AC-3 → `RenderBackendContract/Recording.AC3_UnknownTargetsAreNotFound`
+- [x] AC-4 → `RenderBackendContract/Recording.AC4_TargetLifecycle`
+- [x] AC-5 → `RenderBackendContract/Recording.AC5_TargetsAreIndependent`
+- [x] AC-6 → `RecordingRenderBackend.AC6_KeepsCopiesOfFrames`
+- [x] AC-7 → `RecordingRenderBackend.AC7_CountsPresentsAndTracksDescriptions`
+- [x] AC-8 → `RecordingRenderBackend.AC8_InspectionOfUnknownTargetsFails`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -245,3 +245,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 | 2026-11-02 | Spec and implementation plan created (Draft) | |
 | 2026-11-02 | Q1–Q5 confirmed as recommended; spec and plan approved | Emilio Pomares |
 | 2026-11-02 | **Red**: all 8 new tests fail on assertions (stub recording backend: every call succeeds, ids are all 0, nothing is stored); the other 174 pass. `modules/render/tests/.clang-tidy` now matches `modules/platform/tests/.clang-tidy`, including the typed-test naming exception approved in SPEC-0003 (the copy from `foundation` made in SPEC-0019 lacked it); no new relaxation. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
+| 2026-11-02 | **Green + Refactor**: `RecordingRenderBackend` keeps a map from id to target (description, copied frames, present count), validates descriptions, never reuses ids. `tools/check.sh` exit 0 (182/182); `ctest --preset asan` 182/182. `git diff fcc449c -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
