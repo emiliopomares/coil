@@ -32,7 +32,7 @@ Expected<void> LayoutElement::setModifiers(ModifierChain chain) {
         return makeUnexpected(error->code(), error->message());
     }
     m_modifiers = std::move(chain);
-    const std::size_t stages = m_modifiers.m_modifiers.size() + 1;
+    const std::size_t stages = m_modifiers.layoutStages().size() + 1;
     m_stageConstraints.assign(stages, BoxConstraints{});
     m_stageSizes.assign(stages, Size{});
     return {};
@@ -43,7 +43,7 @@ const ModifierChain& LayoutElement::modifiers() const noexcept {
 }
 
 Size LayoutElement::measure(const BoxConstraints& constraints) {
-    const auto& stages = m_modifiers.m_modifiers;
+    const auto stages = m_modifiers.layoutStages();
     m_stageConstraints.resize(stages.size() + 1);
     m_stageSizes.resize(stages.size() + 1);
 
@@ -71,7 +71,7 @@ Size LayoutElement::measure(const BoxConstraints& constraints) {
 }
 
 void LayoutElement::arrange(Rect bounds) {
-    const auto& stages = m_modifiers.m_modifiers;
+    const auto stages = m_modifiers.layoutStages();
     m_stageSizes.resize(stages.size() + 1);
 
     Rect inner = bounds;

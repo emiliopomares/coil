@@ -314,3 +314,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 |------|--------|-------------|
 | 2026-11-02 | Spec and implementation plan created (Draft) | |
 | 2026-11-02 | Q1–Q7 confirmed as recommended; spec and plan approved | Emilio Pomares |
+| 2026-11-02 | **Red**: refactor first (`Modifier` base, `ParentDataModifier`, `ModifierResult` of `Modifier`, `layoutStages()` used by the engine, `friend` removed): the 158 earlier tests pass unchanged. Then stubs (`find` returns null, `weight` never fails, `Row`/`Column` measure 0×0, arrange nothing, store options and children unchecked) and `linear_layout_test.cpp`: all 8 new tests fail on assertions; the other 158 pass. API detail: the three enums use `std::uint8_t` as their base type (`performance-enum-size`). `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |

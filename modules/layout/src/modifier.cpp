@@ -8,6 +8,7 @@
 #include <cmath>
 #include <memory>
 #include <optional>
+#include <span>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -133,6 +134,9 @@ ModifierChain ModifierChain::then(ModifierResult modifier) && {
     } else if (*modifier == nullptr) {
         m_error = Error{ErrorCode::InvalidArgument, "a modifier factory returned no modifier"};
     } else {
+        if (const auto* stage = dynamic_cast<const LayoutModifier*>(modifier->get())) {
+            m_layoutStages.push_back(stage);
+        }
         m_modifiers.push_back(std::move(*modifier));
     }
     return std::move(*this);
@@ -140,6 +144,10 @@ ModifierChain ModifierChain::then(ModifierResult modifier) && {
 
 const std::optional<Error>& ModifierChain::error() const noexcept {
     return m_error;
+}
+
+std::span<const LayoutModifier* const> ModifierChain::layoutStages() const noexcept {
+    return m_layoutStages;
 }
 
 std::vector<std::string_view> ModifierChain::typeIds() const {
@@ -186,6 +194,10 @@ ModifierResult align(Alignment alignment) {
 
 ModifierResult center() {
     return align(Alignment::center());
+}
+
+ModifierResult weight(float value) {
+    return std::make_unique<Weight>(value);
 }
 
 } // namespace coil::layout
