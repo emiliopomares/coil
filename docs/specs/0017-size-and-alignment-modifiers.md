@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved (complete; awaiting acknowledgement) |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-02 |
 | Module(s) | `coil::layout` only |
@@ -266,3 +266,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 | 2026-11-02 | Q1–Q5 confirmed as recommended; spec and plan approved | Emilio Pomares |
 | 2026-11-02 | **Red**: all 8 new tests fail on assertions (stubs: `enforce` returns its own constraints; the factories return a modifier that changes nothing, has type id `""` and never fails; named alignments return the centre); the other 150 pass. `box_constraints_test.cpp` only gains the new test (10 added lines, 0 removed). `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
 | 2026-11-02 | **Green + Refactor**: `enforce` clamps each bound; named alignments; `size`/`minSize`/`maxSize` share one modifier class that enforces requested constraints built (and validated) by `BoxConstraints::tight`/`create`; `align` loosens, grows to the minimums and places the content by the alignment fractions. `tools/check.sh` exit 0 (158/158); `ctest --preset asan` 158/158. `git diff a30a6bf -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
+| 2026-11-02 | Acknowledged; Status → Done | Emilio Pomares |
