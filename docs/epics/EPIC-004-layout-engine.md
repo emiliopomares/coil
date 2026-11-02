@@ -42,7 +42,7 @@ so every rule is proven by unit tests without a window or a GPU.
 | # | Spec | Status | Depends on |
 |---|------|--------|------------|
 | 1 | [SPEC-0015 Geometry types (`foundation`) and `BoxConstraints` (new `layout` module)](../specs/0015-geometry-and-box-constraints.md) | Done | ADR-0019 |
-| 2 | [SPEC-0016 Layout element protocol (public: custom containers work like built-ins), tree pass, modifier chain, and the first modifier (`padding`)](../specs/0016-layout-elements-and-modifier-chains.md) | Complete, awaiting acknowledgement | 1 |
+| 2 | [SPEC-0016 Layout element protocol (public: custom containers work like built-ins), tree pass, modifier chain, and the first modifier (`padding`)](../specs/0016-layout-elements-and-modifier-chains.md) | Done | 1 |
 | 3 | Size and position modifiers: `size`, `minSize` / `maxSize`, `align`, `center` | Planned | 2 |
 | 4 | `Row` / `Column` with alignment, spacing, and the `weight` modifier | Planned | 3 |
 | 5 | `Grid` with fixed, flexible and content-sized tracks, and the `gridCell` modifier | Planned | 3 |

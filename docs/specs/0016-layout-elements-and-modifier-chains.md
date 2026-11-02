@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved (complete; awaiting acknowledgement) |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-02 |
 | Module(s) | `coil::layout` only |
@@ -356,3 +356,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares).
 | 2026-11-02 | **Green + Refactor**: chains store modifiers and keep their first error; `padding` validates and implements rule 5; `LayoutElement` runs rules 3–4 with per-stage constraints and sizes (iterators, no unchecked indexing), sanitizing every size; `layoutRoot` validates through `BoxConstraints::tight`. Implementation notes: `ModifierChain` declares `LayoutElement` a friend so the stages stay private (no public API added); a factory result holding a null modifier is recorded as an `InvalidArgument` error (not covered by the spec; see amendment proposal). `tools/check.sh` exit 0 (149/149); `ctest --preset asan` 149/149. `git diff 98e99ee -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
 | 2026-11-02 | Acknowledged. **Amendment A**: a result holding a null modifier is recorded as `InvalidArgument` (rule 6, AC-6). That check was added during Green without approval; the Red commit removes it and adds `AC6_NullModifierIsAnError`, so the test is seen failing first; Green restores it. | Emilio Pomares |
 | 2026-11-02 | **Red (amendment A)**: `AC6_NullModifierIsAnError` fails on its assertion (no error recorded) with the null check removed; the other 149 tests pass; format and tidy clean. | Emilio Pomares |
+| 2026-11-02 | **Green (amendment A)**: null check restored. Build, format, layering and tidy clean; `ctest --preset dev` 150/150; `ctest --preset asan` 150/150. `git diff 905e625 -- ':(glob)**/tests/**'` empty. Status → Done (acknowledged with amendment A). | Emilio Pomares |
