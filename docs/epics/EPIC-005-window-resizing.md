@@ -35,7 +35,7 @@ window's display.
 | 2 | [SPEC-0011 Resizable flag and minimum/maximum size](../specs/0011-window-resizable-and-size-limits.md) | Done | 1 |
 | 3 | [SPEC-0013 Pixel size, display scale and `ScaleChanged`](../specs/0013-window-pixel-size-and-scale.md) | Done (pending acknowledgement) | 1 |
 | 4 | [SPEC-0012 `hello_window` resizable, logs size changes](../specs/0012-hello-window-resizable.md) | Done | 2 |
-| 5 | `hello_window` prints its pixel size and display scale (manual check on Retina) | Planned | 3 |
+| 5 | [SPEC-0014 `hello_window` prints pixel size and scale](../specs/0014-hello-window-prints-scale.md) | Draft | 3 |
 
 ## Notes
 - Builds on the `WindowSystem` port (SPEC-0003), its events (SPEC-0006) and `waitEvents` (SPEC-0009).
