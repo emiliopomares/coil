@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved (complete; awaiting acknowledgement) |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-02 |
 | Module(s) | `coil::render` (`Image`); `backends/render_software` (new adapter) |
@@ -269,3 +269,4 @@ All resolved as recommended (2026-11-02, Emilio Pomares), including Q1 (EPIC-006
 | 2026-11-02 | Q1–Q7 confirmed as recommended; spec and plan approved | Emilio Pomares |
 | 2026-11-02 | **Red**: new adapter `backends/render_software` and layering entry; all 12 new tests (5 contract + 7) fail on assertions (stubs: `Image`'s constructor leaves it 0×0; the backend succeeds everywhere with id 0 and empty buffers); the other 182 pass. `tools/check.sh` format, layering and tidy clean. | Emilio Pomares |
 | 2026-11-02 | **Green + Refactor**: `Image` storage; target bookkeeping with back and front buffers of `ceil(size × scale)` pixels; a per-frame canvas of premultiplied floats with a clip stack, exact area coverage for rects and clips, signed-distance coverage for rounded rects and borders (outer minus inner), source-over blending, and conversion to straight 8-bit sRGB on output. `tools/check.sh` exit 0 (194/194); `ctest --preset asan` 194/194. `git diff 470785b -- ':(glob)**/tests/**'` empty. | Emilio Pomares |
+| 2026-11-03 | Acknowledged; Status → Done | Emilio Pomares |
