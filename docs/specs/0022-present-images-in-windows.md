@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-03 |
 | Module(s) | `coil::platform` (port, fake, contract suite); `backends/platform_sdl3`. Prerequisite refactor: `Image` moves from `render` to `foundation` (§9 Q2) |
@@ -220,20 +220,20 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 ## 11. Definition of Done
 - [x] Refactor commit: only the printers move in tests (amendment A), full suite green
 - [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally)
-- [ ] Sanitizer preset passes; macOS `leaks` reports 0 leaks for the SDL tests
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented (Doxygen comments on new public declarations)
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally)
+- [x] Sanitizer preset passes; macOS `leaks` reports 0 leaks for the SDL tests
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented (Doxygen comments on new public declarations)
 
 ### AC verification
-- [ ] AC-1 → `WindowSystemContract/{Fake,Sdl3}.PI1_PresentsImagePixelForPixel`
-- [ ] AC-2 → `WindowSystemContract/{Fake,Sdl3}.PI2_CompositesOverBlack`
-- [ ] AC-3 → `WindowSystemContract/{Fake,Sdl3}.PI3_CropsAndFillsBlack`
-- [ ] AC-4 → `WindowSystemContract/{Fake,Sdl3}.PI4_UnknownWindowsAreNotFound`
-- [ ] AC-5 → `FakeWindowSystem.FS3_FramebufferFollowsPixelSize`
+- [x] AC-1 → `WindowSystemContract/{Fake,Sdl3}.PI1_PresentsImagePixelForPixel`
+- [x] AC-2 → `WindowSystemContract/{Fake,Sdl3}.PI2_CompositesOverBlack`
+- [x] AC-3 → `WindowSystemContract/{Fake,Sdl3}.PI3_CropsAndFillsBlack`
+- [x] AC-4 → `WindowSystemContract/{Fake,Sdl3}.PI4_UnknownWindowsAreNotFound`
+- [x] AC-5 → `FakeWindowSystem.FS3_FramebufferFollowsPixelSize`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -242,3 +242,4 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 | 2026-11-05 | Spec, plan and Q1–Q6 approved as recommended | Emilio Pomares |
 | 2026-11-05 | **Amendment A:** moving `Image` hides SPEC-0021's test printers from ADL (compile error); the refactor moves them to `coil::foundation` without changing any test | Emilio Pomares |
 | 2026-11-05 | Red: 9 new tests fail on assertions (PI1–PI4 on Fake and Sdl3, FS3), 194 others pass. Fake shows a 0x0 framebuffer; SDL's dummy surface reads back 4x3 opaque black; `presentImage` succeeds for unknown windows. `hello_window`'s two test doubles of the port gain the new override (forwarding / `NotFound`), per §8 "all implementations updated" | — |
+| 2026-11-05 | Green (`7e3d9e7`): 203/203 on `dev` and `asan`; tests unchanged since Red (`c283528`); all gates pass; `leaks`: 0 leaks for the SDL tests. Status → Done | — |

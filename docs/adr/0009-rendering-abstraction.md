@@ -37,6 +37,8 @@ the `DrawList` vocabulary, layout, widgets and text.
 - Its frames are **shown in OS windows** through a presentation adapter. The mechanism (for example,
   SDL window surfaces or a streaming texture) and its place in the layering are decided by the first
   spec that needs it (EPIC-006), with an ADR amendment if it adds a dependency edge.
+  *Resolved by SPEC-0022:* `WindowSystem::presentImage` on the window port (SDL window surface), with
+  `Image` in `foundation`; the application connects renderer and window. No new edge.
 - **Vulkan, then OpenGL,** follow as their own epics, unchanged otherwise. Metal is still later.
 
 ### Consequences

@@ -36,7 +36,7 @@ frames can be captured as images for tests and agents.
 | 2 | [SPEC-0020 `RenderBackend` port, recording backend, contract suite](../specs/0020-render-backend-port.md) | Done | 1 |
 | 3a | [SPEC-0021 `render_software`: rects, rounded rects, borders and clips into an image](../specs/0021-software-rasterizer-shapes.md) | Done | 2 |
 | 3b | `render_software`: linear, radial and sweep gradients | Planned | 3a |
-| 4 | [SPEC-0022 Presenting images in windows](../specs/0022-present-images-in-windows.md) | In Progress | 3a; EPIC-005 spec 3 |
+| 4 | [SPEC-0022 Presenting images in windows](../specs/0022-present-images-in-windows.md) | Done | 3a; EPIC-005 spec 3 |
 | 5 | Frame capture to an image (`capture`) | Planned | 3 |
 | 6 | Example: coloured boxes laid out by rows and columns, redrawn on resize | Planned | 4; EPIC-004 |
 
