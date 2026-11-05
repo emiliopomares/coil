@@ -1,4 +1,5 @@
 #include <coil/foundation/error.hpp>
+#include <coil/foundation/image.hpp>
 #include <coil/platform/clock.hpp>
 #include <coil/platform/testing/fake_clock.hpp>
 #include <coil/platform/testing/fake_window_system.hpp>
@@ -7,7 +8,9 @@
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <chrono>
+#include <cstdint>
 #include <limits>
 #include <memory>
 #include <vector>
@@ -28,6 +31,10 @@ struct WindowSystemContractTraits<testing::FakeWindowSystem> {
     static void userResize(WindowSystem& system, WindowId id, WindowSize size) {
         auto& fake = dynamic_cast<testing::FakeWindowSystem&>(system);
         ASSERT_TRUE(succeeds(fake.userResize(id, size)));
+    }
+
+    static Expected<Image> framebuffer(const WindowSystem& system, WindowId id) {
+        return dynamic_cast<const testing::FakeWindowSystem&>(system).framebuffer(id);
     }
 };
 
@@ -116,6 +123,33 @@ TEST(FakeWindowSystem, FS2_ScaleChangesAreCoalescedAndDropped) {
     ASSERT_TRUE(succeeds(fake.changeDisplayScale(*b, 2.0F)));
     ASSERT_TRUE(succeeds(fake.destroyWindow(*b)));
     EXPECT_EQ(fake.pollEvents(), std::vector<WindowEvent>{});
+}
+
+TEST(FakeWindowSystem, FS3_FramebufferFollowsPixelSize) {
+    testing::FakeWindowSystem fake;
+    const auto id = fake.createWindow({.title = "A", .size = {.width = 4, .height = 3}});
+    ASSERT_TRUE(succeeds(id));
+    const auto allBlack = [](const Image& image) {
+        return std::ranges::all_of(image.pixels(),
+                                   [](Pixel pixel) { return pixel == kOpaqueBlack; });
+    };
+
+    const Expected<Image> initial = fake.framebuffer(*id);
+    ASSERT_TRUE(succeeds(initial));
+    EXPECT_EQ(initial->width(), 4U);
+    EXPECT_EQ(initial->height(), 3U);
+    EXPECT_TRUE(allBlack(*initial));
+
+    ASSERT_TRUE(succeeds(fake.presentImage(
+        *id, makeImage(4, 3, [](std::uint32_t, std::uint32_t) { return kOpaqueWhite; }))));
+    ASSERT_TRUE(succeeds(fake.changeDisplayScale(*id, 2.0F)));
+    const Expected<Image> scaled = fake.framebuffer(*id);
+    ASSERT_TRUE(succeeds(scaled));
+    EXPECT_EQ(scaled->width(), 8U);
+    EXPECT_EQ(scaled->height(), 6U);
+    EXPECT_TRUE(allBlack(*scaled));
+
+    EXPECT_TRUE(failsWith(fake.framebuffer(WindowId{.value = 999}), ErrorCode::NotFound));
 }
 
 TEST(FakeWindowSystem, AC5_WaitAdvancesClockByTimeout) {

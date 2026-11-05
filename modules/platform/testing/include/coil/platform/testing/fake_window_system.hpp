@@ -1,6 +1,7 @@
 #pragma once
 
 #include <coil/foundation/error.hpp>
+#include <coil/foundation/image.hpp>
 #include <coil/platform/clock.hpp>
 #include <coil/platform/testing/fake_clock.hpp>
 #include <coil/platform/window_system.hpp>
@@ -39,6 +40,7 @@ public:
     [[nodiscard]] Expected<void> setSizeLimits(WindowId id, WindowSizeLimits limits) override;
     [[nodiscard]] Expected<WindowSize> pixelSize(WindowId id) const override;
     [[nodiscard]] Expected<float> displayScale(WindowId id) const override;
+    [[nodiscard]] Expected<void> presentImage(WindowId id, const Image& image) override;
     [[nodiscard]] std::vector<WindowEvent> pollEvents() override;
     [[nodiscard]] std::vector<WindowEvent> waitEvents(Clock::Duration timeout) override;
 
@@ -53,6 +55,10 @@ public:
     /// Test control: changes `id`'s display scale as if it moved to another display. Fails with
     /// NotFound for an unknown window and InvalidArgument unless `scale` is finite and > 0.
     [[nodiscard]] Expected<void> changeDisplayScale(WindowId id, float scale);
+
+    /// Test control: what the window shows, at its pixel size. Opaque black before any present and
+    /// after each pixel-size change. Fails with NotFound for an unknown window.
+    [[nodiscard]] Expected<Image> framebuffer(WindowId id) const;
 
     /// Test control: runs each time waitEvents would block (no pending events, timeout > 0), before
     /// time advances. If it queues events, waitEvents returns them without advancing time.

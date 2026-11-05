@@ -8,10 +8,13 @@
 //       static void requestClose(WindowSystem& system, WindowId id);
 //       // Simulates the user resizing `id` to `size`, outside the port (SPEC-0010).
 //       static void userResize(WindowSystem& system, WindowId id, WindowSize size);
+//       // What the window shows, read back at its pixel size (SPEC-0022).
+//       static Expected<Image> framebuffer(const WindowSystem& system, WindowId id);
 //   };
 //   INSTANTIATE_TYPED_TEST_SUITE_P(Name, WindowSystemContract, ::testing::Types<Impl>);
 
 #include <coil/foundation/error.hpp>
+#include <coil/foundation/image.hpp>
 #include <coil/platform/window_system.hpp>
 
 #include <gtest/gtest.h>
@@ -19,7 +22,9 @@
 #include <array>
 #include <chrono>
 #include <cstdint>
+#include <cstdlib>
 #include <format>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <ostream>
@@ -28,6 +33,20 @@
 #include <utility>
 #include <variant>
 #include <vector>
+
+namespace coil::foundation {
+
+// Readable failure messages for images, in their own namespace so GoogleTest finds them by ADL.
+inline std::ostream& operator<<(std::ostream& os, Pixel pixel) {
+    return os << "Pixel{" << static_cast<int>(pixel.r) << ", " << static_cast<int>(pixel.g) << ", "
+              << static_cast<int>(pixel.b) << ", " << static_cast<int>(pixel.a) << "}";
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Image& image) {
+    return os << "Image{" << image.width() << "x" << image.height() << "}";
+}
+
+} // namespace coil::foundation
 
 namespace coil::platform {
 
@@ -89,6 +108,35 @@ template <typename T>
     return ::testing::AssertionSuccess();
 }
 
+/// A width x height image whose pixel (x, y) is `pixelAt(x, y)`.
+inline Image makeImage(std::uint32_t width, std::uint32_t height,
+                       const std::function<Pixel(std::uint32_t, std::uint32_t)>& pixelAt) {
+    Image image{width, height};
+    auto it = image.pixels().begin();
+    for (std::uint32_t y = 0; y < height; ++y) {
+        for (std::uint32_t x = 0; x < width; ++x) {
+            *it++ = pixelAt(x, y);
+        }
+    }
+    return image;
+}
+
+/// Every channel of `actual` is within one 8-bit step of `expected`.
+inline ::testing::AssertionResult nearPixel(std::optional<Pixel> actual, Pixel expected) {
+    if (!actual.has_value()) {
+        return ::testing::AssertionFailure() << "no pixel, expected " << expected;
+    }
+    const auto near = [](std::uint8_t a, std::uint8_t b) { return std::abs(a - b) <= 1; };
+    if (near(actual->r, expected.r) && near(actual->g, expected.g) && near(actual->b, expected.b) &&
+        near(actual->a, expected.a)) {
+        return ::testing::AssertionSuccess();
+    }
+    return ::testing::AssertionFailure() << *actual << ", expected " << expected << " +-1";
+}
+
+inline constexpr Pixel kOpaqueBlack{.r = 0, .g = 0, .b = 0, .a = 255};
+inline constexpr Pixel kOpaqueWhite{.r = 255, .g = 255, .b = 255, .a = 255};
+
 template <typename Impl>
 class WindowSystemContract : public ::testing::Test {
 protected:
@@ -124,6 +172,18 @@ protected:
     /// Simulates the user resizing `id`, in the implementation's own way (SPEC-0010).
     void userResize(WindowId id, WindowSize size) {
         WindowSystemContractTraits<Impl>::userResize(*m_system, id, size);
+    }
+
+    /// What a window shows; 0x0 (and a test failure) if it cannot be read (SPEC-0022).
+    Image framebufferOf(WindowId id) {
+        Expected<Image> result = WindowSystemContractTraits<Impl>::framebuffer(*m_system, id);
+        EXPECT_TRUE(succeeds(result));
+        return std::move(result).value_or(Image{});
+    }
+
+    /// Presents an image the test expects to be accepted.
+    void present(WindowId id, const Image& image) {
+        EXPECT_TRUE(succeeds(m_system->presentImage(id, image)));
     }
 
     /// Size of a window; 0x0 (and a test failure) if the query fails.
@@ -583,22 +643,104 @@ TYPED_TEST_P(WindowSystemContract, PX3_UnknownIdsAreNotFound) {
     }
 }
 
-REGISTER_TYPED_TEST_SUITE_P(WindowSystemContract, AC1_CreateReturnsValidIdAndListsWindow,
-                            AC2_ReportsTitleAndSizeFromDesc, AC3_SetTitleChangesOnlyThatWindow,
-                            AC4_RejectsNonPositiveSize, AC5_DestroyedWindowIsNotFound,
-                            AC6_UnknownIdsAreNotFound, AC7_IdsAreNeverReused,
-                            EV1_EventsEmptyWhenNothingHappened, EV2_CloseRequestIsDeliveredOnce,
-                            EV3_EventsKeepOrder, EV4_CloseRequestDoesNotCloseWindow,
-                            EV5_EventsForDestroyedWindowsAreDropped, WE1_WaitReturnsPendingEvents,
-                            WE2_WaitTimesOutEmpty, WE3_WaitedEventsAreDeliveredOnce,
-                            WE4_NegativeTimeoutNeverBlocks, RS1_SetSizeIsReportedAsResized,
-                            RS2_SetSameSizeProducesNoEvent, RS3_SetSizeRejectsBadInputWithoutEvents,
-                            RS4_UserResizeIsReportedAsResized, RS5_PendingResizesAreCoalesced,
-                            RS6_ResizesOfDestroyedWindowsAreDropped, SL1_ResizableIsSetAtCreation,
-                            SL2_LimitsAreSetAtCreation, SL3_CreateRejectsInvalidLimitsAndSizes,
-                            SL4_SetSizeIsClampedToLimits, SL5_NewLimitsResizeTheWindow,
-                            SL6_SetLimitsRejectsBadInputWithoutEvents,
-                            SL7_UserResizeIsClampedToLimits, PX1_PixelSizeAndScaleArePositive,
-                            PX2_PixelSizeFollowsResize, PX3_UnknownIdsAreNotFound);
+// SPEC-0022: presenting images (PI<n> = SPEC-0022 AC-<n>). Windows are 4x3 at scale 1.
+
+TYPED_TEST_P(WindowSystemContract, PI1_PresentsImagePixelForPixel) {
+    const WindowId a = this->create("A", {.width = 4, .height = 3});
+    const Image image = makeImage(4, 3, [](std::uint32_t x, std::uint32_t y) {
+        return Pixel{.r = static_cast<std::uint8_t>(60 * x),
+                     .g = static_cast<std::uint8_t>(80 * y),
+                     .b = 200,
+                     .a = 255};
+    });
+    this->present(a, image);
+    const Image shown = this->framebufferOf(a);
+    ASSERT_EQ(shown.width(), 4U);
+    ASSERT_EQ(shown.height(), 3U);
+    for (std::uint32_t y = 0; y < 3; ++y) {
+        for (std::uint32_t x = 0; x < 4; ++x) {
+            EXPECT_EQ(shown.pixel(x, y), image.pixel(x, y)) << "at (" << x << ", " << y << ")";
+        }
+    }
+}
+
+TYPED_TEST_P(WindowSystemContract, PI2_CompositesOverBlack) {
+    const WindowId a = this->create("A", {.width = 4, .height = 3});
+    const Image image = makeImage(2, 1, [](std::uint32_t x, std::uint32_t /*y*/) {
+        return x == 0 ? Pixel{.r = 255, .g = 0, .b = 0, .a = 128}
+                      : Pixel{.r = 10, .g = 20, .b = 30, .a = 0};
+    });
+    this->present(a, image);
+    const Image shown = this->framebufferOf(a);
+    EXPECT_TRUE(nearPixel(shown.pixel(0, 0), Pixel{.r = 128, .g = 0, .b = 0, .a = 255}));
+    EXPECT_EQ(shown.pixel(1, 0), kOpaqueBlack);
+}
+
+TYPED_TEST_P(WindowSystemContract, PI3_CropsAndFillsBlack) {
+    const WindowId a = this->create("A", {.width = 4, .height = 3});
+
+    this->present(a, makeImage(2, 2, [](std::uint32_t, std::uint32_t) { return kOpaqueWhite; }));
+    const Image small = this->framebufferOf(a);
+    ASSERT_EQ(small.width(), 4U);
+    ASSERT_EQ(small.height(), 3U);
+    for (std::uint32_t y = 0; y < 3; ++y) {
+        for (std::uint32_t x = 0; x < 4; ++x) {
+            const Pixel expected = (x < 2 && y < 2) ? kOpaqueWhite : kOpaqueBlack;
+            EXPECT_EQ(small.pixel(x, y), expected) << "small image, at (" << x << ", " << y << ")";
+        }
+    }
+
+    const Image large = makeImage(6, 5, [](std::uint32_t x, std::uint32_t y) {
+        return Pixel{.r = static_cast<std::uint8_t>(40 * x),
+                     .g = static_cast<std::uint8_t>(50 * y),
+                     .b = 100,
+                     .a = 255};
+    });
+    this->present(a, large);
+    const Image cropped = this->framebufferOf(a);
+    ASSERT_EQ(cropped.width(), 4U);
+    ASSERT_EQ(cropped.height(), 3U);
+    for (std::uint32_t y = 0; y < 3; ++y) {
+        for (std::uint32_t x = 0; x < 4; ++x) {
+            EXPECT_EQ(cropped.pixel(x, y), large.pixel(x, y))
+                << "large image, at (" << x << ", " << y << ")";
+        }
+    }
+
+    this->present(a, Image{});
+    const Image empty = this->framebufferOf(a);
+    ASSERT_EQ(empty.width(), 4U);
+    ASSERT_EQ(empty.height(), 3U);
+    for (const Pixel pixel : empty.pixels()) {
+        EXPECT_EQ(pixel, kOpaqueBlack) << "0x0 image";
+    }
+}
+
+TYPED_TEST_P(WindowSystemContract, PI4_UnknownWindowsAreNotFound) {
+    WindowSystem& system = this->system();
+    const WindowId destroyed = this->create("A", {.width = 4, .height = 3});
+    ASSERT_TRUE(succeeds(system.destroyWindow(destroyed)));
+    const Image image = makeImage(4, 3, [](std::uint32_t, std::uint32_t) { return kOpaqueWhite; });
+    for (const WindowId gone : {destroyed, WindowId{.value = 999}}) {
+        EXPECT_TRUE(failsWith(system.presentImage(gone, image), ErrorCode::NotFound)) << gone;
+    }
+}
+
+REGISTER_TYPED_TEST_SUITE_P(
+    WindowSystemContract, AC1_CreateReturnsValidIdAndListsWindow, AC2_ReportsTitleAndSizeFromDesc,
+    AC3_SetTitleChangesOnlyThatWindow, AC4_RejectsNonPositiveSize, AC5_DestroyedWindowIsNotFound,
+    AC6_UnknownIdsAreNotFound, AC7_IdsAreNeverReused, EV1_EventsEmptyWhenNothingHappened,
+    EV2_CloseRequestIsDeliveredOnce, EV3_EventsKeepOrder, EV4_CloseRequestDoesNotCloseWindow,
+    EV5_EventsForDestroyedWindowsAreDropped, WE1_WaitReturnsPendingEvents, WE2_WaitTimesOutEmpty,
+    WE3_WaitedEventsAreDeliveredOnce, WE4_NegativeTimeoutNeverBlocks,
+    RS1_SetSizeIsReportedAsResized, RS2_SetSameSizeProducesNoEvent,
+    RS3_SetSizeRejectsBadInputWithoutEvents, RS4_UserResizeIsReportedAsResized,
+    RS5_PendingResizesAreCoalesced, RS6_ResizesOfDestroyedWindowsAreDropped,
+    SL1_ResizableIsSetAtCreation, SL2_LimitsAreSetAtCreation,
+    SL3_CreateRejectsInvalidLimitsAndSizes, SL4_SetSizeIsClampedToLimits,
+    SL5_NewLimitsResizeTheWindow, SL6_SetLimitsRejectsBadInputWithoutEvents,
+    SL7_UserResizeIsClampedToLimits, PX1_PixelSizeAndScaleArePositive, PX2_PixelSizeFollowsResize,
+    PX3_UnknownIdsAreNotFound, PI1_PresentsImagePixelForPixel, PI2_CompositesOverBlack,
+    PI3_CropsAndFillsBlack, PI4_UnknownWindowsAreNotFound);
 
 } // namespace coil::platform

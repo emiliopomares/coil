@@ -1,4 +1,5 @@
 #include <coil/foundation/error.hpp>
+#include <coil/foundation/image.hpp>
 #include <coil/platform/clock.hpp>
 #include <coil/platform/testing/fake_clock.hpp>
 #include <coil/platform/testing/fake_window_system.hpp>
@@ -215,6 +216,17 @@ Expected<float> FakeWindowSystem::displayScale(WindowId id) const {
         return notFound(id);
     }
     return window->scale;
+}
+
+Expected<void> FakeWindowSystem::presentImage(WindowId id, const Image& image) {
+    static_cast<void>(id);
+    static_cast<void>(image);
+    return {}; // Red stub (SPEC-0022)
+}
+
+Expected<Image> FakeWindowSystem::framebuffer(WindowId id) const {
+    static_cast<void>(find(id));
+    return Image{}; // Red stub (SPEC-0022)
 }
 
 Expected<void> FakeWindowSystem::changeDisplayScale(WindowId id, float scale) {

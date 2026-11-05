@@ -1,6 +1,7 @@
 #pragma once
 
 #include <coil/foundation/error.hpp>
+#include <coil/foundation/image.hpp>
 #include <coil/platform/clock.hpp>
 
 #include <cstdint>
@@ -126,6 +127,12 @@ public:
     /// Physical pixels per DIP for the window (e.g. 2.0 on a Retina display). Always > 0. Fails
     /// with NotFound for an unknown window.
     [[nodiscard]] virtual Expected<float> displayScale(WindowId id) const = 0;
+
+    /// Shows `image` in the window, pixel for pixel from the top-left corner, at the window's pixel
+    /// size (pixelSize()). Each pixel is composited over opaque black; window pixels the image does
+    /// not cover become opaque black; image pixels beyond the window are cropped. Nothing is
+    /// scaled. Fails with NotFound for an unknown window (SPEC-0022).
+    [[nodiscard]] virtual Expected<void> presentImage(WindowId id, const Image& image) = 0;
 
     /// Returns all events that occurred since the previous call, in order; each event is returned
     /// once. Events for windows destroyed before this call are dropped. Non-blocking.

@@ -1,4 +1,5 @@
 #include <coil/foundation/error.hpp>
+#include <coil/foundation/image.hpp>
 #include <coil/platform/testing/fake_window_system.hpp>
 #include <coil/platform/window_system.hpp>
 #include <coil/platform/window_system_contract.hpp>
@@ -7,11 +8,14 @@
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_init.h>
+#include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
 
 #include <gtest/gtest.h>
 
+#include <cstdint>
 #include <cstdlib>
+#include <expected>
 #include <format>
 #include <memory>
 #include <utility>
@@ -137,6 +141,31 @@ struct WindowSystemContractTraits<Sdl3> {
         SDL_Window* window = SDL_GetWindowFromID(*sdlId);
         ASSERT_NE(window, nullptr) << SDL_GetError();
         ASSERT_TRUE(SDL_SetWindowSize(window, size.width, size.height)) << SDL_GetError();
+    }
+
+    /// Reads the SDL window surface back, pixel by pixel.
+    static Expected<Image> framebuffer(const WindowSystem& system, WindowId id) {
+        const auto sdlId = platform_sdl3::sdlWindowId(system, id);
+        if (!sdlId.has_value()) {
+            return std::unexpected(sdlId.error());
+        }
+        SDL_Surface* surface = SDL_GetWindowSurface(SDL_GetWindowFromID(*sdlId));
+        if (surface == nullptr) {
+            return makeUnexpected(ErrorCode::Internal,
+                                  std::format("no window surface: {}", SDL_GetError()));
+        }
+        Image image{static_cast<std::uint32_t>(surface->w), static_cast<std::uint32_t>(surface->h)};
+        auto it = image.pixels().begin();
+        for (int y = 0; y < surface->h; ++y) {
+            for (int x = 0; x < surface->w; ++x) {
+                Pixel& pixel = *it++;
+                if (!SDL_ReadSurfacePixel(surface, x, y, &pixel.r, &pixel.g, &pixel.b, &pixel.a)) {
+                    return makeUnexpected(ErrorCode::Internal,
+                                          std::format("cannot read pixel: {}", SDL_GetError()));
+                }
+            }
+        }
+        return image;
     }
 };
 

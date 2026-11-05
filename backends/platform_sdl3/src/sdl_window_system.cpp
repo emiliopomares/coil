@@ -1,4 +1,5 @@
 #include <coil/foundation/error.hpp>
+#include <coil/foundation/image.hpp>
 #include <coil/platform/clock.hpp>
 #include <coil/platform/window_system.hpp>
 #include <coil/platform_sdl3/sdl_window_system.hpp>
@@ -327,6 +328,12 @@ public:
             return sdlFailure(ErrorCode::Internal, "SDL_GetWindowDisplayScale failed");
         }
         return scale;
+    }
+
+    [[nodiscard]] Expected<void> presentImage(platform::WindowId id, const Image& image) override {
+        static_cast<void>(id);
+        static_cast<void>(image);
+        return {}; // Red stub (SPEC-0022)
     }
 
     [[nodiscard]] std::vector<platform::WindowEvent> pollEvents() override {

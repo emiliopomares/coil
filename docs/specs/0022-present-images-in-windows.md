@@ -218,8 +218,8 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
   stays behind the port. The manual check in spec 6 confirms it on screen.
 
 ## 11. Definition of Done
-- [ ] Refactor commit: only the printers move in tests (amendment A), full suite green
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
+- [x] Refactor commit: only the printers move in tests (amendment A), full suite green
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
 - [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
 - [ ] Full test suite passes
 - [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
@@ -241,3 +241,4 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 | 2026-11-03 | Spec and implementation plan created (Draft) | |
 | 2026-11-05 | Spec, plan and Q1–Q6 approved as recommended | Emilio Pomares |
 | 2026-11-05 | **Amendment A:** moving `Image` hides SPEC-0021's test printers from ADL (compile error); the refactor moves them to `coil::foundation` without changing any test | Emilio Pomares |
+| 2026-11-05 | Red: 9 new tests fail on assertions (PI1–PI4 on Fake and Sdl3, FS3), 194 others pass. Fake shows a 0x0 framebuffer; SDL's dummy surface reads back 4x3 opaque black; `presentImage` succeeds for unknown windows. `hello_window`'s two test doubles of the port gain the new override (forwarding / `NotFound`), per §8 "all implementations updated" | — |

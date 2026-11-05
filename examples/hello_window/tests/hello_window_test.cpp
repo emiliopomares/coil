@@ -1,6 +1,7 @@
 #include "hello_window.hpp"
 
 #include <coil/foundation/error.hpp>
+#include <coil/foundation/image.hpp>
 #include <coil/platform/clock.hpp>
 #include <coil/platform/testing/fake_window_system.hpp>
 #include <coil/platform/window_system.hpp>
@@ -26,6 +27,7 @@ namespace {
 
 using coil::ErrorCode;
 using coil::Expected;
+using coil::Image;
 using coil::makeUnexpected;
 using coil::platform::Clock;
 using coil::platform::WindowDesc;
@@ -116,6 +118,10 @@ public:
         return m_inner.displayScale(id);
     }
 
+    [[nodiscard]] Expected<void> presentImage(WindowId id, const Image& image) override {
+        return m_inner.presentImage(id, image);
+    }
+
     [[nodiscard]] std::vector<WindowEvent> pollEvents() override {
         ++m_pollCalls;
         beforeEventCall();
@@ -192,6 +198,10 @@ public:
     }
 
     [[nodiscard]] Expected<float> displayScale(WindowId id) const override { return notFound(id); }
+
+    [[nodiscard]] Expected<void> presentImage(WindowId id, const Image& /*image*/) override {
+        return notFound(id);
+    }
 
     [[nodiscard]] std::vector<WindowEvent> pollEvents() override { return {}; }
 
