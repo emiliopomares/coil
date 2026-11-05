@@ -32,7 +32,9 @@ renderer-agnostic.
 ## 2. Scope
 - **Prerequisite refactor:** `Image` and `Pixel` move from `render` to `foundation`
   (`coil/foundation/image.hpp`); `coil/render/image.hpp` keeps `coil::render::Image` and
-  `coil::render::Pixel` as aliases, so existing code and SPEC-0021's frozen tests compile unchanged.
+  `coil::render::Pixel` as aliases, so existing code compiles unchanged. SPEC-0021's test file changes
+  only in where its two `operator<<` printers live: they move to `coil::foundation`, where GoogleTest
+  finds them by ADL (amendment A); no test or assertion changes.
 - Port: `WindowSystem::presentImage(WindowId, const Image&)`.
 - Fake: implements it, plus the test control `framebuffer(id)` (what the window shows).
 - Contract suite: new tests PI1–PI4, and a trait `framebuffer(system, id)` per implementation.
@@ -135,7 +137,7 @@ composited channels.
 
 The refactor (§9 Q2) gets no new test: a test that cannot fail in Red proves nothing. It is proven by
 its own commit, in which every existing test (including SPEC-0021's, which use `coil::render::Image`)
-passes unchanged.
+passes; the only test-file change is amendment A's move of two printers.
 
 The SDL trait reads the window surface back (`SDL_GetWindowSurface`, `SDL_ReadSurfacePixel`), the same way
 the SDL trait already reaches the window for `userResize`.
@@ -180,7 +182,8 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 
 ### 10.1 Steps
 0. **Refactor** (commit `refactor(0022): move Image and Pixel to foundation`): move the header and source,
-   leave aliases in `render`; full suite green (194/194), tests untouched.
+   leave aliases in `render`; move SPEC-0021's two test printers to `coil::foundation` (amendment A);
+   full suite green (194/194), no test or assertion changed.
 1. **Red** (commit `test(0022): …`):
    - **Stubs:** `presentImage` in the port; the fake and SDL adapter return success without drawing; the
      fake's `framebuffer` returns a 0×0 image.
@@ -215,7 +218,7 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
   stays behind the port. The manual check in spec 6 confirms it on screen.
 
 ## 11. Definition of Done
-- [ ] Refactor commit: tests untouched, full suite green
+- [ ] Refactor commit: only the printers move in tests (amendment A), full suite green
 - [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
 - [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
 - [ ] Full test suite passes
@@ -237,3 +240,4 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 |------|--------|-------------|
 | 2026-11-03 | Spec and implementation plan created (Draft) | |
 | 2026-11-05 | Spec, plan and Q1–Q6 approved as recommended | Emilio Pomares |
+| 2026-11-05 | **Amendment A:** moving `Image` hides SPEC-0021's test printers from ADL (compile error); the refactor moves them to `coil::foundation` without changing any test | Emilio Pomares |

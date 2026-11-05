@@ -1,5 +1,5 @@
 coil_add_module(render
-    SOURCES src/draw_list.cpp src/image.cpp src/paint.cpp src/painter.cpp src/render_backend.cpp
+    SOURCES src/draw_list.cpp src/paint.cpp src/painter.cpp src/render_backend.cpp
     DEPENDS coil::foundation)
 
 # Test-support library: test doubles for the render ports. Linked only by test executables.

@@ -1,5 +1,6 @@
 #include <coil/foundation/error.hpp>
 #include <coil/foundation/geometry.hpp>
+#include <coil/foundation/image.hpp>
 #include <coil/render/color.hpp>
 #include <coil/render/draw_list.hpp>
 #include <coil/render/image.hpp>
@@ -19,6 +20,23 @@
 #include <utility>
 #include <vector>
 
+// Printers live in Image's namespace, where GoogleTest finds them by ADL.
+namespace coil::foundation {
+inline namespace {
+
+// Readable failure messages (test-only; GoogleTest uses operator<<).
+std::ostream& operator<<(std::ostream& os, Pixel pixel) {
+    return os << "Pixel{" << static_cast<int>(pixel.r) << ", " << static_cast<int>(pixel.g) << ", "
+              << static_cast<int>(pixel.b) << ", " << static_cast<int>(pixel.a) << "}";
+}
+
+std::ostream& operator<<(std::ostream& os, const Image& image) {
+    return os << "Image{" << image.width() << "x" << image.height() << "}";
+}
+
+} // namespace
+} // namespace coil::foundation
+
 namespace coil::render {
 
 template <>
@@ -32,16 +50,6 @@ using SoftwareImplementations = ::testing::Types<render_software::SoftwareRender
 INSTANTIATE_TYPED_TEST_SUITE_P(Software, RenderBackendContract, SoftwareImplementations);
 
 inline namespace {
-
-// Readable failure messages (test-only; GoogleTest uses operator<<).
-std::ostream& operator<<(std::ostream& os, Pixel pixel) {
-    return os << "Pixel{" << static_cast<int>(pixel.r) << ", " << static_cast<int>(pixel.g) << ", "
-              << static_cast<int>(pixel.b) << ", " << static_cast<int>(pixel.a) << "}";
-}
-
-std::ostream& operator<<(std::ostream& os, const Image& image) {
-    return os << "Image{" << image.width() << "x" << image.height() << "}";
-}
 
 using render_software::SoftwareRenderBackend;
 

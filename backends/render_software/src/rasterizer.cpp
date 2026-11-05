@@ -1,6 +1,7 @@
 #include "rasterizer.hpp"
 
 #include <coil/foundation/geometry.hpp>
+#include <coil/foundation/image.hpp>
 #include <coil/render/color.hpp>
 #include <coil/render/draw_list.hpp>
 #include <coil/render/image.hpp>

@@ -1,4 +1,4 @@
-coil_add_module(foundation SOURCES src/error.cpp src/version.cpp)
+coil_add_module(foundation SOURCES src/error.cpp src/image.cpp src/version.cpp)
 
 # The project version is the single source of truth for coil::foundation::kVersion.
 set(coil_foundation_generated ${CMAKE_CURRENT_BINARY_DIR}/generated/include)

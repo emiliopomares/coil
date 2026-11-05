@@ -1,8 +1,8 @@
 #include "rasterizer.hpp"
 
 #include <coil/foundation/error.hpp>
+#include <coil/foundation/image.hpp>
 #include <coil/render/draw_list.hpp>
-#include <coil/render/image.hpp>
 #include <coil/render/render_backend.hpp>
 #include <coil/render_software/software_render_backend.hpp>
 

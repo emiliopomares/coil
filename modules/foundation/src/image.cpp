@@ -1,11 +1,11 @@
-#include <coil/render/image.hpp>
+#include <coil/foundation/image.hpp>
 
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <optional>
 
-namespace coil::render {
+namespace coil::foundation {
 
 Image::Image(std::uint32_t width, std::uint32_t height)
     : m_width(width)
@@ -20,4 +20,4 @@ std::optional<Pixel> Image::pixel(std::uint32_t x, std::uint32_t y) const noexce
     return *std::next(m_pixels.begin(), index); // in range: checked above
 }
 
-} // namespace coil::render
+} // namespace coil::foundation
