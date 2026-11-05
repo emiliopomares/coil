@@ -9,6 +9,7 @@
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
 
 #include <algorithm>
@@ -95,6 +96,14 @@ Sint32 toSdlTimeout(platform::Clock::Duration timeout) {
     const auto milliseconds = std::chrono::ceil<std::chrono::milliseconds>(timeout).count();
     return static_cast<Sint32>(
         std::min<std::int64_t>(milliseconds, std::numeric_limits<Sint32>::max()));
+}
+
+/// `pixel` composited over opaque black, rounded to nearest (SPEC-0022 rule 1).
+Pixel overBlack(Pixel pixel) {
+    const auto scaled = [alpha = pixel.a](std::uint8_t channel) {
+        return static_cast<std::uint8_t>(((channel * alpha) + 127) / 255);
+    };
+    return Pixel{.r = scaled(pixel.r), .g = scaled(pixel.g), .b = scaled(pixel.b), .a = 255};
 }
 
 /// WindowSystem backed by SDL3. Owns SDL's video subsystem for its lifetime (SPEC-0005).
@@ -330,10 +339,33 @@ public:
         return scale;
     }
 
+    /// Writes into the window surface, which has the window's pixel size, then shows it
+    /// (SPEC-0022 rule 5).
     [[nodiscard]] Expected<void> presentImage(platform::WindowId id, const Image& image) override {
-        static_cast<void>(id);
-        static_cast<void>(image);
-        return {}; // Red stub (SPEC-0022)
+        const Window* window = find(id);
+        if (window == nullptr) {
+            return notFound(id);
+        }
+        SDL_Surface* surface = SDL_GetWindowSurface(window->handle.get());
+        if (surface == nullptr) {
+            return sdlFailure(ErrorCode::Internal, "SDL_GetWindowSurface failed");
+        }
+        constexpr Pixel kOpaqueBlack{.r = 0, .g = 0, .b = 0, .a = 255};
+        for (int y = 0; y < surface->h; ++y) {
+            for (int x = 0; x < surface->w; ++x) {
+                const Pixel pixel =
+                    image.pixel(static_cast<std::uint32_t>(x), static_cast<std::uint32_t>(y))
+                        .transform(overBlack)
+                        .value_or(kOpaqueBlack);
+                if (!SDL_WriteSurfacePixel(surface, x, y, pixel.r, pixel.g, pixel.b, pixel.a)) {
+                    return sdlFailure(ErrorCode::Internal, "SDL_WriteSurfacePixel failed");
+                }
+            }
+        }
+        if (!SDL_UpdateWindowSurface(window->handle.get())) {
+            return sdlFailure(ErrorCode::Internal, "SDL_UpdateWindowSurface failed");
+        }
+        return {};
     }
 
     [[nodiscard]] std::vector<platform::WindowEvent> pollEvents() override {

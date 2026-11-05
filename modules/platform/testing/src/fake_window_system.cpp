@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <expected>
 #include <format>
 #include <functional>
@@ -71,6 +72,48 @@ void queueReplacing(std::vector<WindowEvent>& events, Event event) {
     events.emplace_back(event);
 }
 
+/// Pixel size for a logical size at `scale`, rounded up as SDL does when it derives pixels from a
+/// density (SPEC-0013 rule 7).
+WindowSize toPixelSize(WindowSize size, float scale) {
+    const auto toPixels = [scale](int units) {
+        return static_cast<int>(std::ceil(static_cast<float>(units) * scale));
+    };
+    return WindowSize{.width = toPixels(size.width), .height = toPixels(size.height)};
+}
+
+constexpr Pixel kOpaqueBlack{.r = 0, .g = 0, .b = 0, .a = 255};
+
+/// `pixel` composited over opaque black, rounded to nearest (SPEC-0022 rule 1).
+Pixel overBlack(Pixel pixel) {
+    const auto scaled = [alpha = pixel.a](std::uint8_t channel) {
+        return static_cast<std::uint8_t>(((channel * alpha) + 127) / 255);
+    };
+    return Pixel{.r = scaled(pixel.r), .g = scaled(pixel.g), .b = scaled(pixel.b), .a = 255};
+}
+
+/// What a window of `pixels` shows for `image`: pixel for pixel from the top-left, composited over
+/// black, cropped, and black where the image does not reach (SPEC-0022 rule 1).
+Image showOnBlack(WindowSize pixels, const Image& image) {
+    Image frame{static_cast<std::uint32_t>(pixels.width),
+                static_cast<std::uint32_t>(pixels.height)};
+    auto out = frame.pixels().begin();
+    for (std::uint32_t y = 0; y < frame.height(); ++y) {
+        for (std::uint32_t x = 0; x < frame.width(); ++x) {
+            *out++ = image.pixel(x, y).transform(overBlack).value_or(kOpaqueBlack);
+        }
+    }
+    return frame;
+}
+
+/// Makes `frame` opaque black if the window's pixel size no longer matches it (SPEC-0022 rule 4).
+void fitFrame(Image& frame, WindowSize size, float scale) {
+    const WindowSize pixels = toPixelSize(size, scale);
+    if (std::cmp_not_equal(frame.width(), pixels.width) ||
+        std::cmp_not_equal(frame.height(), pixels.height)) {
+        frame = showOnBlack(pixels, Image{});
+    }
+}
+
 } // namespace
 
 FakeWindowSystem::FakeWindowSystem()
@@ -101,7 +144,8 @@ Expected<WindowId> FakeWindowSystem::createWindow(const WindowDesc& desc) {
                                .title = desc.title,
                                .size = desc.size,
                                .resizable = desc.resizable,
-                               .limits = desc.limits});
+                               .limits = desc.limits,
+                               .frame = showOnBlack(desc.size, Image{})});
     return id;
 }
 
@@ -165,6 +209,7 @@ void FakeWindowSystem::resize(Window& window, WindowSize size) {
         return;
     }
     window.size = size;
+    fitFrame(window.frame, window.size, window.scale);
     queueReplacing(m_events, Resized{.window = window.id, .size = size});
 }
 
@@ -202,12 +247,7 @@ Expected<WindowSize> FakeWindowSystem::pixelSize(WindowId id) const {
     if (window == nullptr) {
         return notFound(id);
     }
-    // Rounded up, as SDL does when it derives pixels from a density (SPEC-0013 rule 7).
-    const auto toPixels = [scale = window->scale](int units) {
-        return static_cast<int>(std::ceil(static_cast<float>(units) * scale));
-    };
-    return WindowSize{.width = toPixels(window->size.width),
-                      .height = toPixels(window->size.height)};
+    return toPixelSize(window->size, window->scale);
 }
 
 Expected<float> FakeWindowSystem::displayScale(WindowId id) const {
@@ -219,14 +259,20 @@ Expected<float> FakeWindowSystem::displayScale(WindowId id) const {
 }
 
 Expected<void> FakeWindowSystem::presentImage(WindowId id, const Image& image) {
-    static_cast<void>(id);
-    static_cast<void>(image);
-    return {}; // Red stub (SPEC-0022)
+    Window* window = find(id);
+    if (window == nullptr) {
+        return notFound(id);
+    }
+    window->frame = showOnBlack(toPixelSize(window->size, window->scale), image);
+    return {};
 }
 
 Expected<Image> FakeWindowSystem::framebuffer(WindowId id) const {
-    static_cast<void>(find(id));
-    return Image{}; // Red stub (SPEC-0022)
+    const Window* window = find(id);
+    if (window == nullptr) {
+        return notFound(id);
+    }
+    return window->frame;
 }
 
 Expected<void> FakeWindowSystem::changeDisplayScale(WindowId id, float scale) {
@@ -240,6 +286,7 @@ Expected<void> FakeWindowSystem::changeDisplayScale(WindowId id, float scale) {
     }
     if (window->scale != scale) {
         window->scale = scale;
+        fitFrame(window->frame, window->size, window->scale);
         queueReplacing(m_events, ScaleChanged{.window = id, .scale = scale});
     }
     return {};

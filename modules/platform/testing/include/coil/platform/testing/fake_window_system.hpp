@@ -75,6 +75,7 @@ private:
         bool resizable = false;
         WindowSizeLimits limits;
         float scale = 1.0F; ///< Display scale; pixels per DIP.
+        Image frame;        ///< What the window shows, at its pixel size (SPEC-0022).
     };
 
     /// The live window with `id`, or nullptr.
