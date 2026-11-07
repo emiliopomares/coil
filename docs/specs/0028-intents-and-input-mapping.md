@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-07 |
 | Module(s) | `coil::core` (new; already in `tools/layering.json`) |
@@ -233,20 +233,20 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 
 ## 11. Definition of Done
 - [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes on `dev`, `asan` and `tsan`
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes on `dev`, `asan` and `tsan`
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented
 
 ### AC verification
-- [ ] AC-1 → `InputMapper.AC1_DefaultKeyBindings`
-- [ ] AC-2 → `InputMapper.AC2_ExactChordsAndReleases`
-- [ ] AC-3 → `InputMapper.AC3_OnlyNavigationRepeats`
-- [ ] AC-4 → `InputMapper.AC4_PointerAndScroll`
-- [ ] AC-5 → `InputMapper.AC5_Text`
-- [ ] AC-6 → `InputMapper.AC6_Rebinding`
-- [ ] AC-7 → `Bindings.AC7_Defaults`
+- [x] AC-1 → `InputMapper.AC1_DefaultKeyBindings`
+- [x] AC-2 → `InputMapper.AC2_ExactChordsAndReleases`
+- [x] AC-3 → `InputMapper.AC3_OnlyNavigationRepeats`
+- [x] AC-4 → `InputMapper.AC4_PointerAndScroll`
+- [x] AC-5 → `InputMapper.AC5_Text`
+- [x] AC-6 → `InputMapper.AC6_Rebinding`
+- [x] AC-7 → `Bindings.AC7_Defaults`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -254,3 +254,4 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 | 2026-11-07 | Spec and implementation plan created (Draft) | |
 | 2026-11-07 | Spec, plan and Q1–Q6 approved as recommended | Emilio Pomares |
 | 2026-11-07 | Red: all seven fail on assertions (no intents, empty bindings); the other 253 pass. AC-2 first passed against the stub, since it only asserted absences; before committing Red it gained a positive control (plain Enter gives `Activate`), so its absences prove rejection | — |
+| 2026-11-07 | Green (`5fae969`): 260/260 on `dev`, `asan` and `tsan`; tests unchanged since Red (`7550d2d`); all gates pass. Status → Done | — |
