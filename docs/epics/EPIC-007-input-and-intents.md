@@ -27,7 +27,7 @@ which device was used.
 ## Specs (in dependency order)
 | # | Spec | Status | Depends on |
 |---|------|--------|------------|
-| 1 | [SPEC-0026 Raw pointer events (`InputSource` port)](../specs/0026-raw-pointer-events.md) | In Progress | EPIC-005 spec 3 |
+| 1 | [SPEC-0026 Raw pointer events (`InputSource` port)](../specs/0026-raw-pointer-events.md) | Done | EPIC-005 spec 3 |
 | 2 | Raw keyboard and text-input events (port, fake, SDL3, contract) | Planned | 1 |
 | 3 | Intent types and the default device→intent mapping (`core`) | Planned | 2 |
 | 4 | Example: print intents from real input (manual check) | Planned | 3 |

@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-07 |
 | Module(s) | `coil::platform` (port, fake, contract suite); `backends/platform_sdl3` |
@@ -240,21 +240,21 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 ## 11. Definition of Done
 - [x] ADR-0007 Amendment 1 committed
 - [x] Red phase: new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes on `dev`, `asan` and `tsan`; `leaks` 0 for SDL tests
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes on `dev`, `asan` and `tsan`; `leaks` 0 for SDL tests
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented
 
 ### AC verification
-- [ ] AC-1 → `InputSourceContract/{Fake,Sdl3}.IN1_NothingHappened`
-- [ ] AC-2 → `InputSourceContract/{Fake,Sdl3}.IN2_MoveIsReportedOnce`
-- [ ] AC-3 → `InputSourceContract/{Fake,Sdl3}.IN3_ButtonsPressAndRelease`
-- [ ] AC-4 → `InputSourceContract/{Fake,Sdl3}.IN4_ScrollDeltas`
-- [ ] AC-5 → `InputSourceContract/{Fake,Sdl3}.IN5_OrderWindowsAndDrops`
-- [ ] AC-6 → `InputSourceContract/{Fake,Sdl3}.IN6_PortsShareTheQueue`
-- [ ] AC-7 → `SdlInputSource.SI1_SdlSpecifics`
-- [ ] AC-8 → `FakeWindowSystem.FI1_InjectRequiresALiveWindow`
+- [x] AC-1 → `InputSourceContract/{Fake,Sdl3}.IN1_NothingHappened`
+- [x] AC-2 → `InputSourceContract/{Fake,Sdl3}.IN2_MoveIsReportedOnce`
+- [x] AC-3 → `InputSourceContract/{Fake,Sdl3}.IN3_ButtonsPressAndRelease`
+- [x] AC-4 → `InputSourceContract/{Fake,Sdl3}.IN4_ScrollDeltas`
+- [x] AC-5 → `InputSourceContract/{Fake,Sdl3}.IN5_OrderWindowsAndDrops`
+- [x] AC-6 → `InputSourceContract/{Fake,Sdl3}.IN6_PortsShareTheQueue`
+- [x] AC-7 → `SdlInputSource.SI1_SdlSpecifics`
+- [x] AC-8 → `FakeWindowSystem.FI1_InjectRequiresALiveWindow`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -262,3 +262,4 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 | 2026-11-07 | Spec and implementation plan created (Draft) | |
 | 2026-11-07 | Spec, plan, Q1–Q7 and ADR-0007 Amendment 1 approved as recommended | Emilio Pomares |
 | 2026-11-07 | Red: IN2–IN6 fail on Fake and Sdl3 (10), SI1 and FI1 fail, all on assertions (empty input batches, `injectInput` accepting unknown windows); IN1 passes with the stub as planned; the other 231 pass. `InputSource`'s destructor is pure virtual (still defined), so that adapters implementing both ports pass `misc-multiple-inheritance` | — |
+| 2026-11-07 | Green (`a07e4fc`): 243/243 on `dev`, `asan` and `tsan`; `leaks` 0 for the SDL tests; tests unchanged since Red (`ea3cbee`); all gates pass. Status → Done | — |
