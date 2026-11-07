@@ -1,5 +1,6 @@
 #include <coil/foundation/error.hpp>
 #include <coil/foundation/geometry.hpp>
+#include <coil/foundation/image.hpp>
 #include <coil/render/draw_list.hpp>
 #include <coil/render/render_backend.hpp>
 #include <coil/render/testing/recording_render_backend.hpp>
@@ -83,11 +84,16 @@ Expected<void> RecordingRenderBackend::present(RenderTargetId id) {
 
 tasks::AsyncResult<CapturedFrame> RecordingRenderBackend::capture(RenderTargetId id,
                                                                   std::optional<Rect> region) {
-    const bool known = m_targets.contains(id.value);
-    static_cast<void>(known);
-    static_cast<void>(region);
-    return tasks::AsyncResult<CapturedFrame>::ready(
-        CapturedFrame{.image = {}, .scale = 0.0F}); // Red stub (SPEC-0025)
+    const auto target = m_targets.find(id.value);
+    if (target == m_targets.end()) {
+        return tasks::AsyncResult<CapturedFrame>::failed(unknownTarget(id).error());
+    }
+    const Expected<PixelRect> pixels = captureRect(target->second.desc, region);
+    if (!pixels) {
+        return tasks::AsyncResult<CapturedFrame>::failed(pixels.error());
+    }
+    return tasks::AsyncResult<CapturedFrame>::ready(CapturedFrame{
+        .image = Image{pixels->width, pixels->height}, .scale = target->second.desc.scale});
 }
 
 Expected<std::vector<DrawList>> RecordingRenderBackend::frames(RenderTargetId id) const {

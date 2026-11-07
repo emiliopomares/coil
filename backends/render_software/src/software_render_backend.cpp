@@ -13,6 +13,7 @@
 #include <expected>
 #include <format>
 #include <optional>
+#include <utility>
 
 namespace coil::render_software {
 
@@ -113,11 +114,26 @@ Expected<Image> SoftwareRenderBackend::frontBuffer(RenderTargetId id) const {
 
 tasks::AsyncResult<render::CapturedFrame>
 SoftwareRenderBackend::capture(RenderTargetId id, std::optional<Rect> region) {
-    const bool known = m_targets.contains(id.value);
-    static_cast<void>(known);
-    static_cast<void>(region);
-    return tasks::AsyncResult<render::CapturedFrame>::ready(
-        render::CapturedFrame{.image = {}, .scale = 0.0F}); // Red stub (SPEC-0025)
+    using Result = tasks::AsyncResult<render::CapturedFrame>;
+    const auto target = m_targets.find(id.value);
+    if (target == m_targets.end()) {
+        return Result::failed(unknownTarget(id).error());
+    }
+    const Expected<render::PixelRect> pixels = render::captureRect(target->second.desc, region);
+    if (!pixels) {
+        return Result::failed(pixels.error());
+    }
+    // A copy of the front buffer's pixels inside the rectangle (rules 5, 7).
+    const Image& shown = target->second.front;
+    Image image{pixels->width, pixels->height};
+    auto out = image.pixels().begin();
+    for (std::uint32_t y = 0; y < pixels->height; ++y) {
+        for (std::uint32_t x = 0; x < pixels->width; ++x) {
+            *out++ = shown.pixel(pixels->x + x, pixels->y + y).value_or(Pixel{});
+        }
+    }
+    return Result::ready(
+        render::CapturedFrame{.image = std::move(image), .scale = target->second.desc.scale});
 }
 
 } // namespace coil::render_software
