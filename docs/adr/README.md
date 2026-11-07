@@ -12,7 +12,7 @@ a new ADR that supersedes it.
 | [0004](0004-layered-hexagonal-architecture.md) | Layered hexagonal architecture | Accepted |
 | [0005](0005-retained-widget-tree.md) | Retained widget tree, ownership, handles, registry | Accepted (incl. Amendment 1: built-ins are ordinary clients) |
 | [0006](0006-layout-model.md) | Two-pass layout in logical units | Accepted (amended by 0019) |
-| [0007](0007-device-agnostic-input.md) | Device-agnostic input via intents | Accepted |
+| [0007](0007-device-agnostic-input.md) | Device-agnostic input via intents | Accepted (incl. Amendment 1: typed raw input events) |
 | [0008](0008-commands-out-state-in.md) | Commands out, state in (local or remote) | Accepted |
 | [0009](0009-rendering-abstraction.md) | DrawList and RenderBackend port; GPU surfaces | Accepted (incl. Amendment 1: software first; Amendment 2: closed vocabulary; linear, radial and sweep gradients; Amendment 3: `render` may depend on `tasks`) |
 | [0010](0010-threading-model.md) | Threading model | Accepted |
