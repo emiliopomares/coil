@@ -1,6 +1,7 @@
 #include <coil/foundation/error.hpp>
 #include <coil/foundation/image.hpp>
 #include <coil/platform/clock.hpp>
+#include <coil/platform/input_source.hpp>
 #include <coil/platform/window_system.hpp>
 #include <coil/platform_sdl3/sdl_window_system.hpp>
 
@@ -17,6 +18,7 @@
 #include <cstdint>
 #include <expected>
 #include <format>
+#include <functional>
 #include <limits>
 #include <memory>
 #include <string>
@@ -106,8 +108,9 @@ Pixel overBlack(Pixel pixel) {
     return Pixel{.r = scaled(pixel.r), .g = scaled(pixel.g), .b = scaled(pixel.b), .a = 255};
 }
 
-/// WindowSystem backed by SDL3. Owns SDL's video subsystem for its lifetime (SPEC-0005).
-class SdlWindowSystem final : public platform::WindowSystem {
+/// WindowSystem backed by SDL3. Owns SDL's video subsystem for its lifetime (SPEC-0005). Also the
+/// InputSource for its windows, sharing SDL's event queue (SPEC-0026 Q1).
+class SdlWindowSystem final : public platform::WindowSystem, public platform::InputSource {
 private:
     struct Window {
         platform::WindowId id;
@@ -393,6 +396,11 @@ public:
         return events;
     }
 
+    [[nodiscard]] std::vector<platform::RawInputEvent> pollInput() override {
+        static_cast<void>(find(platform::WindowId{}));
+        return {}; // Red stub (SPEC-0026)
+    }
+
     /// SDL's id for a live window (SPEC-0006 sdlWindowId).
     [[nodiscard]] Expected<std::uint32_t> sdlWindowId(platform::WindowId id) const {
         const Window* window = find(id);
@@ -432,6 +440,16 @@ Expected<std::uint32_t> sdlWindowId(const platform::WindowSystem& system, platfo
                               "window system was not created by createSdlWindowSystem");
     }
     return sdlSystem->sdlWindowId(id);
+}
+
+Expected<std::reference_wrapper<platform::InputSource>>
+inputSourceOf(platform::WindowSystem& system) {
+    auto* sdlSystem = dynamic_cast<SdlWindowSystem*>(&system);
+    if (sdlSystem == nullptr) {
+        return makeUnexpected(ErrorCode::InvalidArgument,
+                              "window system was not created by createSdlWindowSystem");
+    }
+    return std::ref<platform::InputSource>(*sdlSystem);
 }
 
 } // namespace coil::platform_sdl3

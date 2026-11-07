@@ -1,5 +1,8 @@
 #include <coil/foundation/error.hpp>
+#include <coil/foundation/geometry.hpp>
 #include <coil/foundation/image.hpp>
+#include <coil/platform/input_source.hpp>
+#include <coil/platform/input_source_contract.hpp>
 #include <coil/platform/testing/fake_window_system.hpp>
 #include <coil/platform/window_system.hpp>
 #include <coil/platform/window_system_contract.hpp>
@@ -8,6 +11,8 @@
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_init.h>
+#include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
 
@@ -174,6 +179,113 @@ INSTANTIATE_TYPED_TEST_SUITE_P(Sdl3, WindowSystemContract, Sdl3Implementations);
 
 namespace {
 
+/// SDL's window id for `id`, or 0 (and a test failure).
+SDL_WindowID sdlIdOf(const WindowSystem& system, WindowId id) {
+    const auto sdlId = platform_sdl3::sdlWindowId(system, id);
+    EXPECT_TRUE(succeeds(sdlId));
+    return sdlId.value_or(0);
+}
+
+/// SDL's button number for a role.
+Uint8 sdlButton(PointerButton button) {
+    switch (button) {
+    case PointerButton::Primary:
+        return SDL_BUTTON_LEFT;
+    case PointerButton::Secondary:
+        return SDL_BUTTON_RIGHT;
+    case PointerButton::Middle:
+        return SDL_BUTTON_MIDDLE;
+    case PointerButton::Back:
+        return SDL_BUTTON_X1;
+    case PointerButton::Forward:
+        return SDL_BUTTON_X2;
+    }
+    return 0;
+}
+
+constexpr SDL_MouseID kSdlMouse = 1;
+
+void push(SDL_Event event) {
+    ASSERT_TRUE(SDL_PushEvent(&event)) << SDL_GetError();
+}
+
+void pushButton(SDL_WindowID window, Uint8 button, bool down, Point position) {
+    SDL_Event event{};
+    event.type = down ? SDL_EVENT_MOUSE_BUTTON_DOWN : SDL_EVENT_MOUSE_BUTTON_UP;
+    event.button.windowID = window;
+    event.button.which = kSdlMouse;
+    event.button.button = button;
+    event.button.down = down;
+    event.button.x = position.x;
+    event.button.y = position.y;
+    push(event);
+}
+
+void pushWheel(SDL_WindowID window, Point position, float dx, float dy,
+               SDL_MouseWheelDirection direction) {
+    SDL_Event event{};
+    event.type = SDL_EVENT_MOUSE_WHEEL;
+    event.wheel.windowID = window;
+    event.wheel.which = kSdlMouse;
+    event.wheel.x = dx;
+    event.wheel.y = dy;
+    event.wheel.direction = direction;
+    event.wheel.mouse_x = position.x;
+    event.wheel.mouse_y = position.y;
+    push(event);
+}
+
+void pushMotion(SDL_WindowID window, Point position) {
+    SDL_Event event{};
+    event.type = SDL_EVENT_MOUSE_MOTION;
+    event.motion.windowID = window;
+    event.motion.which = kSdlMouse;
+    event.motion.x = position.x;
+    event.motion.y = position.y;
+    push(event);
+}
+
+} // namespace
+
+/// Pushes real SDL mouse events, as SDL would for a device.
+template <>
+struct InputSourceContractTraits<Sdl3> {
+    static std::unique_ptr<WindowSystem> make() { return WindowSystemContractTraits<Sdl3>::make(); }
+
+    static InputSource& input(WindowSystem& system) {
+        auto source = platform_sdl3::inputSourceOf(system);
+        if (!source.has_value()) {
+            ADD_FAILURE() << std::format("no input source: {}", source.error());
+            std::abort();
+        }
+        return source->get();
+    }
+
+    static void move(WindowSystem& system, WindowId id, Point position) {
+        pushMotion(sdlIdOf(system, id), position);
+    }
+
+    static void press(WindowSystem& system, WindowId id, PointerButton button, Point position) {
+        pushButton(sdlIdOf(system, id), sdlButton(button), true, position);
+    }
+
+    static void release(WindowSystem& system, WindowId id, PointerButton button, Point position) {
+        pushButton(sdlIdOf(system, id), sdlButton(button), false, position);
+    }
+
+    static void scroll(WindowSystem& system, WindowId id, Point position, float dx, float dy) {
+        pushWheel(sdlIdOf(system, id), position, dx, dy, SDL_MOUSEWHEEL_NORMAL);
+    }
+
+    static void requestClose(WindowSystem& system, WindowId id) {
+        WindowSystemContractTraits<Sdl3>::requestClose(system, id);
+    }
+};
+
+INSTANTIATE_TYPED_TEST_SUITE_P(Sdl3, InputSourceContract, Sdl3Implementations);
+
+namespace {
+
 /// Pushes a display-scale-changed event for an SDL window, as SDL would on a display change.
 void pushScaleChanged(SDL_WindowID sdlId) {
     SDL_Event event{};
@@ -226,6 +338,30 @@ TEST(SdlWindowSystem, SD2_UnchangedScaleEventsAreDropped) {
     // The dummy driver's scale stays 1.0: an "unchanged" scale is not a change (rule 4).
     EXPECT_EQ((*system)->pollEvents(), std::vector<WindowEvent>{});
     SDL_DestroyWindow(foreign);
+}
+
+TEST(SdlInputSource, SI1_SdlSpecifics) {
+    auto system = createSdlWindowSystem(headless());
+    ASSERT_TRUE(system.has_value()) << std::format("{}", system.error());
+    const auto id = (*system)->createWindow({.title = "A", .size = {.width = 100, .height = 80}});
+    ASSERT_TRUE(succeeds(id));
+    const auto source = platform_sdl3::inputSourceOf(**system);
+    ASSERT_TRUE(succeeds(source));
+    const SDL_WindowID window = sdlIdOf(**system, *id);
+    const Point at{.x = 3.0F, .y = 4.0F};
+
+    pushWheel(window, at, 0.5F, 1.0F, SDL_MOUSEWHEEL_FLIPPED);
+    pushButton(window, SDL_BUTTON_X2 + 1, true, at);
+    SDL_Window* foreign = SDL_CreateWindow("Foreign", 64, 64, 0);
+    ASSERT_NE(foreign, nullptr) << SDL_GetError();
+    pushMotion(SDL_GetWindowID(foreign), at);
+    EXPECT_EQ(withoutTimeOrDevice(source->get().pollInput()),
+              (std::vector<RawInputEvent>{PointerScrolled{
+                  .window = *id, .position = at, .deltaX = -0.5F, .deltaY = -1.0F}}));
+    SDL_DestroyWindow(foreign);
+
+    testing::FakeWindowSystem fake;
+    EXPECT_TRUE(failsWith(platform_sdl3::inputSourceOf(fake), ErrorCode::InvalidArgument));
 }
 
 } // namespace

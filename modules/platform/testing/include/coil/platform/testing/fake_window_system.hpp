@@ -3,6 +3,7 @@
 #include <coil/foundation/error.hpp>
 #include <coil/foundation/image.hpp>
 #include <coil/platform/clock.hpp>
+#include <coil/platform/input_source.hpp>
 #include <coil/platform/testing/fake_clock.hpp>
 #include <coil/platform/window_system.hpp>
 
@@ -14,8 +15,9 @@
 
 namespace coil::platform::testing {
 
-/// In-memory WindowSystem for tests. No OS resources; deterministic ids starting at 1.
-class FakeWindowSystem final : public WindowSystem {
+/// In-memory WindowSystem for tests. No OS resources; deterministic ids starting at 1. Also the
+/// InputSource for its windows (SPEC-0026 Q1).
+class FakeWindowSystem final : public WindowSystem, public InputSource {
 public:
     /// Uses its own FakeClock, starting at the time point zero.
     FakeWindowSystem();
@@ -43,6 +45,11 @@ public:
     [[nodiscard]] Expected<void> presentImage(WindowId id, const Image& image) override;
     [[nodiscard]] std::vector<WindowEvent> pollEvents() override;
     [[nodiscard]] std::vector<WindowEvent> waitEvents(Clock::Duration timeout) override;
+    [[nodiscard]] std::vector<RawInputEvent> pollInput() override;
+
+    /// Test control: queues `event` for pollInput(), as if a device produced it. Fails with
+    /// NotFound (queuing nothing) if the event's window is not live.
+    [[nodiscard]] Expected<void> injectInput(RawInputEvent event);
 
     /// Test control: queues CloseRequested for `id`, as if the OS had sent it.
     /// Fails with NotFound if `id` is not a live window.

@@ -239,7 +239,7 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 
 ## 11. Definition of Done
 - [x] ADR-0007 Amendment 1 committed
-- [ ] Red phase: new tests shown failing on assertions (output recorded in the Change Log)
+- [x] Red phase: new tests shown failing on assertions (output recorded in the Change Log)
 - [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
 - [ ] Full test suite passes on `dev`, `asan` and `tsan`; `leaks` 0 for SDL tests
 - [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
@@ -261,3 +261,4 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 |------|--------|-------------|
 | 2026-11-07 | Spec and implementation plan created (Draft) | |
 | 2026-11-07 | Spec, plan, Q1–Q7 and ADR-0007 Amendment 1 approved as recommended | Emilio Pomares |
+| 2026-11-07 | Red: IN2–IN6 fail on Fake and Sdl3 (10), SI1 and FI1 fail, all on assertions (empty input batches, `injectInput` accepting unknown windows); IN1 passes with the stub as planned; the other 231 pass. `InputSource`'s destructor is pure virtual (still defined), so that adapters implementing both ports pass `misc-multiple-inheritance` | — |

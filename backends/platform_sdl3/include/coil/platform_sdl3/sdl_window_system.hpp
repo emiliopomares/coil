@@ -1,9 +1,11 @@
 #pragma once
 
 #include <coil/foundation/error.hpp>
+#include <coil/platform/input_source.hpp>
 #include <coil/platform/window_system.hpp>
 
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -27,5 +29,10 @@ createSdlWindowSystem(const SdlWindowSystemOptions& options = {});
 /// by createSdlWindowSystem, and with NotFound if `id` is not a live window.
 [[nodiscard]] Expected<std::uint32_t> sdlWindowId(const platform::WindowSystem& system,
                                                   platform::WindowId id);
+
+/// The InputSource of an SDL window system (SPEC-0026); valid as long as `system`. Fails with
+/// InvalidArgument if `system` was not created by createSdlWindowSystem.
+[[nodiscard]] Expected<std::reference_wrapper<platform::InputSource>>
+inputSourceOf(platform::WindowSystem& system);
 
 } // namespace coil::platform_sdl3

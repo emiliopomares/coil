@@ -1,6 +1,9 @@
 #include <coil/foundation/error.hpp>
+#include <coil/foundation/geometry.hpp>
 #include <coil/foundation/image.hpp>
 #include <coil/platform/clock.hpp>
+#include <coil/platform/input_source.hpp>
+#include <coil/platform/input_source_contract.hpp>
 #include <coil/platform/testing/fake_clock.hpp>
 #include <coil/platform/testing/fake_window_system.hpp>
 #include <coil/platform/window_system.hpp>
@@ -40,6 +43,60 @@ struct WindowSystemContractTraits<testing::FakeWindowSystem> {
 
 using FakeImplementations = ::testing::Types<testing::FakeWindowSystem>;
 INSTANTIATE_TYPED_TEST_SUITE_P(Fake, WindowSystemContract, FakeImplementations);
+
+/// Injects events through the fake's test control, with increasing timestamps.
+template <>
+struct InputSourceContractTraits<testing::FakeWindowSystem> {
+    static std::unique_ptr<WindowSystem> make() {
+        return std::make_unique<testing::FakeWindowSystem>();
+    }
+
+    static InputSource& input(WindowSystem& system) {
+        return dynamic_cast<testing::FakeWindowSystem&>(system);
+    }
+
+    static void move(WindowSystem& system, WindowId id, Point position) {
+        inject(system, PointerMoved{.window = id, .pointer = kMouse, .position = position});
+    }
+
+    static void press(WindowSystem& system, WindowId id, PointerButton button, Point position) {
+        inject(system,
+               PointerPressed{
+                   .window = id, .pointer = kMouse, .button = button, .position = position});
+    }
+
+    static void release(WindowSystem& system, WindowId id, PointerButton button, Point position) {
+        inject(system,
+               PointerReleased{
+                   .window = id, .pointer = kMouse, .button = button, .position = position});
+    }
+
+    static void scroll(WindowSystem& system, WindowId id, Point position, float dx, float dy) {
+        inject(
+            system,
+            PointerScrolled{
+                .window = id, .pointer = kMouse, .position = position, .deltaX = dx, .deltaY = dy});
+    }
+
+    static void requestClose(WindowSystem& system, WindowId id) {
+        auto& fake = dynamic_cast<testing::FakeWindowSystem&>(system);
+        ASSERT_TRUE(succeeds(fake.requestClose(id)));
+    }
+
+private:
+    static constexpr PointerId kMouse{.value = 1};
+
+    template <typename Event>
+    static void inject(WindowSystem& system, Event event) {
+        static InputTimestamp next{};
+        next += InputTimestamp{1};
+        event.time = next;
+        auto& fake = dynamic_cast<testing::FakeWindowSystem&>(system);
+        ASSERT_TRUE(succeeds(fake.injectInput(event)));
+    }
+};
+
+INSTANTIATE_TYPED_TEST_SUITE_P(Fake, InputSourceContract, FakeImplementations);
 
 namespace {
 
@@ -150,6 +207,23 @@ TEST(FakeWindowSystem, FS3_FramebufferFollowsPixelSize) {
     EXPECT_TRUE(allBlack(*scaled));
 
     EXPECT_TRUE(failsWith(fake.framebuffer(WindowId{.value = 999}), ErrorCode::NotFound));
+}
+
+TEST(FakeWindowSystem, FI1_InjectRequiresALiveWindow) {
+    testing::FakeWindowSystem fake;
+    const auto live = fake.createWindow(windowDesc());
+    ASSERT_TRUE(succeeds(live));
+    const auto destroyed = fake.createWindow(windowDesc());
+    ASSERT_TRUE(succeeds(destroyed));
+    ASSERT_TRUE(succeeds(fake.destroyWindow(*destroyed)));
+    for (const WindowId gone : {*destroyed, WindowId{.value = 999}}) {
+        EXPECT_TRUE(failsWith(fake.injectInput(PointerMoved{.window = gone}), ErrorCode::NotFound));
+    }
+    EXPECT_EQ(fake.pollInput(), std::vector<RawInputEvent>{});
+
+    const RawInputEvent move = PointerMoved{.window = *live, .position = {.x = 1.0F, .y = 2.0F}};
+    EXPECT_TRUE(succeeds(fake.injectInput(move)));
+    EXPECT_EQ(fake.pollInput(), std::vector<RawInputEvent>{move});
 }
 
 TEST(FakeWindowSystem, AC5_WaitAdvancesClockByTimeout) {

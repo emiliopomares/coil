@@ -1,5 +1,5 @@
 coil_add_module(platform
-    SOURCES src/clock.cpp src/system_clock.cpp src/window_system.cpp
+    SOURCES src/clock.cpp src/input_source.cpp src/system_clock.cpp src/window_system.cpp
     DEPENDS coil::foundation)
 
 # Test-support library: fakes for the platform ports. Linked only by test executables.

@@ -1,6 +1,7 @@
 #include <coil/foundation/error.hpp>
 #include <coil/foundation/image.hpp>
 #include <coil/platform/clock.hpp>
+#include <coil/platform/input_source.hpp>
 #include <coil/platform/testing/fake_clock.hpp>
 #include <coil/platform/testing/fake_window_system.hpp>
 #include <coil/platform/window_system.hpp>
@@ -332,6 +333,18 @@ std::vector<WindowEvent> FakeWindowSystem::waitEvents(Clock::Duration timeout) {
     // Cannot fail: timeout is positive here.
     [[maybe_unused]] const Expected<void> advanced = m_clock->advance(timeout);
     return events;
+}
+
+std::vector<RawInputEvent> FakeWindowSystem::pollInput() {
+    static_cast<void>(find(WindowId{}));
+    return {}; // Red stub (SPEC-0026)
+}
+
+Expected<void> FakeWindowSystem::injectInput(RawInputEvent event) {
+    static_cast<void>(find(WindowId{}));
+    const RawInputEvent ignored{event};
+    static_cast<void>(ignored);
+    return {}; // Red stub (SPEC-0026)
 }
 
 void FakeWindowSystem::setWaitHook(std::function<void()> hook) {
