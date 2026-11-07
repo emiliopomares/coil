@@ -38,7 +38,7 @@ frames can be captured as images for tests and agents.
 | 3b | `render_software`: linear, radial and sweep gradients | Planned | 3a |
 | 4 | [SPEC-0022 Presenting images in windows](../specs/0022-present-images-in-windows.md) | Done | 3a; EPIC-005 spec 3 |
 | 5 | Frame capture to an image (`capture`) | Planned | 3 |
-| 6 | [SPEC-0023 `boxes` example: coloured boxes laid out and redrawn on resize (Milestone 1)](../specs/0023-boxes-example.md) | In Progress | 4; EPIC-004 |
+| 6 | [SPEC-0023 `boxes` example: coloured boxes laid out and redrawn on resize (Milestone 1)](../specs/0023-boxes-example.md) | Done | 4; EPIC-004 |
 
 ## Notes
 - ADR-0009 Amendment 1 (software first). ADR-0017 (capture, golden images). ADR-0006 and ADR-0019

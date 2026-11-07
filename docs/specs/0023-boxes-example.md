@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-07 |
 | Module(s) | `examples/boxes` only (new) |
@@ -226,23 +226,23 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 
 ## 11. Definition of Done
 - [x] Red phase: new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally)
-- [ ] Sanitizer preset passes; macOS `leaks` reports 0 leaks for the example tests
-- [ ] Manual check recorded
-- [ ] Every AC ticked below with its proving test
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally)
+- [x] Sanitizer preset passes; macOS `leaks` reports 0 leaks for the example tests
+- [x] Manual check recorded
+- [x] Every AC ticked below with its proving test
 
 ### AC verification
-- [ ] AC-1 → `Boxes.B1_FirstFrameShowsTheScene`
-- [ ] AC-2 → `Boxes.B2_ResizeRedrawsAtTheNewLayout`
-- [ ] AC-3 → `Boxes.B3_ScaleChangeRedrawsSharp`
-- [ ] AC-4 → `Boxes.B4_OneFramePerChangingBatch`
-- [ ] AC-5 → `Boxes.B5_CloseReleasesWindowAndTarget`
-- [ ] AC-6 → `Boxes.B6_WindowFailureReturnsOne`
-- [ ] AC-7 → `Boxes.B7_RunsOnSdlDummyDriver`
-- [ ] AC-8 → `gate.examples.AC8_BoxesBuilds`
+- [x] AC-1 → `Boxes.B1_FirstFrameShowsTheScene`
+- [x] AC-2 → `Boxes.B2_ResizeRedrawsAtTheNewLayout`
+- [x] AC-3 → `Boxes.B3_ScaleChangeRedrawsSharp`
+- [x] AC-4 → `Boxes.B4_OneFramePerChangingBatch`
+- [x] AC-5 → `Boxes.B5_CloseReleasesWindowAndTarget`
+- [x] AC-6 → `Boxes.B6_WindowFailureReturnsOne`
+- [x] AC-7 → `Boxes.B7_RunsOnSdlDummyDriver`
+- [x] AC-8 → `gate.examples.AC8_BoxesBuilds`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -250,3 +250,5 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 | 2026-11-07 | Spec and implementation plan created (Draft) | |
 | 2026-11-07 | Spec, plan and Q1–Q6 approved as recommended | Emilio Pomares |
 | 2026-11-07 | Red: B1–B5 and B7 fail on assertions (black frames, no frame lines, window not released, SDL surface black); B6 and B8 pass with the stub, as planned (regression tests); the other 203 pass | — |
+| 2026-11-07 | Green (`7b8cbe7`): 211/211 on `dev` and `asan`; tests unchanged since Red (`c8e0918`); all gates pass; `leaks`: 0 leaks | — |
+| 2026-11-07 | Manual check by the user on macOS: the scene renders correctly on screen ("it's pretty"). The scale line, live-resize behaviour and resize speed were not reported; they are re-checked with EPIC-003 and EPIC-013. Status → Done | Emilio Pomares |
