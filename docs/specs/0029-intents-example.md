@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | In Progress |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-07 |
 | Module(s) | `examples/intents` only (new) |
@@ -222,24 +222,24 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
   manual check, it is recorded and fixed in a platform spec, not here.
 
 ## 11. Definition of Done
-- [ ] Red phase: new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally)
-- [ ] Sanitizer preset passes
-- [ ] Manual check recorded
-- [ ] Every AC ticked below with its proving test
+- [x] Red phase: new tests shown failing on assertions (output recorded in the Change Log)
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally)
+- [x] Sanitizer preset passes
+- [x] Manual check recorded
+- [x] Every AC ticked below with its proving test
 
 ### AC verification
-- [ ] AC-1 → `Intents.I1_WindowLineAndBackground`
-- [ ] AC-2 → `Intents.I2_KeysPrintTheirIntents`
-- [ ] AC-3 → `Intents.I3_PointerAndScrollPrintInDips`
-- [ ] AC-4 → `Intents.I4_TextPrintsUnchanged`
-- [ ] AC-5 → `Intents.I5_DescribeEveryAlternative`
-- [ ] AC-6 → `Intents.I6_CloseAfterTheBatchAndOtherWindowsIgnored`
-- [ ] AC-7 → `Intents.I7_FailureAndSdlDummyDriver`
-- [ ] AC-8 → `gate.examples.AC8_IntentsBuilds`
+- [x] AC-1 → `Intents.I1_WindowLineAndBackground`
+- [x] AC-2 → `Intents.I2_KeysPrintTheirIntents`
+- [x] AC-3 → `Intents.I3_PointerAndScrollPrintInDips`
+- [x] AC-4 → `Intents.I4_TextPrintsUnchanged`
+- [x] AC-5 → `Intents.I5_DescribeEveryAlternative`
+- [x] AC-6 → `Intents.I6_CloseAfterTheBatchAndOtherWindowsIgnored`
+- [x] AC-7 → `Intents.I7_FailureAndSdlDummyDriver`
+- [x] AC-8 → `gate.examples.AC8_IntentsBuilds`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -248,3 +248,4 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 | 2026-11-07 | Spec, plan and Q1–Q5 approved as recommended | Emilio Pomares |
 | 2026-11-07 | Red: I1–I7 fail on assertions (no lines, unfilled framebuffer, wrong descriptions, SDL log empty); I7's failure half and I8 pass with the stub, as planned (regression tests); the other 261 pass. Lint: the I1 and I6 scripts are helper functions to stay under the complexity limit | — |
 | 2026-11-07 | Green: 268/268 on `dev`, `asan` and `tsan`; tests unchanged since Red (`2a54d79`); all gates pass | — |
+| 2026-11-07 | Manual check by the user on macOS: all items of §5 as specified ("all seems right"). Status → Done | Emilio Pomares |

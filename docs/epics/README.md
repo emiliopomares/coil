@@ -11,7 +11,7 @@ implemented one at a time. An epic has no code of its own; it is done when all i
 | [EPIC-004](EPIC-004-layout-engine.md) | Layout engine: rows, columns, grids and modifiers | In Progress |
 | [EPIC-005](EPIC-005-window-resizing.md) | Window resizing | Done |
 | [EPIC-006](EPIC-006-first-pixels.md) | First pixels: DrawList, software renderer, on screen | In Progress |
-| [EPIC-007](EPIC-007-input-and-intents.md) | Input and intents | Approved |
+| [EPIC-007](EPIC-007-input-and-intents.md) | Input and intents | Done |
 | [EPIC-008](EPIC-008-widget-tree.md) | Widget tree | Approved |
 | [EPIC-009](EPIC-009-commands-and-state.md) | Commands and state | Approved |
 | [EPIC-010](EPIC-010-text.md) | Text | Approved |
