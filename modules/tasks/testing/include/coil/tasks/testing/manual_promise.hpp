@@ -41,7 +41,7 @@ public:
 
     /// Whether the consumer cancelled or dropped the result.
     [[nodiscard]] bool cancelRequested() const {
-        return false; // Red stub (SPEC-0024)
+        return m_pair.promise.stopToken().stop_requested();
     }
 
     /// Whether the outcome is known (completed, failed or cancelled).

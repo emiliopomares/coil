@@ -18,7 +18,7 @@ std::string_view toString(ErrorCode code) noexcept {
     case ErrorCode::Internal:
         return "Internal";
     case ErrorCode::Cancelled:
-        break; // Red stub (SPEC-0024)
+        return "Cancelled";
     }
     return "Unknown";
 }
