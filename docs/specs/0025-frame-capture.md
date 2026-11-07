@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-07 |
 | Module(s) | `coil::render` (port, recording backend, contract suite); `backends/render_software` |
@@ -214,21 +214,21 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 
 ## 11. Definition of Done
 - [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes on `dev`, `asan` and `tsan`
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally)
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented (Doxygen comments on new public declarations)
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes on `dev`, `asan` and `tsan`
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally)
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented (Doxygen comments on new public declarations)
 
 ### AC verification
-- [ ] AC-1 → `RenderBackendContract/{Recording,Software}.CP1_CaptureOfUnknownTargetIsNotFound`
-- [ ] AC-2 → `RenderBackendContract/{Recording,Software}.CP2_CaptureHasTargetPixelSizeAndScale`
-- [ ] AC-3 → `RenderBackendContract/{Recording,Software}.CP3_RegionsAreRoundedOutAndClipped`
-- [ ] AC-4 → `SoftwareRenderBackend.SC1_CaptureIsTheFrontBuffer`
-- [ ] AC-5 → `SoftwareRenderBackend.SC2_CaptureShowsThePresentedFrame`
-- [ ] AC-6 → `SoftwareRenderBackend.SC3_CaptureIsACopy`
-- [ ] AC-7 → `RecordingRenderBackend.SC4_CaptureIsTransparent`
+- [x] AC-1 → `RenderBackendContract/{Recording,Software}.CP1_CaptureOfUnknownTargetIsNotFound`
+- [x] AC-2 → `RenderBackendContract/{Recording,Software}.CP2_CaptureHasTargetPixelSizeAndScale`
+- [x] AC-3 → `RenderBackendContract/{Recording,Software}.CP3_RegionsAreRoundedOutAndClipped`
+- [x] AC-4 → `SoftwareRenderBackend.SC1_CaptureIsTheFrontBuffer`
+- [x] AC-5 → `SoftwareRenderBackend.SC2_CaptureShowsThePresentedFrame`
+- [x] AC-6 → `SoftwareRenderBackend.SC3_CaptureIsACopy`
+- [x] AC-7 → `RecordingRenderBackend.SC4_CaptureIsTransparent`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -236,3 +236,4 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 | 2026-11-07 | Spec and implementation plan created (Draft) | |
 | 2026-11-07 | Spec, plan and Q1–Q6 approved as recommended (including the `render_software → tasks` edge and the split of EPIC-006 spec 5) | Emilio Pomares |
 | 2026-11-07 | Red: CP1–CP3 fail on both implementations (6) and SC1–SC4 fail (4), all on assertions (0×0 images, scale 0, errors not reported); the other 219 pass; format, layering and tidy clean | — |
+| 2026-11-07 | Green (`37c9d83`): 229/229 on `dev`, `asan` and `tsan`; tests unchanged since Red (`3551dac`); all gates pass. Status → Done | — |

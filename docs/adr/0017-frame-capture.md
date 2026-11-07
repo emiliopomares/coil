@@ -16,6 +16,10 @@ Status: Accepted (2026-11-01)
   Not optimized for production use.
 - **Image encoding** (PNG) lives in an adapter behind an `ImageEncoder` port. Library: libspng (ADR-0018).
 
+*Note (2026-11-07):* implemented by SPEC-0025 as `capture(RenderTargetId, optional<Rect>) →
+AsyncResult<CapturedFrame>`, where `CapturedFrame` carries the image and its scale; the target id is
+`RenderTargetId` (SPEC-0020), not `WindowTargetId`.
+
 ## Consequences
 + Screenshots are available to agents and tests on every platform, including CI without a GPU.
 − A second rasterizer must stay consistent with GPU backends (golden tests with a tolerance).

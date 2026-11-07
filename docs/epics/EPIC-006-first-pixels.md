@@ -37,7 +37,7 @@ frames can be captured as images for tests and agents.
 | 3a | [SPEC-0021 `render_software`: rects, rounded rects, borders and clips into an image](../specs/0021-software-rasterizer-shapes.md) | Done | 2 |
 | 3b | `render_software`: linear, radial and sweep gradients | Planned | 3a |
 | 4 | [SPEC-0022 Presenting images in windows](../specs/0022-present-images-in-windows.md) | Done | 3a; EPIC-005 spec 3 |
-| 5a | [SPEC-0025 Frame capture (`RenderBackend::capture`)](../specs/0025-frame-capture.md) | In Progress | 3a; EPIC-009 spec 1 |
+| 5a | [SPEC-0025 Frame capture (`RenderBackend::capture`)](../specs/0025-frame-capture.md) | Done | 3a; EPIC-009 spec 1 |
 | 5b | Golden images: file format, comparison with tolerance, update workflow, the `boxes` golden | Planned | 5a; 6 |
 | 6 | [SPEC-0023 `boxes` example: coloured boxes laid out and redrawn on resize (Milestone 1)](../specs/0023-boxes-example.md) | Done | 4; EPIC-004 |
 
