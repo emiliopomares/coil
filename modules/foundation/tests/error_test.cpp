@@ -75,6 +75,13 @@ TEST(Error, AC8_CodesHaveStableNumericValues) {
     EXPECT_EQ(std::to_underlying(ErrorCode::Internal), 4);
 }
 
+// SPEC-0024 AC-8: the code for cancelled operations.
+TEST(Error, AC8_CancelledCode) {
+    EXPECT_EQ(toString(ErrorCode::Cancelled), "Cancelled");
+    EXPECT_EQ(std::format("{}", Error{ErrorCode::Cancelled}), "Cancelled");
+    EXPECT_EQ(std::to_underlying(ErrorCode::Cancelled), 5);
+}
+
 TEST(Error, CoilNamespaceAliasesFoundation) {
     EXPECT_TRUE((std::is_same_v<coil::Error, coil::foundation::Error>));
     EXPECT_TRUE((std::is_same_v<coil::ErrorCode, coil::foundation::ErrorCode>));

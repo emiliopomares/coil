@@ -45,6 +45,20 @@
                 "lhs": "${hostSystemName}",
                 "rhs": "Windows"
             }
+        },
+        {
+            "name": "tsan",
+            "inherits": "base",
+            "displayName": "Debug + ThreadSanitizer",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "COIL_SANITIZE": "thread"
+            },
+            "condition": {
+                "type": "notEquals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
         }
     ],
     "buildPresets": [
@@ -59,6 +73,10 @@
         {
             "name": "asan",
             "configurePreset": "asan"
+        },
+        {
+            "name": "tsan",
+            "configurePreset": "tsan"
         }
     ],
     "testPresets": [
@@ -79,6 +97,13 @@
         {
             "name": "asan",
             "configurePreset": "asan",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "tsan",
+            "configurePreset": "tsan",
             "output": {
                 "outputOnFailure": true
             }

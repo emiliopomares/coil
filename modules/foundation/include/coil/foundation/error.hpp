@@ -16,6 +16,7 @@ enum class ErrorCode : std::uint16_t {
     NotFound = 2,        ///< A referenced entity (id, handle, name) does not exist.
     Unavailable = 3,     ///< A required resource or service cannot be used right now.
     Internal = 4,        ///< An unexpected failure inside Coil or a backend.
+    Cancelled = 5,       ///< The operation was cancelled before it finished.
 };
 
 /// Returns the enumerator name ("InvalidArgument", …), or "Unknown" for any other value.

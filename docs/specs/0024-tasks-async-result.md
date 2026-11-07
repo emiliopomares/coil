@@ -261,7 +261,7 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 - **Lock-free state:** not needed at UI rates; a mutex is simpler to prove under TSan.
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
 - [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
 - [ ] Full test suite passes on `dev`, `asan` and `tsan`
 - [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
@@ -284,3 +284,4 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 |------|--------|-------------|
 | 2026-11-07 | Spec and implementation plan created (Draft) | |
 | 2026-11-07 | Spec, plan and Q1–Q8 approved as recommended | Emilio Pomares |
+| 2026-11-07 | Red: all 8 new tests fail on assertions ("no outcome", `complete` returns `false`, `toString` gives "Unknown"); the other 211 pass; format, layering and tidy clean | — |
