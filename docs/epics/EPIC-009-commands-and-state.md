@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Proposed |
+| Status | Approved |
 | Date | 2026-11-01 |
 | Origin | Roadmap to a button (2026-11-01) |
 
@@ -43,3 +43,4 @@ state through a `PropertyStore` and are told when it changes.
 | Date | Change | Approved by |
 |------|--------|-------------|
 | 2026-11-01 | Epic proposed (roadmap) | |
+| 2026-11-07 | Epic approved (roadmap to Milestone 2) | Emilio Pomares |

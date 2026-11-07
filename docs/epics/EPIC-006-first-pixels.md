@@ -38,14 +38,17 @@ frames can be captured as images for tests and agents.
 | 3b | `render_software`: linear, radial and sweep gradients | Planned | 3a |
 | 4 | [SPEC-0022 Presenting images in windows](../specs/0022-present-images-in-windows.md) | Done | 3a; EPIC-005 spec 3 |
 | 5 | Frame capture to an image (`capture`) | Planned | 3 |
-| 6 | Example: coloured boxes laid out by rows and columns, redrawn on resize | Planned | 4; EPIC-004 |
+| 6 | [SPEC-0023 `boxes` example: coloured boxes laid out and redrawn on resize (Milestone 1)](../specs/0023-boxes-example.md) | In Progress | 4; EPIC-004 |
 
 ## Notes
 - ADR-0009 Amendment 1 (software first). ADR-0017 (capture, golden images). ADR-0006 and ADR-0019
   (DIPs; pixel conversion only in backends).
 - **Decided in spec 4 (SPEC-0022):** `WindowSystem::presentImage` on the window port, SDL window
   surface; `Image` moves to `foundation`. No new layering edge.
-- **Order after spec 4:** spec 6 (Milestone 1), then spec 5 and 3b (SPEC-0022 Q6).
+- **Order after spec 4:** spec 6 (Milestone 1), then spec 5 (needed by EPIC-013). Spec 3b waits until
+  after Milestone 2 (roadmap, 2026-11-07).
+- **Golden images:** spec 6 checks exact pixel probes; the stored golden image comes with spec 5
+  (SPEC-0023 Q5).
 - **Decided in spec 3:** anti-aliasing of rounded corners, the colour space (sRGB storage, blending
   rules), gradient interpolation (sRGB or linear light), and the golden-image tolerance.
 - **Decided in spec 1:** the gradient model: number of colour stops, and whether a gradient is a
@@ -61,3 +64,4 @@ frames can be captured as images for tests and agents.
 | 2026-11-02 | Epic approved; started after EPIC-004 spec 4 (rows and columns are enough for Milestone 1) | Emilio Pomares |
 | 2026-11-02 | Spec 3 split into 3a (shapes, borders, clips) and 3b (gradients) (SPEC-0021 Q1); spec 4 needs only 3a | Emilio Pomares |
 | 2026-11-05 | Spec 4 is SPEC-0022; spec 6 to be done before specs 5 and 3b (SPEC-0022 Q6) | Emilio Pomares |
+| 2026-11-07 | Spec 6 is SPEC-0023; golden image file deferred to spec 5; spec 3b after Milestone 2 | Emilio Pomares |

@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Proposed |
+| Status | Approved |
 | Date | 2026-11-01 |
 | Origin | Roadmap to a button (2026-11-01) |
 
@@ -58,3 +58,4 @@ carry modifier chains (ADR-0019), lay out, paint into a `DrawList`, receive rout
 | 2026-11-01 | Epic proposed (roadmap) | |
 | 2026-11-02 | Spec 8's panel is a custom widget defined in the example, proving ADR-0005 Amendment 1 (folded into spec 8 to keep the epic at eight specs) | Emilio Pomares |
 | 2026-11-02 | Custom hit shapes and pointer capture (spec 5) and virtual automation sub-elements (spec 7), for the node-editor use case | Emilio Pomares |
+| 2026-11-07 | Epic approved (roadmap to Milestone 2) | Emilio Pomares |
