@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-07 |
 | Module(s) | `coil::platform` (event types, contract suite); `backends/platform_sdl3` |
@@ -197,19 +197,19 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 
 ## 11. Definition of Done
 - [x] Red phase: new tests shown failing on assertions where expected (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes on `dev`, `asan` and `tsan`; `leaks` 0 for SDL tests
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes on `dev`, `asan` and `tsan`; `leaks` 0 for SDL tests
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented
 
 ### AC verification
-- [ ] AC-1 → `InputSourceContract/{Fake,Sdl3}.KB1_KeyPressAndRelease`
-- [ ] AC-2 → `InputSourceContract/{Fake,Sdl3}.KB2_ModifiersAndRepeat`
-- [ ] AC-3 → `InputSourceContract/{Fake,Sdl3}.KB3_TextIsUtf8`
-- [ ] AC-4 → `InputSourceContract/{Fake,Sdl3}.KB4_OrderAcrossDevicesAndDrops`
-- [ ] AC-5 → `SdlInputSource.SK1_KeyTable`
-- [ ] AC-6 → `SdlInputSource.SK2_TextInputIsStarted`
+- [x] AC-1 → `InputSourceContract/{Fake,Sdl3}.KB1_KeyPressAndRelease`
+- [x] AC-2 → `InputSourceContract/{Fake,Sdl3}.KB2_ModifiersAndRepeat`
+- [x] AC-3 → `InputSourceContract/{Fake,Sdl3}.KB3_TextIsUtf8`
+- [x] AC-4 → `InputSourceContract/{Fake,Sdl3}.KB4_OrderAcrossDevicesAndDrops`
+- [x] AC-5 → `SdlInputSource.SK1_KeyTable`
+- [x] AC-6 → `SdlInputSource.SK2_TextInputIsStarted`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -217,3 +217,4 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 | 2026-11-07 | Spec and implementation plan created (Draft) | |
 | 2026-11-07 | Spec, plan and Q1–Q5 approved as recommended | Emilio Pomares |
 | 2026-11-07 | Red: on Sdl3, KB1–KB4 fail (empty input) and SK1–SK2 fail (empty input; text input not active), all on assertions; on the fake, KB1–KB4 pass with no production change, as planned; the other 243 pass. SPEC-0026's contract helpers extended as in §10.3, and its garbled header comment rewritten | — |
+| 2026-11-07 | Green (`e6850fa`): 253/253 on `dev`, `asan` and `tsan`; `leaks` 0 for the SDL tests; tests unchanged since Red (`0250d5e`). Gates run one by one (format on tracked files, layering, tidy with the compilation database), because an untracked CMake build directory in `examples/boxes/` makes `tools/check.sh`'s format step fail. Status → Done | — |
