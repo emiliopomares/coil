@@ -196,7 +196,7 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
   strings, which outlive the event.
 
 ## 11. Definition of Done
-- [ ] Red phase: new tests shown failing on assertions where expected (output recorded in the Change Log)
+- [x] Red phase: new tests shown failing on assertions where expected (output recorded in the Change Log)
 - [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
 - [ ] Full test suite passes on `dev`, `asan` and `tsan`; `leaks` 0 for SDL tests
 - [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
@@ -216,3 +216,4 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 |------|--------|-------------|
 | 2026-11-07 | Spec and implementation plan created (Draft) | |
 | 2026-11-07 | Spec, plan and Q1–Q5 approved as recommended | Emilio Pomares |
+| 2026-11-07 | Red: on Sdl3, KB1–KB4 fail (empty input) and SK1–SK2 fail (empty input; text input not active), all on assertions; on the fake, KB1–KB4 pass with no production change, as planned; the other 243 pass. SPEC-0026's contract helpers extended as in §10.3, and its garbled header comment rewritten | — |

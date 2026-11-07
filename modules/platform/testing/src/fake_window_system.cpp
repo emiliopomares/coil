@@ -351,7 +351,7 @@ Expected<void> FakeWindowSystem::injectInput(RawInputEvent event) {
     if (find(window) == nullptr) {
         return notFound(window);
     }
-    m_input.push_back(event);
+    m_input.push_back(std::move(event));
     return {};
 }
 

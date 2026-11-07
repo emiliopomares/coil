@@ -11,6 +11,8 @@
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_init.h>
+#include <SDL3/SDL_keyboard.h>
+#include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_surface.h>
@@ -18,6 +20,7 @@
 
 #include <gtest/gtest.h>
 
+#include <array>
 #include <cstdint>
 #include <cstdlib>
 #include <expected>
@@ -245,6 +248,106 @@ void pushMotion(SDL_WindowID window, Point position) {
     push(event);
 }
 
+/// Every Key and the SDL keycode that produces it (SPEC-0027 AC-5), written out from the spec.
+constexpr std::array<std::pair<SDL_Keycode, Key>, 67> kKeyTable{{
+    {SDLK_A, Key::A},
+    {SDLK_B, Key::B},
+    {SDLK_C, Key::C},
+    {SDLK_D, Key::D},
+    {SDLK_E, Key::E},
+    {SDLK_F, Key::F},
+    {SDLK_G, Key::G},
+    {SDLK_H, Key::H},
+    {SDLK_I, Key::I},
+    {SDLK_J, Key::J},
+    {SDLK_K, Key::K},
+    {SDLK_L, Key::L},
+    {SDLK_M, Key::M},
+    {SDLK_N, Key::N},
+    {SDLK_O, Key::O},
+    {SDLK_P, Key::P},
+    {SDLK_Q, Key::Q},
+    {SDLK_R, Key::R},
+    {SDLK_S, Key::S},
+    {SDLK_T, Key::T},
+    {SDLK_U, Key::U},
+    {SDLK_V, Key::V},
+    {SDLK_W, Key::W},
+    {SDLK_X, Key::X},
+    {SDLK_Y, Key::Y},
+    {SDLK_Z, Key::Z},
+    {SDLK_0, Key::Digit0},
+    {SDLK_1, Key::Digit1},
+    {SDLK_2, Key::Digit2},
+    {SDLK_3, Key::Digit3},
+    {SDLK_4, Key::Digit4},
+    {SDLK_5, Key::Digit5},
+    {SDLK_6, Key::Digit6},
+    {SDLK_7, Key::Digit7},
+    {SDLK_8, Key::Digit8},
+    {SDLK_9, Key::Digit9},
+    {SDLK_F1, Key::F1},
+    {SDLK_F2, Key::F2},
+    {SDLK_F3, Key::F3},
+    {SDLK_F4, Key::F4},
+    {SDLK_F5, Key::F5},
+    {SDLK_F6, Key::F6},
+    {SDLK_F7, Key::F7},
+    {SDLK_F8, Key::F8},
+    {SDLK_F9, Key::F9},
+    {SDLK_F10, Key::F10},
+    {SDLK_F11, Key::F11},
+    {SDLK_F12, Key::F12},
+    {SDLK_RETURN, Key::Enter},
+    {SDLK_ESCAPE, Key::Escape},
+    {SDLK_BACKSPACE, Key::Backspace},
+    {SDLK_TAB, Key::Tab},
+    {SDLK_SPACE, Key::Space},
+    {SDLK_LEFT, Key::Left},
+    {SDLK_RIGHT, Key::Right},
+    {SDLK_UP, Key::Up},
+    {SDLK_DOWN, Key::Down},
+    {SDLK_HOME, Key::Home},
+    {SDLK_END, Key::End},
+    {SDLK_PAGEUP, Key::PageUp},
+    {SDLK_PAGEDOWN, Key::PageDown},
+    {SDLK_INSERT, Key::Insert},
+    {SDLK_DELETE, Key::Delete},
+    {SDLK_LSHIFT, Key::Shift},
+    {SDLK_LCTRL, Key::Control},
+    {SDLK_LALT, Key::Alt},
+    {SDLK_LGUI, Key::Super},
+}};
+
+SDL_Keycode sdlKeyOf(Key key) {
+    for (const auto& [sdl, coil] : kKeyTable) {
+        if (coil == key) {
+            return sdl;
+        }
+    }
+    ADD_FAILURE() << "no SDL keycode for key " << static_cast<int>(key);
+    return SDLK_UNKNOWN;
+}
+
+void pushKey(SDL_WindowID window, SDL_Keycode key, SDL_Keymod mod, bool down, bool repeat) {
+    SDL_Event event{};
+    event.type = down ? SDL_EVENT_KEY_DOWN : SDL_EVENT_KEY_UP;
+    event.key.windowID = window;
+    event.key.key = key;
+    event.key.mod = mod;
+    event.key.down = down;
+    event.key.repeat = repeat;
+    push(event);
+}
+
+void pushText(SDL_WindowID window, const char* utf8) {
+    SDL_Event event{};
+    event.type = SDL_EVENT_TEXT_INPUT;
+    event.text.windowID = window;
+    event.text.text = utf8;
+    push(event);
+}
+
 } // namespace
 
 /// Pushes real SDL mouse events, as SDL would for a device.
@@ -279,6 +382,20 @@ struct InputSourceContractTraits<Sdl3> {
 
     static void requestClose(WindowSystem& system, WindowId id) {
         WindowSystemContractTraits<Sdl3>::requestClose(system, id);
+    }
+
+    static void key(WindowSystem& system, WindowId id, Key key, KeyModifiers modifiers, bool down,
+                    bool repeat) {
+        SDL_Keymod mod = SDL_KMOD_NONE;
+        mod |= modifiers.shift ? SDL_KMOD_LSHIFT : SDL_KMOD_NONE;
+        mod |= modifiers.control ? SDL_KMOD_LCTRL : SDL_KMOD_NONE;
+        mod |= modifiers.alt ? SDL_KMOD_LALT : SDL_KMOD_NONE;
+        mod |= modifiers.super ? SDL_KMOD_LGUI : SDL_KMOD_NONE;
+        pushKey(sdlIdOf(system, id), sdlKeyOf(key), mod, down, repeat);
+    }
+
+    static void text(WindowSystem& system, WindowId id, const char* utf8) {
+        pushText(sdlIdOf(system, id), utf8);
     }
 };
 
@@ -362,6 +479,45 @@ TEST(SdlInputSource, SI1_SdlSpecifics) {
 
     testing::FakeWindowSystem fake;
     EXPECT_TRUE(failsWith(platform_sdl3::inputSourceOf(fake), ErrorCode::InvalidArgument));
+}
+
+// SPEC-0027: SDL keyboard specifics (SK<n>).
+
+TEST(SdlInputSource, SK1_KeyTable) {
+    auto system = createSdlWindowSystem(headless());
+    ASSERT_TRUE(system.has_value()) << std::format("{}", system.error());
+    const auto id = (*system)->createWindow({.title = "A", .size = {.width = 100, .height = 80}});
+    ASSERT_TRUE(succeeds(id));
+    const auto source = platform_sdl3::inputSourceOf(**system);
+    ASSERT_TRUE(succeeds(source));
+    const SDL_WindowID window = sdlIdOf(**system, *id);
+
+    std::vector<RawInputEvent> expected;
+    for (const auto& [sdl, key] : kKeyTable) {
+        pushKey(window, sdl, SDL_KMOD_NONE, true, false);
+        expected.emplace_back(KeyPressed{.window = *id, .key = key});
+    }
+    // Right-hand modifiers count as the same keys (Q3).
+    for (const auto& [sdl, key] :
+         {std::pair{SDLK_RSHIFT, Key::Shift}, std::pair{SDLK_RCTRL, Key::Control},
+          std::pair{SDLK_RALT, Key::Alt}, std::pair{SDLK_RGUI, Key::Super}}) {
+        pushKey(window, sdl, SDL_KMOD_NONE, true, false);
+        expected.emplace_back(KeyPressed{.window = *id, .key = key});
+    }
+    pushKey(window, SDLK_VOLUMEUP, SDL_KMOD_NONE, true, false); // not in the enum: dropped
+    pushKey(0, SDLK_A, SDL_KMOD_NONE, true, false);             // no focused window: dropped
+    pushText(window, "");                                       // empty text: dropped
+    EXPECT_EQ(withoutTimeOrDevice(source->get().pollInput()), expected);
+}
+
+TEST(SdlInputSource, SK2_TextInputIsStarted) {
+    auto system = createSdlWindowSystem(headless());
+    ASSERT_TRUE(system.has_value()) << std::format("{}", system.error());
+    const auto id = (*system)->createWindow({.title = "A", .size = {.width = 100, .height = 80}});
+    ASSERT_TRUE(succeeds(id));
+    SDL_Window* window = SDL_GetWindowFromID(sdlIdOf(**system, *id));
+    ASSERT_NE(window, nullptr) << SDL_GetError();
+    EXPECT_TRUE(SDL_TextInputActive(window));
 }
 
 } // namespace

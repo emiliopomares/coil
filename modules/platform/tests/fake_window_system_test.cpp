@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <limits>
 #include <memory>
+#include <utility>
 #include <vector>
 
 namespace coil::platform {
@@ -83,6 +84,20 @@ struct InputSourceContractTraits<testing::FakeWindowSystem> {
         ASSERT_TRUE(succeeds(fake.requestClose(id)));
     }
 
+    static void key(WindowSystem& system, WindowId id, Key key, KeyModifiers modifiers, bool down,
+                    bool repeat) {
+        if (down) {
+            inject(system,
+                   KeyPressed{.window = id, .key = key, .modifiers = modifiers, .repeat = repeat});
+        } else {
+            inject(system, KeyReleased{.window = id, .key = key, .modifiers = modifiers});
+        }
+    }
+
+    static void text(WindowSystem& system, WindowId id, const char* utf8) {
+        inject(system, TextEntered{.window = id, .text = utf8});
+    }
+
 private:
     static constexpr PointerId kMouse{.value = 1};
 
@@ -92,7 +107,7 @@ private:
         next += InputTimestamp{1};
         event.time = next;
         auto& fake = dynamic_cast<testing::FakeWindowSystem&>(system);
-        ASSERT_TRUE(succeeds(fake.injectInput(event)));
+        ASSERT_TRUE(succeeds(fake.injectInput(std::move(event))));
     }
 };
 

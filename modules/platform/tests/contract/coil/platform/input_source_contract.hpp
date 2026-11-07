@@ -1,18 +1,19 @@
 #pragma once
 
-// Contract suite every InputSource implementation must pass (SPEC-0026). An implementation is a
-// WindowSystem that is also the InputSource for its windows (SPEC-0026 Q1). To run it for `Impl`,
-// in a test source inside namespace coil::platform:
-//   template <> struct InputSourceContractTraits<Impl> {
-//       static std::unique_ptr<WindowSystem> make();
-//       static InputSource& input(WindowSystem& system);
-//       // Each simulates a device event for window `id`, outside the port.
-//       static void move(WindowSystem& system, WindowId id, Point position);
-//       static void press(WindowSystem& system, WindowId id, PointerButton button, Point position);
-//       static void release(WindowSystem& system, WindowId id, PointerButton button, Point
-//       position); static void scroll(WindowSystem& system, WindowId id, Point position, float dx,
-//       float dy); static void requestClose(WindowSystem& system, WindowId id);
-//   };
+// Contract suite every InputSource implementation must pass (SPEC-0026, SPEC-0027). An
+// implementation is a WindowSystem that is also the InputSource for its windows (SPEC-0026 Q1).
+// To run it for `Impl`, specialize InputSourceContractTraits<Impl> inside namespace
+// coil::platform with these static functions, then instantiate the suite:
+//   std::unique_ptr<WindowSystem> make();
+//   InputSource& input(WindowSystem& system);
+// Each of the following simulates a device event for window `id`, outside the port:
+//   void move(WindowSystem&, WindowId, Point position);
+//   void press(WindowSystem&, WindowId, PointerButton, Point position);
+//   void release(WindowSystem&, WindowId, PointerButton, Point position);
+//   void scroll(WindowSystem&, WindowId, Point position, float dx, float dy);
+//   void requestClose(WindowSystem&, WindowId);
+//   void key(WindowSystem&, WindowId, Key, KeyModifiers, bool down, bool repeat);
+//   void text(WindowSystem&, WindowId, const char* utf8);  // a static string
 //   INSTANTIATE_TYPED_TEST_SUITE_P(Name, InputSourceContract, ::testing::Types<Impl>);
 
 #include <coil/foundation/geometry.hpp>
@@ -72,6 +73,19 @@ inline std::ostream& operator<<(std::ostream& os, const RawInputEvent& event) {
         return os << "PointerScrolled{" << scrolled->window << ", " << scrolled->position << ", "
                   << scrolled->deltaX << ", " << scrolled->deltaY << "}";
     }
+    if (const auto* pressed = std::get_if<KeyPressed>(&event)) {
+        return os << "KeyPressed{" << pressed->window << ", key " << static_cast<int>(pressed->key)
+                  << ", mods " << pressed->modifiers.shift << pressed->modifiers.control
+                  << pressed->modifiers.alt << pressed->modifiers.super << ", repeat "
+                  << pressed->repeat << "}";
+    }
+    if (const auto* released = std::get_if<KeyReleased>(&event)) {
+        return os << "KeyReleased{" << released->window << ", key "
+                  << static_cast<int>(released->key) << "}";
+    }
+    if (const auto* text = std::get_if<TextEntered>(&event)) {
+        return os << "TextEntered{" << text->window << ", \"" << text->text << "\"}";
+    }
     return os << "RawInputEvent{unknown}";
 }
 
@@ -82,7 +96,9 @@ inline std::vector<RawInputEvent> withoutTimeOrDevice(std::vector<RawInputEvent>
         std::visit(
             [](auto& alternative) {
                 alternative.time = {};
-                alternative.pointer = {};
+                if constexpr (requires { alternative.pointer; }) {
+                    alternative.pointer = {};
+                }
             },
             event);
     }
@@ -201,8 +217,65 @@ TYPED_TEST_P(InputSourceContract, IN6_PortsShareTheQueue) {
     EXPECT_EQ(this->poll(), move) << "input after window events";
 }
 
+// SPEC-0027: keyboard and text (KB<n> = SPEC-0027 AC-<n>).
+
+TYPED_TEST_P(InputSourceContract, KB1_KeyPressAndRelease) {
+    using Traits = TestFixture::Traits;
+    const WindowId a = this->create("A");
+    Traits::key(this->system(), a, Key::Enter, {}, true, false);
+    Traits::key(this->system(), a, Key::Enter, {}, false, false);
+    EXPECT_EQ(this->poll(),
+              (std::vector<RawInputEvent>{KeyPressed{.window = a, .key = Key::Enter},
+                                          KeyReleased{.window = a, .key = Key::Enter}}));
+}
+
+TYPED_TEST_P(InputSourceContract, KB2_ModifiersAndRepeat) {
+    using Traits = TestFixture::Traits;
+    const WindowId a = this->create("A");
+    const KeyModifiers controlShift{.shift = true, .control = true};
+    const KeyModifiers altSuper{.alt = true, .super = true};
+    Traits::key(this->system(), a, Key::Z, controlShift, true, false);
+    Traits::key(this->system(), a, Key::A, altSuper, true, false);
+    Traits::key(this->system(), a, Key::A, altSuper, true, true);
+    EXPECT_EQ(this->poll(),
+              (std::vector<RawInputEvent>{
+                  KeyPressed{.window = a, .key = Key::Z, .modifiers = controlShift},
+                  KeyPressed{.window = a, .key = Key::A, .modifiers = altSuper},
+                  KeyPressed{.window = a, .key = Key::A, .modifiers = altSuper, .repeat = true}}));
+}
+
+TYPED_TEST_P(InputSourceContract, KB3_TextIsUtf8) {
+    using Traits = TestFixture::Traits;
+    const WindowId a = this->create("A");
+    Traits::text(this->system(), a, "\xC3\xA9");                 // é
+    Traits::text(this->system(), a, "\xE6\xBC\xA2\xE5\xAD\x97"); // 漢字
+    EXPECT_EQ(this->poll(), (std::vector<RawInputEvent>{
+                                TextEntered{.window = a, .text = "\xC3\xA9"},
+                                TextEntered{.window = a, .text = "\xE6\xBC\xA2\xE5\xAD\x97"}}));
+}
+
+TYPED_TEST_P(InputSourceContract, KB4_OrderAcrossDevicesAndDrops) {
+    using Traits = TestFixture::Traits;
+    const WindowId a = this->create("A");
+    const WindowId b = this->create("B");
+    const Point at{.x = 1.0F, .y = 1.0F};
+    Traits::key(this->system(), a, Key::Tab, {}, true, false);
+    Traits::move(this->system(), b, at);
+    Traits::text(this->system(), a, "x");
+    EXPECT_EQ(this->poll(), (std::vector<RawInputEvent>{KeyPressed{.window = a, .key = Key::Tab},
+                                                        PointerMoved{.window = b, .position = at},
+                                                        TextEntered{.window = a, .text = "x"}}));
+
+    const WindowId gone = this->create("Gone");
+    Traits::key(this->system(), gone, Key::Escape, {}, true, false);
+    Traits::text(this->system(), gone, "y");
+    ASSERT_TRUE(succeeds(this->system().destroyWindow(gone)));
+    EXPECT_EQ(this->poll(), std::vector<RawInputEvent>{});
+}
+
 REGISTER_TYPED_TEST_SUITE_P(InputSourceContract, IN1_NothingHappened, IN2_MoveIsReportedOnce,
                             IN3_ButtonsPressAndRelease, IN4_ScrollDeltas, IN5_OrderWindowsAndDrops,
-                            IN6_PortsShareTheQueue);
+                            IN6_PortsShareTheQueue, KB1_KeyPressAndRelease, KB2_ModifiersAndRepeat,
+                            KB3_TextIsUtf8, KB4_OrderAcrossDevicesAndDrops);
 
 } // namespace coil::platform
