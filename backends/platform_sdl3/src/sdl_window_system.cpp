@@ -10,6 +10,8 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>
+#include <SDL3/SDL_keyboard.h>
+#include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_surface.h>
@@ -113,6 +115,161 @@ std::optional<platform::PointerButton> toButton(Uint8 button) {
     }
 }
 
+/// The Coil key for an SDL keycode; nullopt for keys outside the enum (SPEC-0027 rule 2).
+std::optional<platform::Key> toKey(SDL_Keycode key) {
+    using platform::Key;
+    switch (key) {
+    case SDLK_A:
+        return Key::A;
+    case SDLK_B:
+        return Key::B;
+    case SDLK_C:
+        return Key::C;
+    case SDLK_D:
+        return Key::D;
+    case SDLK_E:
+        return Key::E;
+    case SDLK_F:
+        return Key::F;
+    case SDLK_G:
+        return Key::G;
+    case SDLK_H:
+        return Key::H;
+    case SDLK_I:
+        return Key::I;
+    case SDLK_J:
+        return Key::J;
+    case SDLK_K:
+        return Key::K;
+    case SDLK_L:
+        return Key::L;
+    case SDLK_M:
+        return Key::M;
+    case SDLK_N:
+        return Key::N;
+    case SDLK_O:
+        return Key::O;
+    case SDLK_P:
+        return Key::P;
+    case SDLK_Q:
+        return Key::Q;
+    case SDLK_R:
+        return Key::R;
+    case SDLK_S:
+        return Key::S;
+    case SDLK_T:
+        return Key::T;
+    case SDLK_U:
+        return Key::U;
+    case SDLK_V:
+        return Key::V;
+    case SDLK_W:
+        return Key::W;
+    case SDLK_X:
+        return Key::X;
+    case SDLK_Y:
+        return Key::Y;
+    case SDLK_Z:
+        return Key::Z;
+    case SDLK_0:
+        return Key::Digit0;
+    case SDLK_1:
+        return Key::Digit1;
+    case SDLK_2:
+        return Key::Digit2;
+    case SDLK_3:
+        return Key::Digit3;
+    case SDLK_4:
+        return Key::Digit4;
+    case SDLK_5:
+        return Key::Digit5;
+    case SDLK_6:
+        return Key::Digit6;
+    case SDLK_7:
+        return Key::Digit7;
+    case SDLK_8:
+        return Key::Digit8;
+    case SDLK_9:
+        return Key::Digit9;
+    case SDLK_F1:
+        return Key::F1;
+    case SDLK_F2:
+        return Key::F2;
+    case SDLK_F3:
+        return Key::F3;
+    case SDLK_F4:
+        return Key::F4;
+    case SDLK_F5:
+        return Key::F5;
+    case SDLK_F6:
+        return Key::F6;
+    case SDLK_F7:
+        return Key::F7;
+    case SDLK_F8:
+        return Key::F8;
+    case SDLK_F9:
+        return Key::F9;
+    case SDLK_F10:
+        return Key::F10;
+    case SDLK_F11:
+        return Key::F11;
+    case SDLK_F12:
+        return Key::F12;
+    case SDLK_RETURN:
+        return Key::Enter;
+    case SDLK_ESCAPE:
+        return Key::Escape;
+    case SDLK_BACKSPACE:
+        return Key::Backspace;
+    case SDLK_TAB:
+        return Key::Tab;
+    case SDLK_SPACE:
+        return Key::Space;
+    case SDLK_LEFT:
+        return Key::Left;
+    case SDLK_RIGHT:
+        return Key::Right;
+    case SDLK_UP:
+        return Key::Up;
+    case SDLK_DOWN:
+        return Key::Down;
+    case SDLK_HOME:
+        return Key::Home;
+    case SDLK_END:
+        return Key::End;
+    case SDLK_PAGEUP:
+        return Key::PageUp;
+    case SDLK_PAGEDOWN:
+        return Key::PageDown;
+    case SDLK_INSERT:
+        return Key::Insert;
+    case SDLK_DELETE:
+        return Key::Delete;
+    case SDLK_LSHIFT:
+    case SDLK_RSHIFT:
+        return Key::Shift;
+    case SDLK_LCTRL:
+    case SDLK_RCTRL:
+        return Key::Control;
+    case SDLK_LALT:
+    case SDLK_RALT:
+        return Key::Alt;
+    case SDLK_LGUI:
+    case SDLK_RGUI:
+        return Key::Super;
+    default:
+        return std::nullopt;
+    }
+}
+
+/// Held modifiers, either side counting (SPEC-0027 rule 3).
+platform::KeyModifiers toModifiers(SDL_Keymod mod) {
+    return platform::KeyModifiers{.shift = (mod & SDL_KMOD_SHIFT) != 0,
+                                  .control = (mod & SDL_KMOD_CTRL) != 0,
+                                  .alt = (mod & SDL_KMOD_ALT) != 0,
+                                  .super = (mod & SDL_KMOD_GUI) != 0};
+}
+
 /// Positive timeout in whole milliseconds, rounded up and clamped to SDL's Sint32 range
 /// (SPEC-0009 rule 7). Callers never pass zero or negative values.
 Sint32 toSdlTimeout(platform::Clock::Duration timeout) {
@@ -193,7 +350,9 @@ private:
     /// (SPEC-0026 rules 2-5).
     void translateInput(const SDL_Event& event, std::vector<platform::RawInputEvent>& input) {
         if (event.type != SDL_EVENT_MOUSE_MOTION && event.type != SDL_EVENT_MOUSE_BUTTON_DOWN &&
-            event.type != SDL_EVENT_MOUSE_BUTTON_UP && event.type != SDL_EVENT_MOUSE_WHEEL) {
+            event.type != SDL_EVENT_MOUSE_BUTTON_UP && event.type != SDL_EVENT_MOUSE_WHEEL &&
+            event.type != SDL_EVENT_KEY_DOWN && event.type != SDL_EVENT_KEY_UP &&
+            event.type != SDL_EVENT_TEXT_INPUT) {
             return;
         }
         const Window* window = findByHandle(SDL_GetWindowFromEvent(&event));
@@ -201,7 +360,15 @@ private:
             return;
         }
         const platform::InputTimestamp time{event.common.timestamp};
-        if (event.type == SDL_EVENT_MOUSE_MOTION) {
+        if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_KEY_UP) {
+            translateKey(event.key, window->id, time, input);
+        } else if (event.type == SDL_EVENT_TEXT_INPUT) {
+            // Empty text is not an event (SPEC-0027 rule 4).
+            if (event.text.text != nullptr && *event.text.text != '\0') {
+                input.emplace_back(platform::TextEntered{
+                    .window = window->id, .text = std::string{event.text.text}, .time = time});
+            }
+        } else if (event.type == SDL_EVENT_MOUSE_MOTION) {
             input.emplace_back(
                 platform::PointerMoved{.window = window->id,
                                        .pointer = {.value = event.motion.which},
@@ -233,6 +400,27 @@ private:
                                                              .position = position,
                                                              .time = time});
             }
+        }
+    }
+
+    /// Appends KeyPressed or KeyReleased for a key in the enum (SPEC-0027 rules 1-3).
+    static void translateKey(const SDL_KeyboardEvent& event, platform::WindowId window,
+                             platform::InputTimestamp time,
+                             std::vector<platform::RawInputEvent>& input) {
+        const auto key = toKey(event.key);
+        if (!key) {
+            return;
+        }
+        const platform::KeyModifiers modifiers = toModifiers(event.mod);
+        if (event.down) {
+            input.emplace_back(platform::KeyPressed{.window = window,
+                                                    .key = *key,
+                                                    .modifiers = modifiers,
+                                                    .repeat = event.repeat,
+                                                    .time = time});
+        } else {
+            input.emplace_back(platform::KeyReleased{
+                .window = window, .key = *key, .modifiers = modifiers, .time = time});
         }
     }
 
@@ -306,6 +494,10 @@ public:
             if (auto applied = applyLimits(handle.get(), desc.limits); !applied) {
                 return std::unexpected{std::move(applied.error())};
             }
+        }
+        // Text arrives without the application asking, for now (SPEC-0027 rule 5, Q4).
+        if (!SDL_StartTextInput(handle.get())) {
+            return sdlFailure(ErrorCode::Internal, "SDL_StartTextInput failed");
         }
         const platform::WindowId id{.value = m_nextId++};
         const float scale = SDL_GetWindowDisplayScale(handle.get());
