@@ -37,7 +37,8 @@ frames can be captured as images for tests and agents.
 | 3a | [SPEC-0021 `render_software`: rects, rounded rects, borders and clips into an image](../specs/0021-software-rasterizer-shapes.md) | Done | 2 |
 | 3b | `render_software`: linear, radial and sweep gradients | Planned | 3a |
 | 4 | [SPEC-0022 Presenting images in windows](../specs/0022-present-images-in-windows.md) | Done | 3a; EPIC-005 spec 3 |
-| 5 | Frame capture to an image (`capture`) | Planned | 3 |
+| 5a | [SPEC-0025 Frame capture (`RenderBackend::capture`)](../specs/0025-frame-capture.md) | In Progress | 3a; EPIC-009 spec 1 |
+| 5b | Golden images: file format, comparison with tolerance, update workflow, the `boxes` golden | Planned | 5a; 6 |
 | 6 | [SPEC-0023 `boxes` example: coloured boxes laid out and redrawn on resize (Milestone 1)](../specs/0023-boxes-example.md) | Done | 4; EPIC-004 |
 
 ## Notes
@@ -65,3 +66,4 @@ frames can be captured as images for tests and agents.
 | 2026-11-02 | Spec 3 split into 3a (shapes, borders, clips) and 3b (gradients) (SPEC-0021 Q1); spec 4 needs only 3a | Emilio Pomares |
 | 2026-11-05 | Spec 4 is SPEC-0022; spec 6 to be done before specs 5 and 3b (SPEC-0022 Q6) | Emilio Pomares |
 | 2026-11-07 | Spec 6 is SPEC-0023; golden image file deferred to spec 5; spec 3b after Milestone 2 | Emilio Pomares |
+| 2026-11-07 | Spec 5 split into 5a (capture, SPEC-0025) and 5b (golden images, after Milestone 2) (SPEC-0025 Q5) | Emilio Pomares |
