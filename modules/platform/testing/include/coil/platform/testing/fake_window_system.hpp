@@ -92,12 +92,13 @@ private:
     /// changed, replacing any pending Resized for that window (SPEC-0010 rules 2, 4, 9).
     void resize(Window& window, WindowSize size);
 
-    std::vector<Window> m_windows;     ///< Live windows, in creation order.
-    std::vector<WindowEvent> m_events; ///< Events not yet returned by pollEvents().
-    std::uint64_t m_nextId = 1;        ///< Next id to issue; ids are never reused.
-    FakeClock m_ownClock;              ///< Used when no external clock is given.
-    FakeClock* m_clock;                ///< The clock waits advance (never null).
-    std::function<void()> m_waitHook;  ///< Optional; see setWaitHook().
+    std::vector<Window> m_windows;      ///< Live windows, in creation order.
+    std::vector<WindowEvent> m_events;  ///< Events not yet returned by pollEvents().
+    std::vector<RawInputEvent> m_input; ///< Input not yet returned by pollInput().
+    std::uint64_t m_nextId = 1;         ///< Next id to issue; ids are never reused.
+    FakeClock m_ownClock;               ///< Used when no external clock is given.
+    FakeClock* m_clock;                 ///< The clock waits advance (never null).
+    std::function<void()> m_waitHook;   ///< Optional; see setWaitHook().
 };
 
 } // namespace coil::platform::testing

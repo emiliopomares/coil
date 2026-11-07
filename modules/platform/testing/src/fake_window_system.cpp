@@ -336,15 +336,23 @@ std::vector<WindowEvent> FakeWindowSystem::waitEvents(Clock::Duration timeout) {
 }
 
 std::vector<RawInputEvent> FakeWindowSystem::pollInput() {
-    static_cast<void>(find(WindowId{}));
-    return {}; // Red stub (SPEC-0026)
+    std::vector<RawInputEvent> input = std::exchange(m_input, {});
+    // Input for windows destroyed since it was injected is dropped (SPEC-0026 rule 5).
+    std::erase_if(input, [this](const RawInputEvent& event) {
+        return find(std::visit([](const auto& alternative) { return alternative.window; },
+                               event)) == nullptr;
+    });
+    return input;
 }
 
 Expected<void> FakeWindowSystem::injectInput(RawInputEvent event) {
-    static_cast<void>(find(WindowId{}));
-    const RawInputEvent ignored{event};
-    static_cast<void>(ignored);
-    return {}; // Red stub (SPEC-0026)
+    const WindowId window =
+        std::visit([](const auto& alternative) { return alternative.window; }, event);
+    if (find(window) == nullptr) {
+        return notFound(window);
+    }
+    m_input.push_back(event);
+    return {};
 }
 
 void FakeWindowSystem::setWaitHook(std::function<void()> hook) {

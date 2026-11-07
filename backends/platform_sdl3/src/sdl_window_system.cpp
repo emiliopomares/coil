@@ -1,4 +1,5 @@
 #include <coil/foundation/error.hpp>
+#include <coil/foundation/geometry.hpp>
 #include <coil/foundation/image.hpp>
 #include <coil/platform/clock.hpp>
 #include <coil/platform/input_source.hpp>
@@ -9,6 +10,7 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>
+#include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
@@ -21,6 +23,7 @@
 #include <functional>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -90,6 +93,24 @@ Expected<void> applyLimits(SDL_Window* window, const platform::WindowSizeLimits&
         return sdlFailure(ErrorCode::Internal, "cannot set window size limits");
     }
     return {};
+}
+
+/// The role of an SDL mouse button; nullopt for buttons without one (SPEC-0026 rule 3).
+std::optional<platform::PointerButton> toButton(Uint8 button) {
+    switch (button) {
+    case SDL_BUTTON_LEFT:
+        return platform::PointerButton::Primary;
+    case SDL_BUTTON_RIGHT:
+        return platform::PointerButton::Secondary;
+    case SDL_BUTTON_MIDDLE:
+        return platform::PointerButton::Middle;
+    case SDL_BUTTON_X1:
+        return platform::PointerButton::Back;
+    case SDL_BUTTON_X2:
+        return platform::PointerButton::Forward;
+    default:
+        return std::nullopt;
+    }
 }
 
 /// Positive timeout in whole milliseconds, rounded up and clamped to SDL's Sint32 range
@@ -168,8 +189,82 @@ private:
         }
     }
 
-    std::vector<Window> m_windows; ///< Live windows, in creation order.
-    std::uint64_t m_nextId = 1;    ///< Next id to issue; ids are never reused.
+    /// Appends the Coil input event for `event`, if it is a pointer event for a live window
+    /// (SPEC-0026 rules 2-5).
+    void translateInput(const SDL_Event& event, std::vector<platform::RawInputEvent>& input) {
+        if (event.type != SDL_EVENT_MOUSE_MOTION && event.type != SDL_EVENT_MOUSE_BUTTON_DOWN &&
+            event.type != SDL_EVENT_MOUSE_BUTTON_UP && event.type != SDL_EVENT_MOUSE_WHEEL) {
+            return;
+        }
+        const Window* window = findByHandle(SDL_GetWindowFromEvent(&event));
+        if (window == nullptr) {
+            return;
+        }
+        const platform::InputTimestamp time{event.common.timestamp};
+        if (event.type == SDL_EVENT_MOUSE_MOTION) {
+            input.emplace_back(
+                platform::PointerMoved{.window = window->id,
+                                       .pointer = {.value = event.motion.which},
+                                       .position = {.x = event.motion.x, .y = event.motion.y},
+                                       .time = time});
+        } else if (event.type == SDL_EVENT_MOUSE_WHEEL) {
+            // Positive y is away from the user; flipped devices report the opposite (rule 4).
+            const float sign = event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1.0F : 1.0F;
+            input.emplace_back(platform::PointerScrolled{
+                .window = window->id,
+                .pointer = {.value = event.wheel.which},
+                .position = {.x = event.wheel.mouse_x, .y = event.wheel.mouse_y},
+                .deltaX = sign * event.wheel.x,
+                .deltaY = sign * event.wheel.y,
+                .time = time});
+        } else if (const auto button = toButton(event.button.button)) {
+            const platform::PointerId pointer{.value = event.button.which};
+            const Point position{.x = event.button.x, .y = event.button.y};
+            if (event.button.down) {
+                input.emplace_back(platform::PointerPressed{.window = window->id,
+                                                            .pointer = pointer,
+                                                            .button = *button,
+                                                            .position = position,
+                                                            .time = time});
+            } else {
+                input.emplace_back(platform::PointerReleased{.window = window->id,
+                                                             .pointer = pointer,
+                                                             .button = *button,
+                                                             .position = position,
+                                                             .time = time});
+            }
+        }
+    }
+
+    /// Drains SDL's queue into both ports' buffers, so neither loses the other's events (rule 6).
+    void pump(const SDL_Event* first = nullptr) {
+        if (first != nullptr) {
+            translate(*first, m_pendingEvents);
+            translateInput(*first, m_pendingInput);
+        }
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            translate(event, m_pendingEvents);
+            translateInput(event, m_pendingInput);
+        }
+    }
+
+    /// Removes and returns the buffered `events`, without those of windows destroyed since they
+    /// were translated (SPEC-0006 rule 4, SPEC-0026 rule 5).
+    template <typename Event>
+    [[nodiscard]] std::vector<Event> takeLive(std::vector<Event>& events) const {
+        std::vector<Event> live = std::exchange(events, {});
+        std::erase_if(live, [this](const Event& event) {
+            return find(std::visit([](const auto& alternative) { return alternative.window; },
+                                   event)) == nullptr;
+        });
+        return live;
+    }
+
+    std::vector<Window> m_windows;                       ///< Live windows, in creation order.
+    std::vector<platform::WindowEvent> m_pendingEvents;  ///< Translated, not yet polled.
+    std::vector<platform::RawInputEvent> m_pendingInput; ///< Translated, not yet polled.
+    std::uint64_t m_nextId = 1; ///< Next id to issue; ids are never reused.
 
 public:
     SdlWindowSystem() = default;
@@ -372,33 +467,28 @@ public:
     }
 
     [[nodiscard]] std::vector<platform::WindowEvent> pollEvents() override {
-        std::vector<platform::WindowEvent> events;
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            translate(event, events);
-        }
-        return events;
+        pump();
+        return takeLive(m_pendingEvents);
     }
 
     [[nodiscard]] std::vector<platform::WindowEvent>
     waitEvents(platform::Clock::Duration timeout) override {
         std::vector<platform::WindowEvent> events = pollEvents();
-        if (!events.empty() || timeout <= platform::Clock::Duration::zero()) {
+        // Pending input also ends the wait: the caller polls it next (SPEC-0026 rule 7).
+        if (!events.empty() || !m_pendingInput.empty() ||
+            timeout <= platform::Clock::Duration::zero()) {
             return events;
         }
         SDL_Event event;
         if (SDL_WaitEventTimeout(&event, toSdlTimeout(timeout))) {
-            translate(event, events);
-            while (SDL_PollEvent(&event)) {
-                translate(event, events);
-            }
+            pump(&event);
         }
-        return events;
+        return takeLive(m_pendingEvents);
     }
 
     [[nodiscard]] std::vector<platform::RawInputEvent> pollInput() override {
-        static_cast<void>(find(platform::WindowId{}));
-        return {}; // Red stub (SPEC-0026)
+        pump();
+        return takeLive(m_pendingInput);
     }
 
     /// SDL's id for a live window (SPEC-0006 sdlWindowId).
