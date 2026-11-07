@@ -232,7 +232,7 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
   ADR-0007 Amendment 1 argued for raw events.
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
 - [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
 - [ ] Full test suite passes on `dev`, `asan` and `tsan`
 - [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
@@ -253,3 +253,4 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 |------|--------|-------------|
 | 2026-11-07 | Spec and implementation plan created (Draft) | |
 | 2026-11-07 | Spec, plan and Q1–Q6 approved as recommended | Emilio Pomares |
+| 2026-11-07 | Red: all seven fail on assertions (no intents, empty bindings); the other 253 pass. AC-2 first passed against the stub, since it only asserted absences; before committing Red it gained a positive control (plain Enter gives `Activate`), so its absences prove rejection | — |
