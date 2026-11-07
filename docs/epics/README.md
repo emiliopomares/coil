@@ -19,6 +19,7 @@ implemented one at a time. An epic has no code of its own; it is done when all i
 | [EPIC-012](EPIC-012-vector-drawing.md) | Vector drawing: paths, curves, transforms, images | Proposed |
 | [EPIC-013](EPIC-013-ui-host.md) | UI host: windows that drive widget trees | Approved |
 | [EPIC-014](EPIC-014-automation-service.md) | In-process automation service | Approved |
+| [EPIC-015](EPIC-015-editor-scale.md) | Editor scale: load-bearing decisions, proven under load | Proposed |
 
 Epic numbers are identifiers in order of creation, not a work order. **Current work order** (roadmap
 to a button, 2026-11-01; EPIC-005 done 2026-11-02):
@@ -46,6 +47,9 @@ to a button, 2026-11-01; EPIC-005 done 2026-11-02):
 9. EPIC-010 specs 5–6 (`Label`, labels example).
 10. EPIC-014 specs 1–2 (automation service).
 11. EPIC-011 specs 1–4: **Milestone 2**, the "Click me" counter, tested through `AutomationService`.
+
+**After Milestone 2 (proposed 2026-11-07):** EPIC-015 (editor scale), with its prerequisite ADRs
+A–E drafted first, before the standard widget set grows.
 
 EPIC-001's remaining specs (CI matrix, compiler feature check) and EPIC-003 (app main loop) are
 scheduled as needed.
