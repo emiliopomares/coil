@@ -225,7 +225,7 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
   manual check records how it feels; a fast path is a follow-up spec if needed.
 
 ## 11. Definition of Done
-- [ ] Red phase: new tests shown failing on assertions (output recorded in the Change Log)
+- [x] Red phase: new tests shown failing on assertions (output recorded in the Change Log)
 - [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
 - [ ] Full test suite passes
 - [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
@@ -249,3 +249,4 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 |------|--------|-------------|
 | 2026-11-07 | Spec and implementation plan created (Draft) | |
 | 2026-11-07 | Spec, plan and Q1–Q6 approved as recommended | Emilio Pomares |
+| 2026-11-07 | Red: B1–B5 and B7 fail on assertions (black frames, no frame lines, window not released, SDL surface black); B6 and B8 pass with the stub, as planned (regression tests); the other 203 pass | — |
