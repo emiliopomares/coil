@@ -1,12 +1,15 @@
 #pragma once
 
 #include <coil/foundation/error.hpp>
+#include <coil/foundation/geometry.hpp>
 #include <coil/render/draw_list.hpp>
 #include <coil/render/render_backend.hpp>
+#include <coil/tasks/async_result.hpp>
 
 #include <cstddef>
 #include <cstdint>
 #include <map>
+#include <optional>
 #include <vector>
 
 namespace coil::render::testing {
@@ -27,6 +30,9 @@ public:
                                               const RenderTargetDesc& desc) override;
     [[nodiscard]] Expected<void> submit(RenderTargetId id, const DrawList& frame) override;
     [[nodiscard]] Expected<void> present(RenderTargetId id) override;
+    /// A transparent image of the captured size: this backend draws nothing (SPEC-0025 rule 6).
+    [[nodiscard]] tasks::AsyncResult<CapturedFrame> capture(RenderTargetId id,
+                                                            std::optional<Rect> region) override;
 
     /// Copies of the frames submitted to `id`, oldest first. NotFound for an unknown or destroyed
     /// id.

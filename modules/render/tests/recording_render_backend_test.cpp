@@ -1,14 +1,19 @@
 #include <coil/foundation/error.hpp>
+#include <coil/foundation/image.hpp>
 #include <coil/render/draw_list.hpp>
 #include <coil/render/render_backend.hpp>
 #include <coil/render/render_backend_contract.hpp>
 #include <coil/render/testing/recording_render_backend.hpp>
+#include <coil/tasks/async_result.hpp>
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <ostream>
+#include <utility>
 #include <vector>
 
 namespace coil::render {
@@ -88,6 +93,25 @@ TEST(RecordingRenderBackend, AC8_InspectionOfUnknownTargetsFails) {
         EXPECT_TRUE(failsWith(backend.presentCount(id), ErrorCode::NotFound)) << id;
         EXPECT_TRUE(failsWith(backend.desc(id), ErrorCode::NotFound)) << id;
     }
+}
+
+// SPEC-0025 AC-7: the recording backend captures transparent images.
+TEST(RecordingRenderBackend, SC4_CaptureIsTransparent) {
+    RecordingRenderBackend backend;
+    const RenderTargetId id = createOk(backend, targetDesc(10.0F, 5.0F, 2.0F));
+    ASSERT_TRUE(succeeds(backend.submit(id, oneRectFrame())));
+    ASSERT_TRUE(succeeds(backend.present(id)));
+
+    tasks::AsyncResult<CapturedFrame> whole = backend.capture(id, std::nullopt);
+    EXPECT_TRUE(whole.isReady());
+    const std::optional<Expected<CapturedFrame>> outcome = whole.take();
+    const Image image = outcome.has_value() && outcome->has_value() ? (*outcome)->image : Image{};
+    EXPECT_EQ(image.width(), 20U);
+    EXPECT_EQ(image.height(), 10U);
+    EXPECT_TRUE(std::ranges::all_of(image.pixels(), [](Pixel pixel) { return pixel == Pixel{}; }));
+
+    const Expected<CapturedFrame> region = captureNow(backend, id, dipRect(1.0F, 1.0F, 2.0F, 2.0F));
+    EXPECT_EQ(capturedSize(region), (std::pair{4U, 4U}));
 }
 
 } // namespace

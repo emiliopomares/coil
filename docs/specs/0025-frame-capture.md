@@ -213,7 +213,7 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 - **Synchronous `Expected<CapturedFrame>`** was rejected with ADR-0009 Amendment 3.
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
 - [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
 - [ ] Full test suite passes on `dev`, `asan` and `tsan`
 - [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
@@ -235,3 +235,4 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 |------|--------|-------------|
 | 2026-11-07 | Spec and implementation plan created (Draft) | |
 | 2026-11-07 | Spec, plan and Q1–Q6 approved as recommended (including the `render_software → tasks` edge and the split of EPIC-006 spec 5) | Emilio Pomares |
+| 2026-11-07 | Red: CP1–CP3 fail on both implementations (6) and SC1–SC4 fail (4), all on assertions (0×0 images, scale 0, errors not reported); the other 219 pass; format, layering and tidy clean | — |

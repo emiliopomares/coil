@@ -1,12 +1,15 @@
 #pragma once
 
 #include <coil/foundation/error.hpp>
+#include <coil/foundation/geometry.hpp>
 #include <coil/render/draw_list.hpp>
 #include <coil/render/image.hpp>
 #include <coil/render/render_backend.hpp>
+#include <coil/tasks/async_result.hpp>
 
 #include <cstdint>
 #include <map>
+#include <optional>
 
 namespace coil::render_software {
 
@@ -29,6 +32,9 @@ public:
     [[nodiscard]] Expected<void> submit(render::RenderTargetId id,
                                         const render::DrawList& frame) override;
     [[nodiscard]] Expected<void> present(render::RenderTargetId id) override;
+    /// The front buffer, or a region of it; ready at once (SPEC-0025 rule 5).
+    [[nodiscard]] tasks::AsyncResult<render::CapturedFrame>
+    capture(render::RenderTargetId id, std::optional<Rect> region) override;
 
     /// The image the last submit() rendered. NotFound for an unknown or destroyed id.
     [[nodiscard]] Expected<render::Image> backBuffer(render::RenderTargetId id) const;

@@ -2,9 +2,12 @@
 
 #include <coil/foundation/error.hpp>
 #include <coil/foundation/geometry.hpp>
+#include <coil/foundation/image.hpp>
 #include <coil/render/draw_list.hpp>
+#include <coil/tasks/async_result.hpp>
 
 #include <cstdint>
+#include <optional>
 
 namespace coil::render {
 
@@ -22,6 +25,22 @@ struct RenderTargetDesc {
     float scale = 1.0F;
 
     friend constexpr bool operator==(RenderTargetDesc, RenderTargetDesc) = default;
+};
+
+/// Pixels read back from a render target (ADR-0017).
+struct CapturedFrame {
+    Image image;        ///< RGBA8, sRGB, straight alpha; row 0 is the top.
+    float scale = 1.0F; ///< The target's display scale: image pixels per DIP.
+};
+
+/// A rectangle of whole pixels.
+struct PixelRect {
+    std::uint32_t x = 0;
+    std::uint32_t y = 0;
+    std::uint32_t width = 0;
+    std::uint32_t height = 0;
+
+    friend constexpr bool operator==(PixelRect, PixelRect) = default;
 };
 
 /// Port: turns DrawLists into pixels on render targets (ADR-0009). Implemented by renderers
@@ -49,9 +68,21 @@ public:
     [[nodiscard]] virtual Expected<void> submit(RenderTargetId id, const DrawList& frame) = 0;
     /// Shows the last submitted frame. Fails with NotFound for an unknown id.
     [[nodiscard]] virtual Expected<void> present(RenderTargetId id) = 0;
+    /// Reads back the last frame present() showed on the target (transparent before any present).
+    /// `region`, in DIPs, limits it to that rectangle, rounded out to whole pixels and clipped to
+    /// the target. The result may complete later (GPU readback). It fails with NotFound for an
+    /// unknown target and InvalidArgument for a region that is not finite or has a negative size
+    /// (SPEC-0025).
+    [[nodiscard]] virtual tasks::AsyncResult<CapturedFrame>
+    capture(RenderTargetId id, std::optional<Rect> region = std::nullopt) = 0;
 
 protected:
     RenderBackend() = default;
 };
+
+/// For implementations: the pixels a capture of `region` covers on a target described by `desc`
+/// (SPEC-0025 rules 1-3). Fails with InvalidArgument for an invalid region.
+[[nodiscard]] Expected<PixelRect> captureRect(const RenderTargetDesc& desc,
+                                              std::optional<Rect> region);
 
 } // namespace coil::render

@@ -17,6 +17,6 @@
     },
     "backends": {
         "platform_sdl3": ["platform"],
-        "render_software": ["render"]
+        "render_software": ["render", "tasks"]
     }
 }

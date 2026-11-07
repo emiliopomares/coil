@@ -8,6 +8,7 @@
 #include <coil/render/render_backend.hpp>
 #include <coil/render/render_backend_contract.hpp>
 #include <coil/render_software/software_render_backend.hpp>
+#include <coil/tasks/async_result.hpp>
 
 #include <gtest/gtest.h>
 
@@ -285,6 +286,83 @@ TEST(SoftwareRenderBackend, AC8_ClipsNestAndRestore) {
          FillRect{.rect = rect(7.0F, 7.0F, 1.0F, 1.0F), .paint = kRed}});
     EXPECT_EQ(redPixels(gradientFill), (Pairs{{7, 7}}));
     EXPECT_EQ(at(gradientFill, 0, 0), kClear);
+}
+
+// SPEC-0025: capture from the software backend (SC<n>).
+
+/// The image a capture gives; 0x0 (and a test failure) if it failed.
+Image capturedImage(SoftwareRenderBackend& backend, RenderTargetId id,
+                    std::optional<Rect> region = std::nullopt) {
+    const Expected<CapturedFrame> frame = captureNow(backend, id, region);
+    EXPECT_TRUE(succeeds(frame));
+    return frame.has_value() ? frame->image : Image{};
+}
+
+/// The front buffer; 0x0 (and a test failure) if it cannot be read.
+Image front(const SoftwareRenderBackend& backend, RenderTargetId id) {
+    const Expected<Image> image = backend.frontBuffer(id);
+    EXPECT_TRUE(succeeds(image));
+    return image.value_or(Image{});
+}
+
+/// A frame filling `width` x `height` DIPs with `colour`.
+DrawList filled(float width, float height, Color colour) {
+    DrawList frame;
+    frame.append(FillRect{.rect = rect(0.0F, 0.0F, width, height), .paint = colour});
+    return frame;
+}
+
+TEST(SoftwareRenderBackend, SC1_CaptureIsTheFrontBuffer) {
+    SoftwareRenderBackend backend;
+    const RenderTargetId id = createOk(backend, targetDesc(20.0F, 10.0F));
+    ASSERT_TRUE(succeeds(backend.submit(id, oneRectFrame())));
+    ASSERT_TRUE(succeeds(backend.present(id)));
+    const Image shown = front(backend, id);
+    EXPECT_EQ(capturedImage(backend, id), shown);
+
+    const Image region = capturedImage(backend, id, rect(5.0F, 2.0F, 10.0F, 6.0F));
+    ASSERT_EQ(region.width(), 10U);
+    ASSERT_EQ(region.height(), 6U);
+    for (std::uint32_t y = 0; y < 6; ++y) {
+        for (std::uint32_t x = 0; x < 10; ++x) {
+            EXPECT_EQ(region.pixel(x, y), shown.pixel(x + 5, y + 2))
+                << "(" << x << ", " << y << ")";
+        }
+    }
+}
+
+TEST(SoftwareRenderBackend, SC2_CaptureShowsThePresentedFrame) {
+    SoftwareRenderBackend backend;
+    const RenderTargetId id = createOk(backend, targetDesc(4.0F, 4.0F));
+    EXPECT_EQ(capturedImage(backend, id).width(), 4U);
+    EXPECT_TRUE(allClear(capturedImage(backend, id))) << "before any present";
+
+    ASSERT_TRUE(succeeds(backend.submit(id, filled(4.0F, 4.0F, kRed))));
+    ASSERT_TRUE(succeeds(backend.present(id)));
+    ASSERT_TRUE(succeeds(backend.submit(id, filled(4.0F, 4.0F, kHalfBlue))));
+    tasks::AsyncResult<CapturedFrame> result = backend.capture(id, std::nullopt);
+    EXPECT_TRUE(result.isReady()) << "not ready when capture returned";
+    const std::optional<Expected<CapturedFrame>> outcome = result.take();
+    const Image image = outcome.has_value() && outcome->has_value() ? (*outcome)->image : Image{};
+    EXPECT_EQ(image.width(), 4U);
+    EXPECT_EQ(image.pixel(0, 0), std::optional<Pixel>{kRedPixel})
+        << "a submitted, unpresented frame";
+}
+
+TEST(SoftwareRenderBackend, SC3_CaptureIsACopy) {
+    SoftwareRenderBackend backend;
+    const RenderTargetId id = createOk(backend, targetDesc(4.0F, 4.0F));
+    ASSERT_TRUE(succeeds(backend.submit(id, filled(4.0F, 4.0F, kRed))));
+    ASSERT_TRUE(succeeds(backend.present(id)));
+    const Image captured = capturedImage(backend, id);
+    const Image expected = front(backend, id);
+    ASSERT_EQ(captured, expected);
+
+    ASSERT_TRUE(succeeds(backend.submit(id, filled(4.0F, 4.0F, kHalfBlue))));
+    ASSERT_TRUE(succeeds(backend.present(id)));
+    EXPECT_EQ(captured, expected) << "changed by a later frame";
+    ASSERT_TRUE(succeeds(backend.destroyTarget(id)));
+    EXPECT_EQ(captured, expected) << "changed by destroying the target";
 }
 
 } // namespace

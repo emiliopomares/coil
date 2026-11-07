@@ -1,12 +1,15 @@
 #include <coil/foundation/error.hpp>
+#include <coil/foundation/geometry.hpp>
 #include <coil/render/draw_list.hpp>
 #include <coil/render/render_backend.hpp>
 #include <coil/render/testing/recording_render_backend.hpp>
+#include <coil/tasks/async_result.hpp>
 
 #include <cmath>
 #include <cstddef>
 #include <expected>
 #include <format>
+#include <optional>
 #include <vector>
 
 namespace coil::render::testing {
@@ -76,6 +79,15 @@ Expected<void> RecordingRenderBackend::present(RenderTargetId id) {
     }
     ++target->second.presents;
     return {};
+}
+
+tasks::AsyncResult<CapturedFrame> RecordingRenderBackend::capture(RenderTargetId id,
+                                                                  std::optional<Rect> region) {
+    const bool known = m_targets.contains(id.value);
+    static_cast<void>(known);
+    static_cast<void>(region);
+    return tasks::AsyncResult<CapturedFrame>::ready(
+        CapturedFrame{.image = {}, .scale = 0.0F}); // Red stub (SPEC-0025)
 }
 
 Expected<std::vector<DrawList>> RecordingRenderBackend::frames(RenderTargetId id) const {

@@ -1,15 +1,18 @@
 #include "rasterizer.hpp"
 
 #include <coil/foundation/error.hpp>
+#include <coil/foundation/geometry.hpp>
 #include <coil/foundation/image.hpp>
 #include <coil/render/draw_list.hpp>
 #include <coil/render/render_backend.hpp>
 #include <coil/render_software/software_render_backend.hpp>
+#include <coil/tasks/async_result.hpp>
 
 #include <cmath>
 #include <cstdint>
 #include <expected>
 #include <format>
+#include <optional>
 
 namespace coil::render_software {
 
@@ -106,6 +109,15 @@ Expected<Image> SoftwareRenderBackend::frontBuffer(RenderTargetId id) const {
         return unknownTarget(id);
     }
     return target->second.front;
+}
+
+tasks::AsyncResult<render::CapturedFrame>
+SoftwareRenderBackend::capture(RenderTargetId id, std::optional<Rect> region) {
+    const bool known = m_targets.contains(id.value);
+    static_cast<void>(known);
+    static_cast<void>(region);
+    return tasks::AsyncResult<render::CapturedFrame>::ready(
+        render::CapturedFrame{.image = {}, .scale = 0.0F}); // Red stub (SPEC-0025)
 }
 
 } // namespace coil::render_software
