@@ -27,7 +27,7 @@ which device was used.
 ## Specs (in dependency order)
 | # | Spec | Status | Depends on |
 |---|------|--------|------------|
-| 1 | Raw pointer events in DIPs (port, fake, SDL3, contract) | Planned | EPIC-005 spec 3 |
+| 1 | [SPEC-0026 Raw pointer events (`InputSource` port)](../specs/0026-raw-pointer-events.md) | In Progress | EPIC-005 spec 3 |
 | 2 | Raw keyboard and text-input events (port, fake, SDL3, contract) | Planned | 1 |
 | 3 | Intent types and the default device→intent mapping (`core`) | Planned | 2 |
 | 4 | Example: print intents from real input (manual check) | Planned | 3 |
@@ -35,11 +35,13 @@ which device was used.
 ## Notes
 - ADR-0007 (device-agnostic input). OVERVIEW §3 puts the mapping in `core`. Spec 3 creates the
   `core` module, which is already in `tools/layering.json`.
-- **Open question for spec 1:** whether raw input extends the `WindowEvent` stream or is a separate
-  `InputSource` port (OVERVIEW lists `InputSource`).
+- **Decided in spec 1 (SPEC-0026):** a separate `InputSource` port (ADR-0007), implemented by the
+  same object as the `WindowSystem` in each adapter, because SDL has one event queue. Raw events are
+  typed (ADR-0007 Amendment 1).
 
 ## Change Log
 | Date | Change | Approved by |
 |------|--------|-------------|
 | 2026-11-01 | Epic proposed (roadmap) | |
 | 2026-11-07 | Epic approved (roadmap to Milestone 2) | Emilio Pomares |
+| 2026-11-07 | Spec 1 is SPEC-0026 | Emilio Pomares |
