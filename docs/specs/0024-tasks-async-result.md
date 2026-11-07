@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-07 |
 | Module(s) | `coil::tasks` (new; already in `tools/layering.json`); `coil::foundation` (`ErrorCode::Cancelled`); a `tsan` build preset |
@@ -262,22 +262,22 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 
 ## 11. Definition of Done
 - [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes on `dev`, `asan` and `tsan`
-- [ ] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally)
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented (Doxygen comments on new public declarations)
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes on `dev`, `asan` and `tsan`
+- [x] `clang-format`, `clang-tidy` and layering clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally)
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented (Doxygen comments on new public declarations)
 
 ### AC verification
-- [ ] AC-1 → `AsyncResult.AC1_ReadyAndFailedResults`
-- [ ] AC-2 → `AsyncResult.AC2_PromiseCompletesResult`
-- [ ] AC-3 → `AsyncResult.AC3_FirstOutcomeWins`
-- [ ] AC-4 → `AsyncResult.AC4_CancelRequestsStop`
-- [ ] AC-5 → `AsyncResult.AC5_DroppedSides`
-- [ ] AC-6 → `AsyncResult.AC6_CompletesFromAnotherThread`
-- [ ] AC-7 → `ManualPromise.AC7_ObservesTheConsumer`
-- [ ] AC-8 → `Error.AC8_CancelledCode`
+- [x] AC-1 → `AsyncResult.AC1_ReadyAndFailedResults`
+- [x] AC-2 → `AsyncResult.AC2_PromiseCompletesResult`
+- [x] AC-3 → `AsyncResult.AC3_FirstOutcomeWins`
+- [x] AC-4 → `AsyncResult.AC4_CancelRequestsStop`
+- [x] AC-5 → `AsyncResult.AC5_DroppedSides`
+- [x] AC-6 → `AsyncResult.AC6_CompletesFromAnotherThread`
+- [x] AC-7 → `ManualPromise.AC7_ObservesTheConsumer`
+- [x] AC-8 → `Error.AC8_CancelledCode`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -285,3 +285,4 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 | 2026-11-07 | Spec and implementation plan created (Draft) | |
 | 2026-11-07 | Spec, plan and Q1–Q8 approved as recommended | Emilio Pomares |
 | 2026-11-07 | Red: all 8 new tests fail on assertions ("no outcome", `complete` returns `false`, `toString` gives "Unknown"); the other 211 pass; format, layering and tidy clean | — |
+| 2026-11-07 | Green (`8267bbc`): 219/219 on `dev`, `asan` and `tsan`; tests unchanged since Red (`37f0b29`); all gates pass. Note on §7: the shared state holds the prebuilt "promise abandoned" error so that destructors cannot fail; its 17-character message fits libc++'s small-string buffer, but on libstdc++ (15 characters) it is a second allocation per pair. Status → Done | — |
