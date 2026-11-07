@@ -2,7 +2,7 @@
     "modules": {
         "foundation": [],
         "platform": ["foundation"],
-        "render": ["foundation"],
+        "render": ["foundation", "tasks"],
         "tasks": ["foundation"],
         "json": ["foundation"],
         "layout": ["foundation"],

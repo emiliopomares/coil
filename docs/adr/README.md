@@ -14,7 +14,7 @@ a new ADR that supersedes it.
 | [0006](0006-layout-model.md) | Two-pass layout in logical units | Accepted (amended by 0019) |
 | [0007](0007-device-agnostic-input.md) | Device-agnostic input via intents | Accepted |
 | [0008](0008-commands-out-state-in.md) | Commands out, state in (local or remote) | Accepted |
-| [0009](0009-rendering-abstraction.md) | DrawList and RenderBackend port; GPU surfaces | Accepted (incl. Amendment 1: software first; Amendment 2: closed vocabulary; linear, radial and sweep gradients) |
+| [0009](0009-rendering-abstraction.md) | DrawList and RenderBackend port; GPU surfaces | Accepted (incl. Amendment 1: software first; Amendment 2: closed vocabulary; linear, radial and sweep gradients; Amendment 3: `render` may depend on `tasks`) |
 | [0010](0010-threading-model.md) | Threading model | Accepted |
 | [0011](0011-plugin-abi.md) | Native C++ plugins with a build fingerprint | Accepted |
 | [0012](0012-docking-and-workspaces.md) | Docking as model/view; serializable workspaces | Accepted |

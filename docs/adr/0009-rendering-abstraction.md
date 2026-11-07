@@ -1,5 +1,5 @@
 # ADR-0009: DrawList and RenderBackend port; GPU surfaces
-Status: Accepted (2026-11-01), including Amendment 1
+Status: Accepted (2026-11-01), including Amendments 1–3
 
 ## Decision
 - Widgets paint through a **`Painter`** that records into a backend-agnostic **`DrawList`**: filled and
@@ -70,3 +70,28 @@ frame capture and golden tests, and leave remote frontends unable to draw them.
 ### Consequences
 + Every widget works on every backend, in tests, in captures and in remote frontends.
 − Effects outside the vocabulary must wait until it is extended, or use an image or a `GpuSurface`.
+
+## Amendment 3 (2026-11-07): `render` may depend on `tasks`
+Status: Accepted (2026-11-07)
+
+### Context
+ADR-0017 defines `RenderBackend::capture` as returning `AsyncResult<Image>`, so that GPU backends can
+read pixels back after present without stalling a frame. `AsyncResult` lives in `tasks` (ADR-0014,
+SPEC-0024), and `tools/layering.json` lets `render` depend only on `foundation`. The edge
+`render → tasks` creates no cycle, but it is a new path through the layers (CLAUDE.md §1).
+
+### Decision
+- **`render` may depend on `tasks`** (and through it on `foundation` only). `tools/layering.json`
+  gains `"render": ["foundation", "tasks"]`.
+- `render` uses `tasks` only for asynchronous results in its ports (`capture` first). It does not
+  schedule work, own threads or call `UiDispatcher`: completing a result is the backend's business,
+  and continuations stay on the UI thread as ADR-0014 requires.
+- Backends of `render` may include `tasks` headers for the types that appear in `render`'s ports
+  (include what you use). Their edge to `tasks` changes no layer order, so it is added, with user
+  approval, by the spec that needs it (CLAUDE.md §1).
+
+### Consequences
++ `capture` has the shape ADR-0017 promised from the first backend, so GPU backends add readback
+  without changing the port or the contract suite.
+− `render` is no longer a leaf over `foundation`. `tasks` must stay small and free of UI concepts,
+  or this edge would pull them into rendering.
