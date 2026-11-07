@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | In Progress |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-07 |
 | Module(s) | `examples/intents` only (new) |
@@ -246,3 +246,4 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 |------|--------|-------------|
 | 2026-11-07 | Spec and implementation plan created (Draft) | |
 | 2026-11-07 | Spec, plan and Q1–Q5 approved as recommended | Emilio Pomares |
+| 2026-11-07 | Red: I1–I7 fail on assertions (no lines, unfilled framebuffer, wrong descriptions, SDL log empty); I7's failure half and I8 pass with the stub, as planned (regression tests); the other 261 pass. Lint: the I1 and I6 scripts are helper functions to stay under the complexity limit | — |
