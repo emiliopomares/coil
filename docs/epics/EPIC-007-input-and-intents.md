@@ -30,7 +30,7 @@ which device was used.
 | 1 | [SPEC-0026 Raw pointer events (`InputSource` port)](../specs/0026-raw-pointer-events.md) | Done | EPIC-005 spec 3 |
 | 2 | [SPEC-0027 Raw keyboard and text-input events](../specs/0027-raw-keyboard-and-text-events.md) | Done | 1 |
 | 3 | [SPEC-0028 Intents and the default input mapping (`core`)](../specs/0028-intents-and-input-mapping.md) | Done | 2 |
-| 4 | Example: print intents from real input (manual check) | Planned | 3 |
+| 4 | [SPEC-0029 Example: print intents from real input (manual check)](../specs/0029-intents-example.md) | Approved | 3 |
 
 ## Notes
 - ADR-0007 (device-agnostic input). OVERVIEW §3 puts the mapping in `core`. Spec 3 creates the
@@ -45,3 +45,4 @@ which device was used.
 | 2026-11-01 | Epic proposed (roadmap) | |
 | 2026-11-07 | Epic approved (roadmap to Milestone 2) | Emilio Pomares |
 | 2026-11-07 | Spec 1 is SPEC-0026 | Emilio Pomares |
+| 2026-11-07 | Spec 4 is SPEC-0029 | Emilio Pomares |
