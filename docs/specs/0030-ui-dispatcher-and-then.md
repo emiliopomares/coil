@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved |
+| Status | In Progress |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-08 |
 | Module(s) | `coil::tasks` (and its test-support library) |
@@ -60,7 +60,7 @@ public:
     /// Takes ownership of `callable` (which may be move-only).
     template <typename F>
         requires(!std::same_as<std::remove_cvref_t<F>, UiTask> && std::invocable<std::decay_t<F>&>)
-    UiTask(F&& callable); // implicit on purpose, so post([] { ... }) reads naturally
+    explicit UiTask(F&& callable); // callers write post(UiTask{[] { ... }}) (Amendment A)
 
     UiTask(UiTask&&) noexcept;
     UiTask& operator=(UiTask&&) noexcept;
@@ -310,3 +310,5 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 |------|--------|-------------|
 | 2026-11-08 | Spec and implementation plan created (Draft) | |
 | 2026-11-08 | Spec, plan and Q1–Q7 approved as recommended | Emilio Pomares |
+| 2026-11-08 | Amendment A (before Red): `UiTask`'s constructor is `explicit`, not implicit, because clang-tidy (`cppcoreguidelines-explicit-constructor`) rejects implicit single-argument constructors; callers write `post(UiTask{…})` | Emilio Pomares |
+| 2026-11-08 | Red: AC-1 to AC-8 fail on assertions (task never runs, nothing queued, chain never settles, source not cancelled); the "not run" and "cancel" checks of AC-3, AC-6 and AC-7 hold against the stub, but each test's positive control fails; the other 268 pass | — |

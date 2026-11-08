@@ -30,7 +30,7 @@ state through a `PropertyStore` and are told when it changes.
 | # | Spec | Status | Depends on |
 |---|------|--------|------------|
 | 1 | [SPEC-0024 `tasks` module: `AsyncResult`, `AsyncPromise` and `ManualPromise`](../specs/0024-tasks-async-result.md) | Done | — |
-| 2 | [SPEC-0030 `UiDispatcher`, `ManualUiDispatcher` and `then` continuations](../specs/0030-ui-dispatcher-and-then.md) | Approved | 1 |
+| 2 | [SPEC-0030 `UiDispatcher`, `ManualUiDispatcher` and `then` continuations](../specs/0030-ui-dispatcher-and-then.md) | In Progress | 1 |
 | 3 | `Command` and `CommandRouter` with in-process handlers | Planned | 1; EPIC-008 spec 1 |
 | 4 | UI-thread continuations with `WidgetHandle` capture and cancellation | Planned | 2, 3 |
 | 5 | Minimal `PropertyStore` with change notification | Planned | EPIC-008 spec 1 |

@@ -2,7 +2,9 @@
 
 #include <coil/foundation/assert.hpp>
 #include <coil/foundation/error.hpp>
+#include <coil/tasks/ui_dispatcher.hpp>
 
+#include <concepts>
 #include <expected>
 #include <memory>
 #include <mutex>
@@ -65,6 +67,17 @@ struct SharedState {
     }
 };
 
+/// A continuation's result type, with Expected<U> unwrapped to U (SPEC-0030 Q4).
+template <typename R>
+struct ThenValueOf {
+    using Type = R;
+};
+
+template <typename U>
+struct ThenValueOf<Expected<U>> {
+    using Type = U;
+};
+
 /// A shared state that already holds `value` (rule 2).
 template <typename T>
 [[nodiscard]] std::shared_ptr<SharedState<T>> settledState(Expected<T> value) {
@@ -74,6 +87,11 @@ template <typename T>
 }
 
 } // namespace detail
+
+/// The value type of the result that then() returns for continuation `F` on an AsyncResult<T>: U
+/// if `F` returns Expected<U>, otherwise what `F` returns (possibly void).
+template <typename F, typename T>
+using ThenValue = detail::ThenValueOf<std::invoke_result_t<F&, Expected<T>>>::Type;
 
 /// The consumer side of an asynchronous operation: a value (or error) that arrives later
 /// (ADR-0014). Move-only and single-consumer. Read by polling; it never blocks.
@@ -141,9 +159,26 @@ public:
         }
     }
 
+    /// Runs `continuation(Expected<T>)` on `ui` once this result's outcome is known, never inline,
+    /// and returns a result for what it returns (SPEC-0030 rules 4-8). Cancelling or dropping the
+    /// returned result asks this operation to stop. Consumes this result. `ui` must outlive the
+    /// continuation's task.
+    template <typename F>
+        requires std::invocable<F&, Expected<T>>
+    [[nodiscard]] AsyncResult<ThenValue<F, T>> then(UiDispatcher& ui, F continuation) && {
+        COIL_EXPECTS(m_state != nullptr);
+        // Red-phase stub (SPEC-0030): drops the continuation; the returned result never settles.
+        static_cast<void>(&ui);
+        static_cast<void>(&continuation);
+        return AsyncResult<ThenValue<F, T>>{
+            std::make_shared<detail::SharedState<ThenValue<F, T>>>()};
+    }
+
 private:
     template <typename U>
     friend AsyncPair<U> makeAsync();
+    template <typename U>
+    friend class AsyncResult;
 
     explicit AsyncResult(std::shared_ptr<detail::SharedState<T>> state) noexcept
         : m_state(std::move(state)) {}

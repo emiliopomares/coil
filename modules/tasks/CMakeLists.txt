@@ -1,4 +1,4 @@
-coil_add_module(tasks SOURCES src/async_result.cpp DEPENDS coil::foundation)
+coil_add_module(tasks SOURCES src/async_result.cpp src/ui_dispatcher.cpp DEPENDS coil::foundation)
 
 # Test-support library: fakes for the tasks types (header-only). Linked only by test executables.
 add_library(coil_tasks_testing INTERFACE)
