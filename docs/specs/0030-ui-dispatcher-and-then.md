@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | In Progress |
+| Status | Done |
 | Author | Claude (for Emilio Pomares) |
 | Date | 2026-11-08 |
 | Module(s) | `coil::tasks` (and its test-support library) |
@@ -285,25 +285,25 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
   results are created by producers, which should not know the consumer's thread.
 
 ## 11. Definition of Done
-- [ ] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
-- [ ] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
-- [ ] Full test suite passes
-- [ ] `clang-format` and `clang-tidy` clean; no new `NOLINT`
-- [ ] Builds with warnings-as-errors (macOS locally)
-- [ ] Sanitizer presets pass (`asan`, `tsan`)
-- [ ] Every AC ticked below with its proving test
-- [ ] Public API documented (Doxygen comments on new public declarations)
-- [ ] (Async) Completion, failure and cancellation each covered by a test
+- [x] Red phase: all new tests shown failing on assertions (output recorded in the Change Log)
+- [x] Green phase: tests unchanged since the Red commit (`git diff <red> HEAD -- ':(glob)**/tests/**'` empty)
+- [x] Full test suite passes
+- [x] `clang-format` and `clang-tidy` clean; no new `NOLINT`
+- [x] Builds with warnings-as-errors (macOS locally)
+- [x] Sanitizer presets pass (`asan`, `tsan`)
+- [x] Every AC ticked below with its proving test
+- [x] Public API documented (Doxygen comments on new public declarations)
+- [x] (Async) Completion, failure and cancellation each covered by a test
 
 ### AC verification
-- [ ] AC-1 → `UiTask.AC1_HoldsMoveOnlyCallables`
-- [ ] AC-2 → `ManualUiDispatcher.AC2_RunsInOrderOnDemand`
-- [ ] AC-3 → `ManualUiDispatcher.AC3_DestructionDropsTasks`
-- [ ] AC-4 → `Then.AC4_ContinuationRunsOnDrain`
-- [ ] AC-5 → `Then.AC5_ErrorsAndReturnShapes`
-- [ ] AC-6 → `Then.AC6_CancellationReachesTheSource`
-- [ ] AC-7 → `Then.AC7_DroppedTaskAbandonsTheChain`
-- [ ] AC-8 → `Then.AC8_CompletesFromAnotherThread`
+- [x] AC-1 → `UiTask.AC1_HoldsMoveOnlyCallables`
+- [x] AC-2 → `ManualUiDispatcher.AC2_RunsInOrderOnDemand`
+- [x] AC-3 → `ManualUiDispatcher.AC3_DestructionDropsTasks`
+- [x] AC-4 → `Then.AC4_ContinuationRunsOnDrain`
+- [x] AC-5 → `Then.AC5_ErrorsAndReturnShapes`
+- [x] AC-6 → `Then.AC6_CancellationReachesTheSource`
+- [x] AC-7 → `Then.AC7_DroppedTaskAbandonsTheChain`
+- [x] AC-8 → `Then.AC8_CompletesFromAnotherThread`
 
 ## 12. Change Log
 | Date | Change | Approved by |
@@ -313,3 +313,4 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 | 2026-11-08 | Amendment A (before Red): `UiTask`'s constructor is `explicit`, not implicit, because clang-tidy (`cppcoreguidelines-explicit-constructor`) rejects implicit single-argument constructors; callers write `post(UiTask{…})` | Emilio Pomares |
 | 2026-11-08 | Red: AC-1 to AC-8 fail on assertions (task never runs, nothing queued, chain never settles, source not cancelled); the "not run" and "cancel" checks of AC-3, AC-6 and AC-7 hold against the stub, but each test's positive control fails; the other 268 pass | — |
 | 2026-11-08 | Green: 276/276 on `dev`, `asan` and `tsan` (the `Then` tests also ran 5 times under TSan, clean); tests unchanged since Red (`c1fc012`); all gates pass; clang-tidy did not flag the post from `abandon()` (§10.3), so no change was needed | — |
+| 2026-11-08 | All ACs verified by their tests; Status → Done | — |
