@@ -56,8 +56,7 @@ private:
         explicit Holder(F callable)
             : m_function(std::move(callable)) {}
 
-        // Red-phase stub (SPEC-0030): does not run the callable.
-        void call() override { static_cast<void>(&m_function); }
+        void call() override { m_function(); }
 
     private:
         F m_function;

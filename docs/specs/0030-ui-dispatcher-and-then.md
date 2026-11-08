@@ -312,3 +312,4 @@ Each has a recommendation. Say "as recommended" or name the ones you want change
 | 2026-11-08 | Spec, plan and Q1–Q7 approved as recommended | Emilio Pomares |
 | 2026-11-08 | Amendment A (before Red): `UiTask`'s constructor is `explicit`, not implicit, because clang-tidy (`cppcoreguidelines-explicit-constructor`) rejects implicit single-argument constructors; callers write `post(UiTask{…})` | Emilio Pomares |
 | 2026-11-08 | Red: AC-1 to AC-8 fail on assertions (task never runs, nothing queued, chain never settles, source not cancelled); the "not run" and "cancel" checks of AC-3, AC-6 and AC-7 hold against the stub, but each test's positive control fails; the other 268 pass | — |
+| 2026-11-08 | Green: 276/276 on `dev`, `asan` and `tsan` (the `Then` tests also ran 5 times under TSan, clean); tests unchanged since Red (`c1fc012`); all gates pass; clang-tidy did not flag the post from `abandon()` (§10.3), so no change was needed | — |
