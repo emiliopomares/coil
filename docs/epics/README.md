@@ -54,6 +54,9 @@ A–E drafted first, before the standard widget set grows.
 EPIC-001's remaining specs (CI matrix, compiler feature check) and EPIC-003 (app main loop) are
 scheduled as needed.
 
+Product scope and the ranked list of future needs (which epics cover them, and which have none
+yet): [../architecture/PRODUCT-SCOPE.md](../architecture/PRODUCT-SCOPE.md).
+
 ## Reference use cases
 Every epic is checked against these before its specs are drafted: could someone build them as
 **custom components** (ADR-0005 Amendment 1), with no access that built-ins don't have?

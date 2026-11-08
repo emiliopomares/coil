@@ -27,7 +27,7 @@ node-graph demo holding thousands of items that stays within a measured frame bu
   budgets cover UI-side work (layout, paint recording, hit testing) and software rasterization.
 - **Styling and theming implementation.** ADR C sets the model; a later epic implements it.
 - Text editing, IME composition, bidirectional text (EPIC-010 follow-ups).
-- Gaps found in the 2026-11-07 assessment, each a future epic: multiple windows; drag and drop
+- Gaps found in the 2026-11-07 assessment (ranked in `docs/architecture/PRODUCT-SCOPE.md`), each a future epic: multiple windows; drag and drop
   (including OS file drops); clipboard; cursor shapes; native menus and file dialogs; undo/redo
   and the editor property model (ADR-0008 follow-up).
 
@@ -80,3 +80,4 @@ spec 1's harness, not guesses.
 | Date | Change | Approved by |
 |------|--------|-------------|
 | 2026-11-07 | Epic proposed (from the editor-scale assessment) | |
+| 2026-11-08 | Goal confirmed; done-when and spec list still to approve. Gaps recorded in `docs/architecture/PRODUCT-SCOPE.md` | Emilio Pomares |

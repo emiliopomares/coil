@@ -2,6 +2,8 @@
 
 > Status: **Accepted** (2026-11-01). Each section links to the ADR that records the decision. Changes
 > require a superseding ADR.
+>
+> What Coil aims to be (and not to be), and the ranked future needs: [PRODUCT-SCOPE.md](PRODUCT-SCOPE.md).
 
 ## 1. Goals and constraints
 
