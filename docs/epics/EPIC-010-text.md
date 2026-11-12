@@ -34,7 +34,7 @@ measurable sizes for layout, and a `Label` widget displays it sharply at any dis
 ## Specs (in dependency order)
 | # | Spec | Status | Depends on |
 |---|------|--------|------------|
-| 1 | Text ports (`TextShaper`, `FontRasterizer`) and a fake fixed-advance font | Planned | EPIC-006 spec 1 |
+| 1 | [SPEC-0031](../specs/0031-text-ports-and-fake-font.md): Text ports (`TextShaper`, `FontRasterizer`) and a fake fixed-advance font | Approved | EPIC-006 spec 1 |
 | 2 | `text_freetype` backend: HarfBuzz shaping, FreeType rasterization, bundled default font | Planned | 1 |
 | 3 | Glyph runs in the `DrawList`; glyph atlas in the software renderer | Planned | 1; EPIC-006 spec 3 |
 | 4 | Text measurement for layout (intrinsic sizes) | Planned | 1; EPIC-004 |
