@@ -7,4 +7,5 @@ target_link_libraries(coil_render_contract INTERFACE coil::render GTest::gtest)
 
 coil_add_tests(render
     SOURCES color_test.cpp draw_list_test.cpp painter_test.cpp recording_render_backend_test.cpp
+            fake_text_engine_test.cpp
     DEPENDS coil::render_testing coil::render_contract)

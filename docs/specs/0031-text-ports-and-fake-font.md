@@ -120,7 +120,7 @@ namespace coil::render {
 /// backends/text_freetype (HarfBuzz) and by FakeTextEngine for tests.
 class TextShaper {
 public:
-    virtual ~TextShaper();
+    virtual ~TextShaper() = 0; // pure, defined in src/text.cpp
     TextShaper(const TextShaper&) = delete;
     TextShaper& operator=(const TextShaper&) = delete;
     TextShaper(TextShaper&&) = delete;
@@ -148,7 +148,7 @@ namespace coil::render {
 /// renderer's glyph atlas, spec 3). Accepts the FontIds of the TextShaper it is paired with.
 class FontRasterizer {
 public:
-    virtual ~FontRasterizer();
+    virtual ~FontRasterizer() = 0;
     // copy and move deleted, as above
 
     /// Rasterizes `glyph` of `font` with an em height of `pixelSize` pixels.
@@ -416,3 +416,5 @@ Resolved 2026-11-12: all as recommended.
 | 2026-11-08 | Spec created (Draft) | |
 | 2026-11-12 | Spec and Q1–Q6 approved as recommended | Emilio Pomares |
 | 2026-11-12 | Implementation plan approved | Emilio Pomares |
+| 2026-11-12 | §4.1: the port destructors are pure virtual (still defined), as `UiDispatcher`'s are, so that `misc-multiple-inheritance` accepts a class implementing both ports. No behavioural change | |
+| 2026-11-12 | Red: 8 of 8 new tests fail on assertions (284 tests, 276 pass). AC-1: ids 0 and equal; AC-2, AC-5: invalid input succeeds; AC-3: ascent 0; AC-4, AC-6: no glyphs; AC-7, AC-8: exact values differ | |
